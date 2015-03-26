@@ -1,0 +1,109 @@
+.NPMRDS-control-panel-label {
+  color: #fff;
+  font-size: 12pt;
+  font-weight: bold;
+  line-height: 30px;
+  height: 30px;
+  background-color: #666;
+  text-align: center;
+}
+.NPMRDS-control-panel-label:hover {
+  background-color: #333;
+}
+
+.NPMRDS-control-panel {
+	color: #000;
+	font-size: 9pt;
+}
+
+.NPMRDS-label {
+	color: #fff;
+}
+
+.NPMRDS-checkbox {
+	padding: 2px;
+}
+
+.NPMRDS-submit {
+	background-color: #666;
+	text-align: center;
+	line-height: 30px;
+	height: 30px;
+	cursor: pointer;
+  font-weight: bold;
+  font-size: 12pt;
+}
+.NPMRDS-submit:hover {
+	background-color: #333;
+}
+
+.NPMRDS-data-point-slider-div {
+	text-align: center;
+	height: 50px;
+}
+
+.NPMRDS-data-point-slider {
+	background-color: #666;
+	height: 50px;
+	width: 1000px;
+}
+
+.NPMRDS-legend {
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 100px;
+  z-index: 10;
+  text-align: center;
+  overflow: hidden;
+  background-color: #009;
+  color: #000;
+}
+.NPMRDS-legend-label {
+  height: 30px;
+  line-height: 30px;
+  font-size: 12pt;
+  font-weight: bold;
+  background-color: #666;
+  padding: 0px;
+  color: #fff;
+  cursor: pointer;
+}
+.NPMRDS-legend-label:hover {
+  background-color: #333;
+}
+.NPMRDS-legend-bin {
+  height: 30px;
+  line-height: 30px;
+  padding: 0 10px;
+}
+
+.axis {
+  font: 10px sans-serif;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  user-select: none;
+}
+
+.axis .domain {
+  fill: none;
+  stroke: #000;
+  stroke-opacity: .3;
+  stroke-width: 10px;
+  stroke-linecap: round;
+}
+
+.axis .halo {
+  fill: none;
+  stroke: #ddd;
+  stroke-width: 8px;
+  stroke-linecap: round;
+}
+
+.slider .handle {
+  fill: #fff;
+  stroke: #000;
+  stroke-opacity: .5;
+  stroke-width: 1.25px;
+  cursor: crosshair;
+}
