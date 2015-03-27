@@ -35,6 +35,13 @@ module.exports = {
   // CRUD Handlers
   //------------------------------------
 
+  changeDataView: function(view) {
+    AppDispatcher.handleServerAction({
+      type: ActionTypes.DATA_VIEW_CHANGE,
+      view: view
+    });
+  },
+
   receiveData: function(type,data) {
     //handles Create,Read & Update
     var actiontype = 'RECEIVE_'+type.toUpperCase()+'S';

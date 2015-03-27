@@ -78,6 +78,22 @@
   padding: 0 10px;
 }
 
+.NPMRDS-data-view {
+  position: absolute;
+  z-index: 10;
+  left: 50px;
+  top: 0;
+  background-color: #666;
+  color: #fff;
+}
+.NPMRDS-data-view-label {
+  display: inline;
+  cursor: pointer;
+}
+.NPMRDS-data-view-label:hover {
+  background-color: #333;
+}
+
 .axis {
   font: 10px sans-serif;
   -webkit-user-select: none;

@@ -21,7 +21,8 @@ var AppDispatcher = require('../dispatcher/AppDispatcher'),
 	dataPointSlider = DataPointSlider(),
 	linkShader = LinkShader(),
 	dataPointCollectionsManager = DataPointCollectionsManager(),
-	dataView = "Speed";
+	DataViews = ["Speed", "Congestion", "Time", "Flow"],
+	dataView = DataViews[0];
 
 /**
 * usage data cache object
@@ -85,6 +86,13 @@ var UsageDataStore = assign({}, EventEmitter.prototype, {
 		console.log("SETTING SVG", svg);
 		dataPointSlider.svg(svg)
 			.init();
+	},
+
+	getDataViews: function() {
+		return {
+			DataViews: DataViews,
+			current: dataView
+		}
 	}
 })
 
@@ -95,6 +103,10 @@ UsageDataStore.dispatchToken = AppDispatcher.register(function(payload) {
   		case ActionTypes.RECEIVE_COUNTY_DATA:
   			usageData = action.usageData;
   			processUsageData(action.params);
+  			break;
+  		case ActionTypes.DATA_VIEW_CHANGE:
+  			dataView = action.view;
+  			switchDataView();
   			break;
   	}
 });
@@ -182,17 +194,30 @@ function processUsageData(params) {
 
 	dataPointCollectionsManager.sort()
 		.dataLoaded(true)
-		(dataView, function(d) {
+			(dataView, function(d) {
 
-			linkShader
-				.domain(d.domain());
+				linkShader
+					.domain(d.domain());
 
-			dataPointSlider
-				.data(d.data())
-				.show();
+				dataPointSlider
+					.data(d.data())
+					.show();
 
-			// legend.label(d.unitLabel());
-		})
+				// legend.label(d.unitLabel());
+			})
+}
+
+function switchDataView() {
+	dataPointCollectionsManager(dataView, function(d) {
+		linkShader
+			.domain(d.domain());
+
+		dataPointSlider
+			.data(d.data())
+			.update();
+
+		// legend.label(d.unitLabel())();
+	})
 }
 
 function GeometryShifter() {
@@ -265,8 +290,7 @@ function getProperties(properties) {
 }
 
 function DataPointCollectionsManager() {
-	var labels = ["Speed", "Congestion", "Time", "Flow"],
-		dataPointCollections = {},
+	var dataPointCollections = {},
 		activeCollection = null,
 		points = [],
 		resolution,
@@ -281,7 +305,7 @@ function DataPointCollectionsManager() {
 		}
 	}
 	manager.init = function() {
-		labels.forEach(function(label) {
+		DataViews.forEach(function(label) {
 			var collection = DataPointCollection()
 
 			switch (label) {

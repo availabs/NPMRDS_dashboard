@@ -26,6 +26,7 @@ module.exports = {
 
     RECEIVE_COUNTY_DATA: null,
 
+    DATA_VIEW_CHANGE: null
   }),
 
   EventTypes: keyMirror({

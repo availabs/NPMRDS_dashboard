@@ -5,6 +5,7 @@ var React = require('react'),
     Events = require('../constants/AppConstants').EventTypes,
 
     NPMRDSLegend = require("../components/NPMRDSLegend.react"),
+    DataView = require("../components/NPMRDSDataView.react"),
 
 // stores
     GeoStore = require("../stores/GeoStore"),
@@ -142,6 +143,7 @@ var SamplePage = React.createClass({
             <div className="row">
                 <div className="col-lg-12">
                     <LeafletMap height="600px" layers={this.state.layers}/>
+                    <DataView />
                     <NPMRDSLegend />
                 </div>
             </div>
