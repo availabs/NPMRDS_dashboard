@@ -13,6 +13,8 @@ var React = require('react'),
 
 var linkShader = UsageDataStore.linkShader();
 
+var roadPaths = null;
+
 var SamplePage = React.createClass({
  
   getInitialState: function(){   
@@ -58,7 +60,7 @@ var SamplePage = React.createClass({
                     zoomOnLoad:true,
                     style:function (feature) {
                         return {
-                            className: 'roads',
+                            className: 'roads id-'+feature.properties.linkID+' tmc-'+feature.properties.tmc,
                             stroke:true,
                             color: linkShader(feature)
                         }
@@ -110,17 +112,41 @@ var SamplePage = React.createClass({
     newState.layers.roads.options.zoomOnLoad = true;
 
     this.setState(newState);
+
+    roadPaths = null;
   },
 
   _onDataPointSliderUpdate: function() {
     console.log("DATA_POINT_SLIDER_UPDATE");
-    var newState = this.state;
 
-    newState.layers.roads.id++;
-    newState.layers.roads.geo.features = GeoStore.getLoadedRoads();
-    newState.layers.roads.options.zoomOnLoad = false;
+    if (!roadPaths) {
+      var newState = this.state;
 
-    this.setState(newState);
+      newState.layers.roads.id++;
+      newState.layers.roads.geo.features = GeoStore.getLoadedRoads();
+      newState.layers.roads.options.zoomOnLoad = false;
+
+      this.setState(newState);
+      
+      roadPaths = d3.selectAll(".roads")
+        .datum(function() {
+          var path = d3.select(this),
+              match = path.attr("class").match(/id-(\w+) tmc-(\w+)/)
+              linkID = +match[1],
+              tmc = match[2];
+          return {
+            properties: {
+              linkID:linkID,
+              tmc:tmc
+            }
+          };
+        });
+    }
+
+    roadPaths
+      .attr("stroke", linkShader);
+
+    console.log("_onDataPointSliderUpdate completed")
   },
 
   _onStateChange: function() {

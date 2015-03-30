@@ -9,6 +9,7 @@ var AppDispatcher = require('../dispatcher/AppDispatcher'),
     Constants = require('../constants/AppConstants'),
     EventEmitter = require('events').EventEmitter,
     assign = require('object-assign'),
+    ServerActionCreators = require('../actions/ServerActionsCreator'),
 
     SailsWebApi = require("../utils/api/SailsWebApi"),
     GeoStore = require("./GeoStore"),
@@ -191,6 +192,8 @@ function processUsageData(params) {
 	}
 
 	GeoStore.setShiftedRoads(shiftedRoadsByCounty);
+console.log("processUSageData, sending: shiftedRoadsByCounty")
+	//ServerActionCreators.receiveShiftedCountyRoads(shiftedRoadsByCounty);
 
 	dataPointCollectionsManager.sort()
 		.dataLoaded(true)

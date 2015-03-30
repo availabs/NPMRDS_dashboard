@@ -25,6 +25,7 @@ module.exports = {
     RECEIVE_COUNTY_ROADS: null,
 
     RECEIVE_COUNTY_DATA: null,
+    RECEIVE_SHIFTED_COUNTY_ROADS:null,
 
     DATA_VIEW_CHANGE: null
   }),

@@ -65,6 +65,13 @@ module.exports = {
     });
   },
 
+  receiveShiftedCountyRoads: function(roads) {
+    AppDispatcher.handleServerAction({
+      type: ActionTypes.RECEIVE_SHIFTED_COUNTY_ROADS,
+      roads: roads
+    });
+  },
+
   receiveCountyData: function(fips, params, data) {
     AppDispatcher.handleServerAction({
       type: ActionTypes.RECEIVE_COUNTY_DATA,

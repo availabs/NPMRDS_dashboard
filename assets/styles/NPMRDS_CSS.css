@@ -81,14 +81,22 @@
 .NPMRDS-data-view {
   position: absolute;
   z-index: 10;
-  left: 50px;
+  left: 65px;
   top: 0;
   background-color: #666;
   color: #fff;
 }
 .NPMRDS-data-view-label {
+  border: 2px solid #333;
   display: inline;
   cursor: pointer;
+  font-size: 12pt;
+  padding: 0 10px;
+  height: 24px;
+  line-height: 24px;
+}
+.NPMRDS-data-view-label-selected {
+  background-color: #333;
 }
 .NPMRDS-data-view-label:hover {
   background-color: #333;

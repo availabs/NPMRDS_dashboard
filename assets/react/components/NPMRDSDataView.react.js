@@ -9,22 +9,35 @@ var React = require('react'),
     dataView = UsageDataStore.getDataViews().current;
 
 var DataView = React.createClass({
+	componentDidMount: function() {
+		d3.selectAll(".NPMRDS-data-view-label")
+			.filter(function(s) { return d3.select(this).attr("data-bind") == dataView; })
+			.classed("NPMRDS-data-view-label-selected", true);
+	},
 	render: function() {
 		var views = DataViews.map(function(view) {
 			return (
-				<div onClick={changeView} className="NPMRDS-data-view-label" data-bind={view}>{view}</div>
+				<li onClick={changeView} className="NPMRDS-data-view-label" data-bind={view}>
+					{view}
+				</li>
 			);
 		});
 		return (
 			<div className="NPMRDS-data-view">
-				{views}
+				<ul>
+					{views}
+				</ul>
 			</div>
 		);
 	}
 })
 
 function changeView(e) {
-	var view = d3.select(e.target).attr("data-bind");
+	d3.selectAll(".NPMRDS-data-view-label")
+		.classed("NPMRDS-data-view-label-selected", false);
+	var selection = d3.select(e.target)
+			.classed("NPMRDS-data-view-label-selected", true),
+		view = selection.attr("data-bind");
 	ServerActionCreators.changeDataView(view);
 }
 

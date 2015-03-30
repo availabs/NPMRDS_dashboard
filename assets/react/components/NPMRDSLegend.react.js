@@ -41,18 +41,6 @@ var NPMRDSLegend = React.createClass({
   	},
 
 	render: function() {
-
-		// bins.style("background-color", function(d) { return d; })
-		// 	.text(function(d, ndx) {
-		// 		var v = scale.invertExtent(d);
-		// 		if (ndx == 0) {
-		// 			return "["+Math.floor(v[0])+", "+Math.round(v[1])+")";
-		// 		}
-		// 		if (ndx == scale.range().length-1) {
-		// 			return "["+Math.round(v[0])+", "+Math.ceil(v[1])+")";
-		// 		}
-		// 		return "["+Math.round(v[0])+", "+Math.round(v[1])+")";
-		// 	});
 		var bins = [];
 		if (scale) {
 			 bins = scale.range().map(function(d, i) {
