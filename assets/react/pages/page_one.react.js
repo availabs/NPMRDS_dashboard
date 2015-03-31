@@ -1,25 +1,31 @@
+"use strict"
 var React = require('react'),
     LeafletMap = require("../components/utils/LeafletMap.react"),
     d3 = require("d3"),
+
+    SailsWebApi = require("../utils/api/SailsWebApi"),
 
     Events = require('../constants/AppConstants').EventTypes,
 
     NPMRDSLegend = require("../components/NPMRDSLegend.react"),
     DataView = require("../components/NPMRDSDataView.react"),
+    NPMRDSTabPanel = require("../components/NPMRDSTabPanel.react"),
+    NPMRDSTabSelector = require("../components/NPMRDSTabSelector.react"),
 
 // stores
     GeoStore = require("../stores/GeoStore"),
-    UsageDataStore = require("../stores/UsageDataStore");
+    UsageDataStore = require("../stores/UsageDataStore"),
+    TMCDataStore = require("../stores/TMCDataStore");
 
-var linkShader = UsageDataStore.linkShader();
-
-var roadPaths = null;
+var linkShader = UsageDataStore.linkShader(),
+    roadPaths = null;
 
 var SamplePage = React.createClass({
- 
-  getInitialState: function(){   
+  getInitialState: function(){
     return {
-        roads: GeoStore.getLoadedRoads(),
+        selectedTMCs: [],
+        tabs: [],
+        panels: [],
         layers:{
             county:{
                 id:0,
@@ -70,8 +76,9 @@ var SamplePage = React.createClass({
                         layer.on({
 
                             click: function(e){
-                                //console.log('county clicked',e.target.feature.id);
-                                //GeoStore.toggleCounty(e.target.feature.id)
+                              if (feature.properties.tmc) {
+                                TMCDataStore.addTMC(feature.properties.tmc);
+                              }
                             },
                             mouseover: function(e){
                                 
@@ -87,20 +94,79 @@ var SamplePage = React.createClass({
         }
     }
   },
+
   componentDidMount: function() {  //  Events.USAGE_DATA_PROCESSED
-      GeoStore.addChangeListener(Events.CHANGE_EVENT, this._onChange);
       GeoStore.addChangeListener(Events.COUNTY_CHANGE, this._onCountyChange);
       GeoStore.addChangeListener(Events.STATE_CHANGE, this._onStateChange);
       
       UsageDataStore.addChangeListener(Events.DATA_POINT_SLIDER_UPDATE, this._onDataPointSliderUpdate);
+      
+      TMCDataStore.addChangeListener(Events.DISPLAY_TMC_DATA, this._onDisplayTMCdata);
+      TMCDataStore.addChangeListener(Events.REMOVE_TMC_DATA, this._onRemoveTMCdata);
   },
 
   componentWillUnmount: function() {
-      GeoStore.removeChangeListener(Events.CHANGE_EVENT, this._onChange);
       GeoStore.removeChangeListener(Events.COUNTY_CHANGE, this._onCountyChange);
       GeoStore.removeChangeListener(Events.STATE_CHANGE, this._onStateChange);
       
       UsageDataStore.removeChangeListener(Events.DATA_POINT_SLIDER_UPDATE, this._onDataPointSliderUpdate);
+      
+      TMCDataStore.removeChangeListener(Events.DISPLAY_TMC_DATA, this._onDisplayTMCdata);
+      TMCDataStore.removeChangeListener(Events.REMOVE_TMC_DATA, this._onRemoveTMCdata);
+  },
+
+  _onDisplayTMCdata: function(tmc) {
+console.log("displayTMCdata")
+    var state = this.state;
+    state.selectedTMCs.push(tmc);
+    this.setState(state);
+  },
+
+  _onRemoveTMCdata: function(TMC) {
+    var state = this.state,
+        tabs = [],
+        panels = [];
+
+    state.tabs.forEach(function(tab) {
+        if (TMC != tab.key) {
+          tabs.push(tab);
+        }
+    });
+    state.panels.forEach(function(panel) {
+        if (TMC != panel.key) {
+          panels.push(panel);
+        }
+    });
+
+    state.tabs = tabs;
+    state.panels = panels;
+
+    var activeTab = d3.select("#NPMRDS-tab-content").selectAll(".active");
+
+    if (activeTab.attr("id").substr(TMC)) {
+        var tabs = d3.select("#NPMRDS-tab-content").selectAll(".tab-pane"),
+            index = 0;
+
+        tabs.each(function(d, i) {
+            if (d3.select(this).classed("active")) {
+                index = i;
+            }
+        })
+
+        tabs.each(function(d, i) {
+            if (i == index-1) {
+                d3.select(this).classed("active", true);
+                index = i;
+            }
+        });
+        d3.select("#NPMRDS-tab-list").selectAll("li").each(function(d, i) {
+            if (i == index) {
+                d3.select(this).classed("active", true);
+            }
+        })
+    }
+
+    this.setState(state);
   },
 
   _onCountyChange: function() {
@@ -131,7 +197,7 @@ var SamplePage = React.createClass({
       roadPaths = d3.selectAll(".roads")
         .datum(function() {
           var path = d3.select(this),
-              match = path.attr("class").match(/id-(\w+) tmc-(\w+)/)
+              match = path.attr("class").match(/id-(\w+) tmc-(\w+)/),
               linkID = +match[1],
               tmc = match[2];
           return {
@@ -158,21 +224,33 @@ var SamplePage = React.createClass({
 
     this.setState(newState);
   },
-  
-  _onChange: function(){
-    console.log("CHANGE_EVENT");
-  },
 
   render: function() {
+    var page = this;
+    this.state.selectedTMCs.forEach(function(tmc) {
+        page.state.tabs.push(<NPMRDSTabSelector tmc={tmc} key={tmc}/>);
+    });
+    this.state.selectedTMCs.forEach(function(tmc) {
+        page.state.panels.push(<NPMRDSTabPanel tmc={tmc} key={tmc}/>);
+    });
+    this.state.selectedTMCs = [];
+    var style = {padding: "0px", overflow: "hidden", margin: "0px"};
     return (
         <div className="content container">
-            <div className="row">
-                <div className="col-lg-12">
+          <ul className="nav nav-tabs" role="tablist" id="NPMRDS-tab-list">
+            <li role="presentation" className="active"><a href="#map-div" aria-controls="map-div" role="tab" data-toggle="tab">Home</a></li>
+            {this.state.tabs}
+          </ul>
+          <div className="tab-content" style={style} id="NPMRDS-tab-content">
+            <div role="tabpanel" className="tab-pane active row" id="map-div" style={style}>
+                <div className="col-lg-12" stye={style}>
                     <LeafletMap height="600px" layers={this.state.layers}/>
                     <DataView />
                     <NPMRDSLegend />
                 </div>
             </div>
+            {this.state.panels}
+          </div>
         </div>
     );
   }

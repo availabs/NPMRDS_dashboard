@@ -35,6 +35,10 @@ module.exports = {
   // get county geography
   //------------
 
+  getTMCdata: function(tmc) {
+    ServerActionCreators.receiveTMCdata(tmc);
+  },
+
   getCounties: function() {
     d3.json("/geo_data/us_counties.json", function(err, topo) {
       ServerActionCreators.receiveCounties(topo);

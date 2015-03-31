@@ -72,6 +72,14 @@ module.exports = {
     });
   },
 
+  receiveTMCdata: function(tmc, data) {
+    AppDispatcher.handleServerAction({
+      type: ActionTypes.RECEIVE_TMC_DATA,
+      tmc: tmc,
+      data: data
+    });
+  },
+
   receiveCountyData: function(fips, params, data) {
     AppDispatcher.handleServerAction({
       type: ActionTypes.RECEIVE_COUNTY_DATA,

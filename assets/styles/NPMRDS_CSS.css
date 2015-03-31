@@ -102,6 +102,10 @@
   background-color: #333;
 }
 
+.NPMRDS-tab-close:hover {
+  color: #900;
+}
+
 .axis {
   font: 10px sans-serif;
   -webkit-user-select: none;

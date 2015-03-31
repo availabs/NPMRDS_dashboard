@@ -1,9 +1,4 @@
 'use strict';
-/**
- * This file is provided by Facebook for testing and evaluation purposes
- * only. Facebook reserves all rights not expressly granted.
- *
- */
 
 var AppDispatcher = require('../dispatcher/AppDispatcher'),
     Constants = require('../constants/AppConstants'),
@@ -24,24 +19,24 @@ var _counties = {type:"FeatureCollection", features: []},
     _shiftedRoadsFeatures = [],
     _currentState = 0;
 
-function _addUsers(rawData) {
-  //console.log('stores/UserStore/_addUsers',rawData);
-  rawData.forEach(function(user) {
+// function _addUsers(rawData) {
+//   //console.log('stores/UserStore/_addUsers',rawData);
+//   rawData.forEach(function(user) {
     
-      _users[user.id] = user;
+//       _users[user.id] = user;
     
-  });
-};
+//   });
+// };
 
-function _deleteUser(id){
-  //console.log('stores/userstore/deleteuser',id)
-  delete _users[id];
-  _editUserID = null;
-}
+// function _deleteUser(id){
+//   //console.log('stores/userstore/deleteuser',id)
+//   delete _users[id];
+//   _editUserID = null;
+// }
 
-function _setEditUserID(id){
-    _editUserID = id;
-};
+// function _setEditUserID(id){
+//     _editUserID = id;
+// };
 
 var GeoStore = assign({}, EventEmitter.prototype, {
 
