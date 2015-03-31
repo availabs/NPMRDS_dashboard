@@ -238,7 +238,7 @@ console.log("displayTMCdata")
     return (
         <div className="content container">
           <ul className="nav nav-tabs" role="tablist" id="NPMRDS-tab-list">
-            <li role="presentation" className="active"><a href="#map-div" aria-controls="map-div" role="tab" data-toggle="tab">Home</a></li>
+            <li role="presentation" className="active"><a href="#map-div" aria-controls="map-div" role="tab" data-toggle="tab">Map</a></li>
             {this.state.tabs}
           </ul>
           <div className="tab-content" style={style} id="NPMRDS-tab-content">
