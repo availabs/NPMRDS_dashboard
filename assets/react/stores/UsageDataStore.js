@@ -115,6 +115,7 @@ UsageDataStore.dispatchToken = AppDispatcher.register(function(payload) {
   	switch(action.type) {
   		case ActionTypes.RECEIVE_COUNTY_DATA:
   			usageData = action.usageData;
+console.log("USAGE_DATA",usageData);
   			processUsageData(action.params);
   			_loadingState = false;
 			UsageDataStore.emitChange();

@@ -65,7 +65,7 @@ var ControlPanel = React.createClass({
             })
         params.weekdays = weekdays;
         
-        //console.log('loadParams',params);
+        console.log('loadParams',params);
         
         UsageDataStore.loadData(params);
     },

@@ -110,6 +110,7 @@ function UsageDataBuilder() {
 	        	_TIME_BOUNDS_ = "AND epoch = "+request.timeBounds[0]/5;
 	        }
         }
+console.log(request.resolution)
 
         switch (request.resolution) {
         	case "year":
@@ -132,9 +133,10 @@ function UsageDataBuilder() {
 	        	_RESOLUTION_ = ", INTEGER(epoch/12) AS hour";
 	        	_GROUP_BY_ = "hour, "+_GROUP_BY_;
 	        	break;
-    		case "minute":
+    		case "15-minute":
 	        	_RESOLUTION_ = ", INTEGER(epoch/3) AS minute";
 	        	_GROUP_BY_ = "minute, "+_GROUP_BY_;
+	        	request.resolution = "minute";
 	        	break;
     	}
 
@@ -200,9 +202,10 @@ function UsageDataBuilder() {
 	        	_RESOLUTION_ = ", INTEGER(epoch/12) AS hour";
 	        	_GROUP_BY_ = "hour, "+_GROUP_BY_;
 	        	break;
-    		case "minute":
+    		case "15-minute":
 	        	_RESOLUTION_ = ", INTEGER(epoch/3) AS minute";
 	        	_GROUP_BY_ = "minute, "+_GROUP_BY_;
+	        	request.resolution = "minute";
 	        	break;
     	}
 
