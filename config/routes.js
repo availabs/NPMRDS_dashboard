@@ -27,14 +27,21 @@ module.exports.routes = {
   '/logout':'UserController.logout',
   '/login/auth':'UserController.auth',
 
-
+  /**
+  * road topology, by fips codes
+  */
   '/geo/getcounty/:id?': 'geodata.getCountyTopology',
   '/geo/getstate/:id': 'geodata.getStateTopology',
 
   /**
-  * Usage data
+  * road usage data, by linkID
   */
   '/usage/getstate/:id': 'usagedata.getStateData',
-  '/usage/getcounty/:id': 'usagedata.getCountyData'
+  '/usage/getcounty/:id': 'usagedata.getCountyData',
+
+  /**
+  * tmc statistical data, by tmc code
+  */
+  '/tmcdata/:id?': 'tmcdata.getTMCData'
   
 };

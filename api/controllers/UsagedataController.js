@@ -25,7 +25,7 @@ console.log("data requested for:", request.fips);
 
 		Builder(request, function(error, result) {
 			if (error) {
-				res.send({status: 500, error: error, msg: "Internal server error"}, 500);
+				res.send(error, 500);
 				return;
 			}
 			console.log("sending data for ", request.fips);
@@ -48,7 +48,7 @@ console.log("data requested for:", request.fips);
 
 		Builder(request, function(error, result) {
 			if (error) {
-				res.send({status: 500, error: error, msg: "Internal server error"}, 500);
+				res.send(error, 500);
 				return;
 			}
 			console.log("sending data for ", request.fips);

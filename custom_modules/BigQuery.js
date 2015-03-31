@@ -21,8 +21,7 @@ function BigQueryTest() {
 			    	auth: jwt },
 			    function(error, result) {
 			    	if (error) {
-			    		console.log(error);
-			    		cb(error);
+			    		cb({status:500, error:error});
 			    		return;
 			    	}
 
@@ -30,6 +29,11 @@ function BigQueryTest() {
 			    		setTimeout(wait, 2000, result, cb);
 			    		return;
 			    	}
+
+					if (!result.rows) {
+						cb({error:"empty response from BigQuery", status:500});
+						return;
+					}
 
 			    	if (result.totalRows > result.rows.length) {
 			    		getMoreRows(result, result.pageToken, cb);
@@ -95,11 +99,12 @@ function BigQueryTest() {
 			bigQuery.jobs.getQueryResults(params, function(error, result) {
 				if(error) {
 					console.log(error);
+					cb({status: 500, error:error});
 					return;
 				}
 
 				if (!result.rows) {
-					cb("empty resonse from BigQuery");
+					cb({error:"empty response from BigQuery", status:500});
 					return;
 				}
 
@@ -123,6 +128,7 @@ console.log(pageToken)
 			bigQuery.jobs.getQueryResults(params, function(error, data) {
 				if(error) {
 					console.log(error);
+					cb({status: 500, error:error});
 					return;
 				}
 

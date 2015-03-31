@@ -16,10 +16,6 @@ function UsageDataBuilder() {
         	if (error) {
         		cb(error);
         	}
-        	else if (!result["jobComplete"]) {
-        		waitForJob(request, result, cb);
-        		cb({ msg: "Problem with BigQuery", result: result });
-        	}
         	else {
         		cb(error, processResult(request, result));
         	}
@@ -27,17 +23,6 @@ function UsageDataBuilder() {
 	}
 
 	return builder;
-
-	function waitForJob(request, result, cb) {
-		BIGquery.checkJob(result["jobReference"]["jobId"], function(error, status) {
-			var state = status["status"]["state"];
-			if (state == "RUNNING") {
-				setTimeout(waitForJob, [5000, request, result, cb]);
-				return
-			}
-			
-		});
-	}
 
 	function processResult(request, result) {
 		var response = [],
