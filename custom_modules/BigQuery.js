@@ -13,6 +13,7 @@ function BigQueryTest() {
 		var projectId = 'npmrds';
 
 		function query(sql, cb) {
+			
 			bigQuery.jobs.query({
 			    	kind: "bigquery#queryRequest",
 			    	projectId: projectId,

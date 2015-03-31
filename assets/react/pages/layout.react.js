@@ -1,51 +1,51 @@
 var React = require('react'),
     RouteHandler = require('react-router').RouteHandler,
-
+    // -- utils
+    CHANGE_EVENT = 'change',
     // -- App Templates
     Sidebar = require('../components/layout/Sidebar.react'),
     Logo = require('../components/layout/Logo.react'),
     Header = require('../components/layout/Header.react'),
 
-    ControlPanel = require("../components/ControlPanel.react"),
-    DataPointSlider = require("../components/DataPointSlider.react"),
-
-    // -- Stores
-    AppStore = require('../stores/AppStore');
+    //--Stores
+    UsageDataStore = require('../stores/UsageDataStore');
 
 var App = React.createClass({
  
-  getInitialState: function(){   
-    return {
-      menu:AppStore.getMenu()
-    };
-  },
-  
-  componentDidMount: function() {
-      AppStore.addChangeListener(this._onChange);
-  },
+    getInitialState: function() {
+        return {
+            dataLoading : UsageDataStore.getLoadingState(),
+            dataView : UsageDataStore.getDataViews().current
+        }
+    },
+    componentDidMount: function() {
+        UsageDataStore.addChangeListener(CHANGE_EVENT,this._onChange);
+    },
 
-  componentWillUnmount: function() {
-      AppStore.removeChangeListener(this._onChange);
-  },
-  
-  _onChange: function(){
-    console.log('on change layout');
-    this.setState({menu:AppStore.getMenu()})
-  },
+    componentWillUnmount: function() {
+        UsageDataStore.removeChangeListener(CHANGE_EVENT,this._onChange);
+    },
 
-  render: function() {
-    return (
-        <div>
-            <Logo />
-            <ControlPanel />
-            <div className="wrap">
-                <Header />
-                  <RouteHandler />
+    _onChange:function(){
+        //console.log('layout on change', UsageDataStore.getLoadingState())
+        this.setState({
+            dataLoading : UsageDataStore.getLoadingState(),
+            dataView : UsageDataStore.getDataViews().current
+        })
+    },
+
+    render: function() {
+        return (
+            <div>
+                <Logo />
+                <div className="wrap">
+                    <Header />
+                      <RouteHandler loading={this.state.dataLoading} dataView={this.state.dataView} />
+                </div>
+               
             </div>
-            <DataPointSlider />
-        </div>
-    );
-  },
+        );
+    },
 
 });
 

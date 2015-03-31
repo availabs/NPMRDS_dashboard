@@ -10,7 +10,8 @@ module.exports = function (shipit) {
       ignores: ['.git', 'node_modules'],
       keepReleases: 2,
       key: 'avail-aws-east.pem',
-      shallowClone: true
+      shallowClone: true,
+
     },
 
     production: {
@@ -19,7 +20,8 @@ module.exports = function (shipit) {
   
   });
 
-  shipit.task('pwd', function () {
-    return shipit.remote('pwd');
+  shipit.task('link', function () {
+    shipit.remote('ln -s ~/prod/npmrds/node_modules ~/prod/npmrds/current');
+    shipit.remote('ln -s ~/prod/npmrds/bower_components ~/prod/npmrds/current/assets');
   });
 };

@@ -15,6 +15,7 @@ var AppDispatcher = require('../dispatcher/AppDispatcher'),
     GeoStore = require("./GeoStore"),
 
     Events = Constants.EventTypes,
+    CHANGE_EVENT = 'change',
 
     ActionTypes = Constants.ActionTypes,
 
@@ -28,7 +29,8 @@ var AppDispatcher = require('../dispatcher/AppDispatcher'),
 /**
 * usage data cache object
 */
-var usageData = {};
+var usageData = {},
+	_loadingState=false;
 
 /**
 * data point slider object
@@ -50,6 +52,10 @@ dataPointSlider
 dataPointCollectionsManager.init();
 
 var UsageDataStore = assign({}, EventEmitter.prototype, {
+	emitChange: function() {
+    	this.emit(CHANGE_EVENT);
+  	},
+
 	emitEvent: function(Event, data) {
 		this.emit(Event, data);
 	},
@@ -77,14 +83,20 @@ var UsageDataStore = assign({}, EventEmitter.prototype, {
 
 		params.links = loadedRoads.map(function(road) { return road.properties.linkID; });
 		SailsWebApi.getCountyUsageData(36, params);
+		_loadingState = true;
+		//console.log('data is loading')
+		UsageDataStore.emitChange();
 	},
 
+	getLoadingState:function(){
+		return _loadingState;
+	},
 	linkShader: function() {
 		return linkShader;
 	},
 
 	setSVG: function(svg) {
-		console.log("SETTING SVG", svg);
+		//console.log("SETTING SVG", svg);
 		dataPointSlider.svg(svg)
 			.init();
 	},
@@ -104,10 +116,14 @@ UsageDataStore.dispatchToken = AppDispatcher.register(function(payload) {
   		case ActionTypes.RECEIVE_COUNTY_DATA:
   			usageData = action.usageData;
   			processUsageData(action.params);
-  			break;
+  			_loadingState = false;
+			UsageDataStore.emitChange();
+  		break;
+  		
   		case ActionTypes.DATA_VIEW_CHANGE:
   			dataView = action.view;
   			switchDataView();
+  			UsageDataStore.emitChange();
   			break;
   	}
 });
@@ -115,7 +131,7 @@ UsageDataStore.dispatchToken = AppDispatcher.register(function(payload) {
 module.exports = UsageDataStore;
 
 function processUsageData(params) {
-  	console.log("processUsageData", usageData);
+  	//console.log("processUsageData", usageData);
 
 	var loadedRoadsByCounty = GeoStore.getLoadedRoadsByCounty(),
 		shiftedRoadsByCounty = {},
@@ -192,7 +208,7 @@ function processUsageData(params) {
 	}
 
 	GeoStore.setShiftedRoads(shiftedRoadsByCounty);
-console.log("processUSageData, sending: shiftedRoadsByCounty")
+	//console.log("processUSageData, sending: shiftedRoadsByCounty")
 	//ServerActionCreators.receiveShiftedCountyRoads(shiftedRoadsByCounty);
 
 	dataPointCollectionsManager.sort()

@@ -1,6 +1,6 @@
 "use strict"
 var React = require('react'),
-    TMCDataStore = require("../stores/TMCDataStore");
+    TMCDataStore = require("../../stores/TMCDataStore");
 
 var NPMRDSTabSelector = React.createClass({
 	remove: function() {
