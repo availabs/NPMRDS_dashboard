@@ -3,7 +3,7 @@
 var React = require('react'),
     
     // -- Components 
-    WidgetHeader = require('../components/WidgetHeader.react'),
+    WidgetHeader = require('../components/layout/WidgetHeader.react'),
     UserTable = require('../components/user/UserTable.react'),
     UserForm = require('../components/user/UserForm.react'),
     

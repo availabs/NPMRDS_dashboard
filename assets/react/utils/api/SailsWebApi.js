@@ -65,7 +65,7 @@ module.exports = {
   create: function(type,data){
     io.socket.post('/'+type,data,function(resData){
       //ToDo Check for Errors and Throw Error Case
-      console.log('utils/sailsWebApi/createUser',resData);
+      //console.log('utils/sailsWebApi/createUser',resData);
 
       //add new user back to store through 
       ServerActionCreators.receiveData(type,[resData]);
@@ -83,7 +83,7 @@ module.exports = {
   update: function(type,data){
     io.socket.put('/'+type+'/'+data.id,data,function(resData){
       //ToDo Check for Errors and Throw Error Case
-      console.log('utils/sailsWebApi/updateData',resData);
+      //console.log('utils/sailsWebApi/updateData',resData);
 
       //add new user back to store through 
       ServerActionCreators.receiveData(type,[resData]);
@@ -100,19 +100,7 @@ module.exports = {
     });
   },
 
-  //---------------------------------------------------
-  // Voters
-  //---------------------------------------------------
-  recieveVoters: function(campaignId){
-    console.time('loadVoters');
-    io.socket.get('/campaign/'+campaignId+'/voterData',function(resData){
-      console.timeEnd('loadVoters');
-      //ToDo Check for Errors and Throw Error Case
-      
-      //add new user back to store through 
-      ServerActionCreators.receiveVoters(resData);
-    });
-  },
+  
 
 
 };

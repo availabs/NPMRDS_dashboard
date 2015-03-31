@@ -1,8 +1,8 @@
 var React = require('react'),
 	d3 = require("d3"),
-    ServerActionCreators = require('../actions/ServerActionsCreator'),
+    ServerActionCreators = require('../../actions/ServerActionsCreator'),
 
-    UsageDataStore = require("../stores/UsageDataStore"),
+    UsageDataStore = require("../../stores/UsageDataStore"),
 
 
 	DataViews = UsageDataStore.getDataViews().DataViews,

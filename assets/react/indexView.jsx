@@ -15,27 +15,28 @@ var React = require('react'),
     App = require('./pages/layout.react'),
 
 //  --- Pages
-    PageOne = require('./pages/page_one.react'),
-    PageTwo = require('./pages/page_two.react'),
+    MapView = require('./pages/mapView.react'),
     UserAdmin = require('./pages/UserAdmin.react')
 
 // --- Server API
     sailsWebApi = require('./utils/api/SailsWebApi.js');
 
 // --- Initialize the API with the session User  
-sailsWebApi.initAdmin(window.User);
+    sailsWebApi.initAdmin(window.User);
 
 //  --- Routes 
 var routes = (
   <Route name="app" path="/" handler={App}>
-    <Route name="one" handler={PageOne}/>
-    <Route name="two" handler={PageTwo}/>
+    <Route name="mapVieiw" handler={MapView}/>
     <Route name="userAdmin" path="admin/users"  handler={UserAdmin} />
-    <DefaultRoute handler={PageOne}/>
+    <DefaultRoute handler={MapView}/>
   </Route>
 );
+
+document.body.classList.add('sidebar-hidden');
 
 Router.run(routes, function (Handler) {
   React.render(<Handler/>, document.body);
 });
+
 

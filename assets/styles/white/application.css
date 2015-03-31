@@ -1835,7 +1835,7 @@ a.bg-danger:hover {
 /* line 138, ../../../bower_components/bootstrap-sass-official/assets/stylesheets/bootstrap/_type.scss */
 .page-header {
   padding-bottom: 0px;
-  margin: 10px 0 10px;
+  margin: 15px 2.5641% 0;
   border-bottom: 1px solid #eeeeee;
 }
 
@@ -24436,7 +24436,7 @@ a.text-gray-lighter:hover {
 }
 
 /* line 310, ../../src/sass/_base.scss */
-.sidebar-hidden .sidebar, .sidebar-hidden .logo {
+.sidebar-hidden .sidebar {
   display: none;
 }
 /* line 314, ../../src/sass/_base.scss */
@@ -24457,7 +24457,7 @@ a.text-gray-lighter:hover {
 /*content except of header*/
 /* line 332, ../../src/sass/_base.scss */
 .content {
-  padding: 10px;
+  padding: 25px 2.5641%;
   -webkit-transition: margin-top 0.35s ease, opacity 0.2s;
   -o-transition: margin-top 0.35s ease, opacity 0.2s;
   transition: margin-top 0.35s ease, opacity 0.2s;
@@ -24619,8 +24619,6 @@ a.text-gray-lighter:hover {
 /* line 486, ../../src/sass/_base.scss */
 .page-header {
   border: none;
-  margin: 0 0 2px 0;
-  padding: 0;
   position: relative;
   -moz-border-radius: 3px;
   -webkit-border-radius: 3px;

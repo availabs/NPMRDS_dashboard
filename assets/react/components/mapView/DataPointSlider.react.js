@@ -1,9 +1,9 @@
 var React = require('react'),
 	d3 = require("d3"),
 
-	Events = require('../constants/AppConstants').EventTypes,
+	Events = require('../../constants/AppConstants').EventTypes,
 
-	UsageDataStore = require("../stores/UsageDataStore");
+	UsageDataStore = require("../../stores/UsageDataStore");
 
 var DataPointSlider = React.createClass({
 	getInitialState: function() {
