@@ -38,6 +38,7 @@ var TMCDataStore = assign({}, EventEmitter.prototype, {
 	},
 	receiveTMCdata: function(tmc, data) {
     	selectedTMCs.push(tmc);
+    	console.log(data);
 		this.emitEvent(Events.DISPLAY_TMC_DATA, tmc);
 	}
 })

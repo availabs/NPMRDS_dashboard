@@ -56,6 +56,8 @@ function TMCDataBuilder() {
 			}
 			var row = result.row.pop();
 			response["all_time"] = processResult(result);
+			cb(error, response);
+			return;
 		})
 
 		sql = "select  NTH(500, quantiles(travel_time_all,1000)) median, "+
@@ -84,7 +86,7 @@ function TMCDataBuilder() {
 	}
 
 	function processResult(result, resolution) {
-
+		var row = result.rows[0];
 	}
 	return builder;
 }

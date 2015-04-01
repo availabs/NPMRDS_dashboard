@@ -36,7 +36,9 @@ module.exports = {
   //------------
 
   getTMCdata: function(tmc) {
-    ServerActionCreators.receiveTMCdata(tmc);
+    d3.json("/tmcdata/"+tmc, function(err, tmcData) {
+      ServerActionCreators.receiveTMCdata(tmc, tmcData);
+    })
   },
 
   getCounties: function() {
