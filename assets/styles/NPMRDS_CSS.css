@@ -112,8 +112,25 @@
   background-color: #333;
 }
 
-.NPMRDS-tab-close:hover {
-  color: #900;
+.NPMRDS-tmc-remove:hover {
+  color: #f00;
+}
+
+#NPMRDS-TMC-panel {
+  background-color: #fff;
+  color: #000;
+  stroke: #000;
+}
+#NPMRDS-TMC-panel th {
+  color: #000;
+}
+#NPMRDS-TMC-panel text {
+  fill: #000;
+  stroke: none;
+}
+
+#NPMRDS-TMC-panel th.NPMRDS-dataview:hover {
+  color: #0f0;
 }
 
 .axis {

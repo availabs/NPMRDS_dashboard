@@ -519,7 +519,7 @@ function DataPointSlider() {
 	function slider() {
 		var value = brush.extent()[0];
 
-		if (d3.event.sourceEvent) {
+		if (d3.event && d3.event.sourceEvent) {
 		    value = position(d3.mouse(this)[0]);
 		    brush.extent([value, value]);
 

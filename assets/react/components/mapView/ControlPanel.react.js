@@ -92,7 +92,7 @@ var ControlPanel = React.createClass({
         var checkboxes = _WEEKDAYS_.map(function(day, i) {
             return (
                 <div>
-                    <input type="checkbox" checked={i<_WEEKDAYS_.length-2} value={day} />
+                    <input type="checkbox" defaultChecked={i<_WEEKDAYS_.length-2} value={day} />
                     <span className="NPMRDS-checkbox">{day.slice(0, 2)}</span>
                 </div>
             );
@@ -112,40 +112,36 @@ var ControlPanel = React.createClass({
                         
                     </header>
                     <div className="body">
-                        <div className="row">
-                            <div className="col-md-12">
-                                <div className="form-group">
-                                    <label for="search-input">Date Bounds</label>
-                                    <div className="input-group">
-                                        <input id="startDate" className='form-control' type="date" color="#000"/>
-                                        <input id="endDate" className='form-control' type="date" />
-                                    </div>
-                                </div>
-                                <div className="form-group">
-                                    <label for="search-input">Time Bounds</label>
-                                    <div className="input-group">
-                                        <input className='form-control' id="startTime" type="time" />
-                                        <input className='form-control' id="endTime" type="time" />
-                                    </div>
-                                </div>
-                                <div className="form-group">
-                                    <label for="search-input">Resolution</label>
-                                    
-                                    <select id="resolution" className="form-control">
-                                        {options}
-                                    </select>
-                                </div>
-                                <div className="form-group">
-                                    <label for="search-input">Weekdays</label>
-                                    <br/>
-                                    <div id="NPMRDS-weekday-selector">
-                                        {checkboxes}
-                                    </div>
-                                </div>
-                                 <div className="form-group">
-                                    <div className="NPMRDS-submit NPMRDS-label" onClick={this.getParams}>Load Data</div>
-                                </div>
+                        <div className="form-group">
+                            <label for="search-input">Date Bounds</label>
+                            <div className="input-group">
+                                <input id="startDate" className='form-control' type="date" color="#000"/>
+                                <input id="endDate" className='form-control' type="date" />
                             </div>
+                        </div>
+                        <div className="form-group">
+                            <label for="search-input">Time Bounds</label>
+                            <div className="input-group">
+                                <input className='form-control' id="startTime" type="time" />
+                                <input className='form-control' id="endTime" type="time" />
+                            </div>
+                        </div>
+                        <div className="form-group">
+                            <label for="search-input">Resolution</label>
+                            
+                            <select id="resolution" className="form-control">
+                                {options}
+                            </select>
+                        </div>
+                        <div className="form-group">
+                            <label for="search-input">Weekdays</label>
+                            <br/>
+                            <div id="NPMRDS-weekday-selector">
+                                {checkboxes}
+                            </div>
+                        </div>
+                        <div className="form-group">
+                            <div className="NPMRDS-submit NPMRDS-label" onClick={this.getParams}>Load Data</div>
                         </div>
                     </div>
                     {this.renderLoadingSpan()}

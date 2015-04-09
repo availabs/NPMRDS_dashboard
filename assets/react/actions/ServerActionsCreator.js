@@ -76,7 +76,7 @@ module.exports = {
     AppDispatcher.handleServerAction({
       type: ActionTypes.RECEIVE_TMC_DATA,
       tmc: tmc,
-      data: data
+      data: data[tmc]
     });
   },
 

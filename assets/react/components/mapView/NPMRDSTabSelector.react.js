@@ -9,12 +9,13 @@ var NPMRDSTabSelector = React.createClass({
 	render : function() {
 		var tabID = "tab-"+this.props.tmc,
 			href = "#"+tabID,
-			style = {"marginLeft": "20px"};
+			expanded = this.props.active?"true":"false",
+			style={"marginLeft":"20px"};
 		return (
-            <li role="presentation">
-            	<a href={href} aria-controls={tabID} role="tab" data-toggle="tab">
-            		{this.props.tmc}
-            		<span onClick={this.remove} className="glyphicon glyphicon-remove NPMRDS-tab-close" aria-hidden="true" style={style}></span>
+            <li className={this.props.active?"active":""}>
+            	<a href={href} aria-controls={tabID} role="tab" data-toggle="tab" aria-expanded={expanded} className="NPMRDS-tab">
+        			{this.props.tmc}
+        			<span onClick={this.remove} className="glyphicon glyphicon-remove NPMRDS-tab-close" style={style}></span>
             	</a>
             </li>
 		)

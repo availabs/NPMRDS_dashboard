@@ -110,7 +110,6 @@ function UsageDataBuilder() {
 	        	_TIME_BOUNDS_ = "AND epoch = "+request.timeBounds[0]/5;
 	        }
         }
-console.log(request.resolution)
 
         switch (request.resolution) {
         	case "year":

@@ -1,15 +1,32 @@
 "use strict"
-var React = require('react');
+var React = require('react'),
+
+	Chart = require("./NPMRDS_TMC_Chart.react"),
+	Graph = require("./NPMRDS_TMC_Graph.react"),
+
+	NPMRDSChart = require("../utils/NPMRDS_TMC_Chart"),
+	NPMRDSGraph = require("../utils/NPMRDS_TMC_Graph");
 
 var NPMRDSTabPanel = React.createClass({
-	render : function() {
+	getInitialState: function() {
+		var chart = NPMRDSChart(),
+			graph = NPMRDSGraph();
+
+		chart.on("dataclick", graph);
+		return {
+			chart: chart,
+			graph: graph
+		}
+	},
+	render: function() {
 		var tabID = "tab-"+this.props.tmc,
-			style = {padding: "0px", overflow: "hidden", margin: "0px"};
+			className = this.props.active?"tab-pane clearfix active":"tab-pane";
 		return (
-            <div role="tabpanel" className="tab-pane row" id={tabID} style={style}>
-                <div className="col-lg-12" stye={style}>
-                	STUFF GOES HERE FOR LINK: {this.props.tmc}
-                </div>
+            <div className={className} id={tabID}>
+            	<div className="col-lg-12">
+	                <Chart tmc={this.props.tmc} chart={this.state.chart} />
+	                <Graph tmc={this.props.tmc} graph={this.state.graph} height="400px" />
+	            </div>
             </div>
 		)
 	}

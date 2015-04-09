@@ -10,6 +10,8 @@ var AppDispatcher = require('../dispatcher/AppDispatcher'),
     ActionTypes = Constants.ActionTypes,
     Events = Constants.EventTypes;
 
+var crossfilter = require("crossfilter");
+
 var selectedTMCs = [],
 	TMCdata = {};
 
@@ -24,7 +26,13 @@ var TMCDataStore = assign({}, EventEmitter.prototype, {
     	this.removeListener(Event, callback);
   	},
 	addTMC: function(tmc) {
-		SailsWebApi.getTMCdata(tmc);
+console.log("TMCDataStore: adding", tmc);
+		if (!(tmc in TMCdata)) {
+			SailsWebApi.getTMCdata(tmc);
+		}
+		else {
+			this.receiveTMCdata(tmc, TMCdata[tmc]);
+		}
 	},
 	removeTMC: function(tmc) {
 		for (var i = 0; i < selectedTMCs.length; i++) {
@@ -38,8 +46,15 @@ var TMCDataStore = assign({}, EventEmitter.prototype, {
 	},
 	receiveTMCdata: function(tmc, data) {
     	selectedTMCs.push(tmc);
-    	console.log(data);
-		this.emitEvent(Events.DISPLAY_TMC_DATA, tmc);
+    	data.tmc = tmc;
+
+    	if (!(tmc in TMCdata)) {
+    		TMCdata[tmc] = data;
+    	}
+		this.emitEvent(Events.DISPLAY_TMC_DATA, data);
+	},
+	getTMCData: function(tmc) {
+		return TMCdata[tmc];
 	}
 })
 

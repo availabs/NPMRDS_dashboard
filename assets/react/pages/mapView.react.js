@@ -17,11 +17,18 @@ var React = require('react'),
 
     NPMRDSLegend = require("../components/mapView/NPMRDSLegend.react"),
     DataView = require("../components/mapView/NPMRDSDataView.react"),
+
+    // NPMRDSTabPanel = require("../components/mapView/NPMRDSTabPanel.react"),
+    // NPMRDSTabSelector = require("../components/mapView/NPMRDSTabSelector.react"),
+
+    NPMRDSTMCPanel = require("../components/mapView/NPMRDS_TMC_Panel.react"),
     
     // stores
     GeoStore = require("../stores/GeoStore"),
     UsageDataStore = require("../stores/UsageDataStore"),
-    TMCDataStore = require("../stores/TMCDataStore");
+    TMCDataStore = require("../stores/TMCDataStore"),
+
+    Popup = require("../components/utils/NPMRDSpopup");
 
 var linkShader = UsageDataStore.linkShader(),
     roadPaths = null;
@@ -29,10 +36,9 @@ var linkShader = UsageDataStore.linkShader(),
 var MapView = React.createClass({
   
     getInitialState: function(){
+        var mapView = this;
         return {
-            selectedTMCs: [],
-            tabs: [],
-            panels: [],
+            popup: Popup(),
             layers:{
                 county:{
                     id:0,
@@ -96,10 +102,10 @@ var MapView = React.createClass({
                                   }
                                 },
                                 mouseover: function(e){
-                                    
+                                    mapView.state.popup(feature);
                                 },
                                 mouseout: function(e){
-                                   
+                                    mapView.state.popup.display(false);
                                 }
                             });
                             
@@ -115,6 +121,10 @@ var MapView = React.createClass({
         GeoStore.addChangeListener(Events.STATE_CHANGE, this._onStateChange);
         UsageDataStore.addChangeListener(Events.DATA_POINT_SLIDER_UPDATE, this._onDataPointSliderUpdate);
               
+        TMCDataStore.addChangeListener(Events.DISPLAY_TMC_DATA, this._onDisplayTMCdata);
+        TMCDataStore.addChangeListener(Events.REMOVE_TMC_DATA, this._onRemoveTMCdata);
+
+        this.state.popup.init(d3.select("#NPMRDS-map-div"));
     },
 
     componentWillUnmount: function() {
@@ -123,16 +133,17 @@ var MapView = React.createClass({
           
         UsageDataStore.removeChangeListener(Events.DATA_POINT_SLIDER_UPDATE, this._onDataPointSliderUpdate);  
          
+        TMCDataStore.removeChangeListener(Events.DISPLAY_TMC_DATA, this._onDisplayTMCdata);
+        TMCDataStore.removeChangeListener(Events.REMOVE_TMC_DATA, this._onRemoveTMCdata);
     },
 
-    _onDisplayTMCdata: function(tmc) {
-        //console.log("displayTMCdata")
-        var state = this.state;
-        state.selectedTMCs.push(tmc);
-        this.setState(state);
+    _onDisplayTMCdata: function(data) {
+console.log("DisplayTMCdata", data.tmc)
     },
 
-  
+    _onRemoveTMCdata: function(data) {
+console.log("RemoveTMCdata", data.tmc)
+    },
 
     _onCountyChange: function() {
         //console.log("COUNTY_CHANGE");
@@ -191,32 +202,25 @@ var MapView = React.createClass({
     },
 
     render: function() {
-        var page = this;
-        this.state.selectedTMCs.forEach(function(tmc) {
-            page.state.tabs.push(<NPMRDSTabSelector tmc={tmc} key={tmc}/>);
-        });
-        this.state.selectedTMCs.forEach(function(tmc) {
-            page.state.panels.push(<NPMRDSTabPanel tmc={tmc} key={tmc}/>);
-        });
-        this.state.selectedTMCs = [];
-        var style = {padding: "0px", overflow: "hidden", margin: "0px"};
         return (
             <div className="content container">
                 <div className="row">
                     <div className="col-lg-2">
                       <ControlPanel loading={ this.props.loading }/>
                     </div>
-                    <div className="col-lg-10" stye={style}>
+                    <div className="col-lg-10" id="NPMRDS-map-div">
                         <LeafletMap height="600px" layers={this.state.layers}/>
                         <DataView />
                         <NPMRDSLegend dataView={this.props.dataView}/>
                     </div>
-                    
                 </div>
                 <div className="row">
                     <div className="col-log-10">
                         <DataPointSlider />
                     </div>
+                </div>
+                <div className="row">
+                    <NPMRDSTMCPanel />
                 </div>
             </div>
         );
@@ -225,3 +229,19 @@ var MapView = React.createClass({
 });
 
 module.exports = MapView;
+
+
+                // <div className="row">
+                //     <div className="col-lg-12">
+                //         <section className="widget widget-tabs">
+                //             <header>
+                //                 <ul className="nav nav-tabs" id="NPMRDS-TMC-tabs">
+                //                     {this.state.tabs}
+                //                 </ul>
+                //             </header>
+                //             <div className="body tab-content">
+                //                     {this.state.panels}
+                //             </div>
+                //         </section>
+                //     </div>
+                // </div>
