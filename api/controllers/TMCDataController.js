@@ -73,24 +73,24 @@ console.log("completed query for all data")
 			}
 		});
 
-		sql = "select  NTH(500, quantiles(travel_time_all,1000)) as median, "+
-		        "NTH(800, quantiles(travel_time_all,1000)) as eightieth, "+
-		        "NTH(950, quantiles(travel_time_all,1000)) as nintyfifth, "+
-		        "avg(travel_time_all) as avgTime, "+
-		        "stddev(travel_time_all) as stdTime, "+
-		        "avg(distance/(travel_time_all/3600)) as avgSpeed, "+
-		        "stddev(distance/(travel_time_all/3600)) as stdSpeed, "+
+		sql = "select  NTH(500, quantiles(travel_time_all,1000)) AS median, "+
+		        "NTH(800, quantiles(travel_time_all,1000)) AS eightieth, "+
+		        "NTH(950, quantiles(travel_time_all,1000)) AS nintyfifth, "+
+		        "avg(travel_time_all) AS avgTime, "+
+		        "stddev(travel_time_all) AS stdTime, "+
+		        "avg(distance/(travel_time_all/3600)) AS avgSpeed, "+
+		        "stddev(distance/(travel_time_all/3600)) AS stdSpeed, "+
 		        "distance, "+
 		        "INTEGER(date/10000) AS year, "+
-		        "INTEGER(date/100)%100 AS month, "+
-		        "INTEGER(date%100) AS day, "+
-		        "epoch "+
-			"from [HERE_traffic_data.HERE_NY] as here "+
-			"join each [NPMRDS_LUT.TMC_ATTRIBUTES] as lut on here.tmc = lut.tmc "+
+		        "INTEGER(date/100)%100 AS month "+
+		        // "INTEGER(date%100) AS day, "+
+		        // "epoch "+
+			"from [HERE_traffic_data.HERE_NY] AS here "+
+			"join each [NPMRDS_LUT.TMC_ATTRIBUTES] AS lut on here.tmc = lut.tmc "+
 			"where here.tmc = '"+tmc+"' "+
 			"AND weekday != 'saturday' "+
 			"AND weekday != 'sunday' "+
-			"group by year, month, day, epoch, distance";
+			"group by year, month, distance";
 
 		BIGquery(sql, function(error, result) {
 			completedJobs++;
