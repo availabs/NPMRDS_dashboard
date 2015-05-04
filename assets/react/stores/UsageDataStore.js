@@ -29,17 +29,12 @@ var AppDispatcher = require('../dispatcher/AppDispatcher'),
 /**
 * usage data cache object
 */
-var usageData = {},
-	_loadingState=false;
+var usageData = {};
 
-/**
-* data point slider object
-*/
-var _slider = null;
 
 
 dataPointSlider
-	.width(1000)
+	.width(1400)
 	.height(50)
 	.update(function(d) {
 		linkShader
@@ -83,13 +78,9 @@ var UsageDataStore = assign({}, EventEmitter.prototype, {
 
 		params.links = loadedRoads.map(function(road) { return road.properties.linkID; });
 		SailsWebApi.getCountyUsageData(36, params);
-		_loadingState = true;
+
 		//console.log('data is loading')
 		UsageDataStore.emitChange();
-	},
-
-	getLoadingState:function(){
-		return _loadingState;
 	},
 	linkShader: function() {
 		return linkShader;
@@ -115,16 +106,15 @@ UsageDataStore.dispatchToken = AppDispatcher.register(function(payload) {
   	switch(action.type) {
   		case ActionTypes.RECEIVE_COUNTY_DATA:
   			usageData = action.usageData;
-console.log("USAGE_DATA",usageData);
+console.log("RECEIVE_COUNTY_DATA::usageData", usageData);
   			processUsageData(action.params);
-  			_loadingState = false;
 			UsageDataStore.emitChange();
   		break;
   		
   		case ActionTypes.DATA_VIEW_CHANGE:
   			dataView = action.view;
   			switchDataView();
-  			UsageDataStore.emitChange();
+  			UsageDataStore.emitEvent(Events.TMC_DATAVIEW_CHANGE, dataView);
   			break;
   	}
 });
@@ -138,6 +128,8 @@ function processUsageData(params) {
 		shiftedRoadsByCounty = {},
 		linkIDmap = {},
 		regex = /\d{3}([nNpP])\d{5}/;
+
+	dataPointSlider.resolution(params.resolution);
 
 	usageData.forEach(function(point) {
 		dataPointCollectionsManager.addPoint(point.point, params.resolution);
@@ -414,7 +406,8 @@ function DataPointCollection() {
 	}
 	collection.addPoint = function(point, resolution) {
 		var dataPoint = UsageDataPoint()
-				.point(point),
+				.point(point)
+				.resolution(resolution),
 
 			index = data.length;
 
@@ -426,10 +419,10 @@ function DataPointCollection() {
 
 		dataIndexMap[point] = index;
 
-		if (resolution == "weekday") {
-			var val = function(d) { return _WEEKDAYS_MAP_[d]; };
-			dataPoint.value(val);
-		}
+		// if (resolution == "weekday") {
+		// 	var val = function(d) { return _WEEKDAYS_MAP_[d]; };
+		// 	dataPoint.value(val);
+		// }
 
 		data.push(dataPoint);
 	}
@@ -465,6 +458,7 @@ function DataPointCollection() {
 
 function UsageDataPoint() {
 	var point = 0,
+		resolution = null,
 		data = {},
 		valueFunc = function(d) { return +point; };
 
@@ -476,6 +470,13 @@ function UsageDataPoint() {
 			return point;
 		}
 		point = p;
+		return datapoint;
+	}
+	datapoint.resolution = function(r) {
+		if (!arguments.length) {
+			return resolution;
+		}
+		resolution = r;
 		return datapoint;
 	}
 	datapoint.add = function(linkID, tmc, value) {
@@ -496,11 +497,56 @@ function UsageDataPoint() {
 	return datapoint;
 }
 
+function AxisTickFormatter() {
+	var resolution = "",
+		MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+					"Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+	function formatter(d) {
+		return formatter[resolution](d);
+	}
+	formatter.resolution = function(r) {
+		if (!arguments.length) {
+			return resolution;
+		}
+		resolution = r;
+		if (resolution == "15-minute") {
+			resolution = "minute";
+		}
+		return formatter;
+	}
+	formatter.year = function(d) {
+		return d;
+	}
+	formatter.month = function(d) {
+		return MONTHS[+d];
+	}
+	formatter.day = function(d) {
+		return d;
+	}
+	formatter.weekday = function(d) {
+		return d;
+	}
+	formatter.hour = function(d) {
+		return d+":00-"+d+":59";
+	}
+	formatter.minute = function(d) {
+		var hour = Math.floor((d*15.0)/60.0),
+			format = d3.format("02d");
+		return hour+":"+format(Math.floor(d*15)%60)/*+"-"+
+			hour+":"+format(Math.floor(d*15)%60+14)*/;
+	}
+	return formatter;
+}
+
 function DataPointSlider() {
 	var dataPoints = [],
+		dataPointIndex = 0,
 		svg,
-		width = 1000,
-		height = 500,
+		controlsGroup,
+		width = 1300,
+		height = 50,
+		margin = { left: 160, right: 30 },
 		scale = d3.scale.ordinal(),
 		sliderGroup,
 		brush = d3.svg.brush()
@@ -514,29 +560,50 @@ function DataPointSlider() {
 		handle,
 		dataPoint = 0,
 		position = d3.scale.quantize(),
-		updateFunc = null;
+		updateFunc = null,
+		formatFunc = AxisTickFormatter(),
+		interval = null;
 
-	function slider() {
-		var value = brush.extent()[0];
+	function slider(index) {
+		var pos, value, point=dataPoint;
 
 		if (d3.event && d3.event.sourceEvent) {
-		    value = position(d3.mouse(this)[0]);
-		    brush.extent([value, value]);
+			pos = d3.mouse(this)[0];
+	    	value = position(pos);
+	    	point = dataPoints[value].point();
 
-		    var point = dataPoints[value].point();
+		    brush.extent([pos, pos]);
+		    dataPointIndex = value;
+		}
+		else if (typeof index === "number") {
+			index = (index+dataPoints.length)%dataPoints.length;
 
-			if (point != dataPoint) {
-				var data = dataPoints[value]();
-				updateFunc(data);
-				dataPoint = point;
-			}
+			pos = scale(index);
+	    	value = index;
+	    	point = dataPoints[value].point();
+		    	
+		    brush.extent([pos, pos]);
+		    dataPointIndex = index;
 		}
 
-		handle.attr("cx", scale(point));
+		if (point != dataPoint) {
+			var data = dataPoints[value]();
+			updateFunc(data);
+			dataPoint = point;
+		}
+		handle.attr("cx", scale(dataPoint));
+	}
+	slider.resolution = function(r) {
+		if (!arguments.length) {
+			return formatFunc.resolution();
+		}
+		formatFunc.resolution(r);
+		return slider;
 	}
 	slider.update = function(f) {
 		if (!arguments.length) {
-			updateFunc(dataPoints[brush.extent()[0]]());
+			var index = position(brush.extent()[0]);
+			updateFunc(dataPoints[index]());
 			return;
 		}
 		updateFunc = f;
@@ -547,33 +614,48 @@ function DataPointSlider() {
 			UsageDataStore.emitEvent(Events.DATA_POINT_SLIDER_SHOW, true);
 			// svg.style("display", "block");
 			axisGroup.transition().call(axis);
+			axisGroup.selectAll("text").each(function(d, i) {
+				if (i%2) {
+					d3.select(this).style("transform", "translate(0,-25px)");
+				}
+			})
+			if (interval) {
+				clearInterval(interval);
+			}
+			interval = setInterval(advanceSlider, 2000);
+			dataPointIndex = 0;
 		}
 		else {
+			if (interval) {
+				clearInterval(interval);
+				interval = null;
+			}
 			slider.hide();
 		}
 
-		brush.extent([0, 0]);
-		sliderGroup.call(brush.event);
+		// brush.extent([0, 0]);
+		// sliderGroup.call(brush.event);
 
 		var data = dataPoints.length ? dataPoints[0]() : {};
 		updateFunc(data);
+	}
+	function advanceSlider() {
+		slider(++dataPointIndex);
 	}
 	slider.hide = function() {
 		// svg.style("display", "none");
 		UsageDataStore.emitEvent(Events.DATA_POINT_SLIDER_SHOW, false);
 	}
 	slider.init = function() {
-		var wdth = width-50,
-			hght = height;
 
-		scale.rangePoints([0, wdth]);
-		position.domain([0, wdth]);
+		scale.rangePoints([0, width-margin.left-margin.right]);
+		position.domain([0, width-margin.left-margin.right]);
 
-		svg.attr("transform", "translate("+((width-wdth)/2)+", 0)");
+		svg.attr("transform", "translate("+(margin.left)+", 0)");
 
 		axisGroup = svg.append("g")
 			.attr("class", "x axis")
-		    .attr("transform", "translate(0,25)");
+		    .attr("transform", "translate(0,"+(height/2)+")");
 
 		sliderGroup = svg.append('g')
 			.attr("class", "NPMRDS-slider slider")
@@ -583,12 +665,48 @@ function DataPointSlider() {
 		    .remove();
 
 		sliderGroup.select(".background")
-		    .attr("height", 50);
+		    .attr("height", height);
 
 		handle = sliderGroup.append("circle")
 		    .attr("class", "handle")
 		    .attr("transform", "translate(0,25)")
 		    .attr("r", 9);
+
+		axis.tickFormat(formatFunc);
+
+		controlsGroup.append("polygon")
+			.attr("points", "10,25 40,10, 40,40")
+			.attr("stroke", "none")
+			.attr("fill", "#00a")
+			.on("click", function() {
+				slider(--dataPointIndex);
+			});
+
+		controlsGroup.append("rect")
+			.attr("x", 50).attr("y", 10)
+			.attr("width", 30)
+			.attr("height", 30)
+			.attr("stroke", "none")
+			.attr("fill", "#0a0")
+			.on("click", function() {
+				if (interval) {
+					clearInterval(interval);
+					interval = null;
+					d3.select(this).attr("fill", "#a00");
+				}
+				else {
+					interval = setInterval(advanceSlider, 2000);
+					d3.select(this).attr("fill", "#0a0");
+				}
+			})
+
+		controlsGroup.append("polygon")
+			.attr("points", "120,25 90,10, 90,40")
+			.attr("stroke", "none")
+			.attr("fill", "#00a")
+			.on("click", function() {
+				slider(++dataPointIndex);
+			});
 	}
 	slider.data = function(d) {
 		if (!arguments.length) {
@@ -603,7 +721,10 @@ function DataPointSlider() {
 		if (!arguments.length) {
 			return svg;
 		}
-		svg = s.append("g");
+		controlsGroup = s.append("g")
+		svg = s.style("width", width+"px")
+			.style("height", height+"px")
+			.append("g");
 		// svg = s.append("g")
 		// 	.style("display", "none");
 		return slider;

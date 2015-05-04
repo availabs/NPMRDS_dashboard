@@ -2,11 +2,36 @@ var React = require('react'),
     d3 = require("d3"),
 
     UsageDataStore = require("../../stores/UsageDataStore"),
+    SailsWebApi = require("../../utils/api/SailsWebApi"),
+
+    Constants = require('../../constants/AppConstants'),
+    Events = Constants.EventTypes,
 
     _RESOLUTIONS_ = ["none", "year", "month", "day", "weekday", "hour", "15-minute"],
     _WEEKDAYS_ = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
 
 var ControlPanel = React.createClass({
+    getInitialState: function() {
+        return {
+            loading: false
+        }
+    },
+    componentDidMount: function() {
+        SailsWebApi.addChangeListener(Events.SAILS_WEB_API_LOADING_START, this._onDataLoadingStart);
+        SailsWebApi.addChangeListener(Events.SAILS_WEB_API_LOADING_STOP, this._onDataLoadingStop);
+    },
+    componentWillUnmount: function() {
+        SailsWebApi.removeChangeListener(Events.SAILS_WEB_API_LOADING_START, this._onDataLoadingStart);
+        SailsWebApi.removeChangeListener(Events.SAILS_WEB_API_LOADING_STOP, this._onDataLoadingStop);
+    },
+    _onDataLoadingStart: function() {
+        this.state.loading = true;
+        d3.select("#NPMRDS-CP-submit").classed("NPMRDS-button-disabled", true);
+    },
+    _onDataLoadingStop: function() {
+        this.state.loading = false;
+        d3.select("#NPMRDS-CP-submit").classed("NPMRDS-button-disabled", false);
+    },
     getParams: function() {
         var startDate = d3.select("#startDate").property("value").trim(),
             endDate = d3.select("#endDate").property("value").trim(),
@@ -67,21 +92,9 @@ var ControlPanel = React.createClass({
         
         console.log('loadParams',params);
         
-        UsageDataStore.loadData(params);
-    },
-
-    renderLoadingSpan:function(){
-        if( this.props.loading){
-            return (
-                <div>
-                    <h3>Loading Data...</h3>
-                    <div className="spinner" ></div>
-                </div>
-            )
+        if (!this.state.loading) {
+            UsageDataStore.loadData(params);
         }
-        return (
-            <span />
-        )
     },
 
     render: function() {
@@ -103,12 +116,8 @@ var ControlPanel = React.createClass({
         return (
           	<section className="widget">
                     <header>
-                        <h4>
-                            Control Panel<br />
-                            <small>
-                               Select NPMRDS Data
-                            </small>
-                        </h4>
+                        <h4>Control Panel</h4>
+                        <p>Select NPMRDS data bounds</p>
                         
                     </header>
                     <div className="body">
@@ -141,10 +150,9 @@ var ControlPanel = React.createClass({
                             </div>
                         </div>
                         <div className="form-group">
-                            <div className="NPMRDS-submit NPMRDS-label" onClick={this.getParams}>Load Data</div>
+                            <div id="NPMRDS-CP-submit" className="NPMRDS-submit NPMRDS-label" onClick={this.getParams}>Load Data</div>
                         </div>
                     </div>
-                    {this.renderLoadingSpan()}
                 </section>
             
                

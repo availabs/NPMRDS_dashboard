@@ -52,11 +52,13 @@ function BigQueryTest() {
 			var response = {
 				schema: [],
 				numRows: 0,
-				rows: []
+				rows: [],
+				types: []
 			}
 
 			result.schema.fields.forEach(function(field, i) {
 				response.schema.push(field.name);
+				response.types.push(field.type);
 			})
 
 			result.rows.forEach(function(row) {

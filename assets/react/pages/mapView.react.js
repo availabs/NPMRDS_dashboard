@@ -20,15 +20,19 @@ var React = require('react'),
 
     // NPMRDSTabPanel = require("../components/mapView/NPMRDSTabPanel.react"),
     // NPMRDSTabSelector = require("../components/mapView/NPMRDSTabSelector.react"),
-
-    NPMRDSTMCPanel = require("../components/mapView/NPMRDS_TMC_Panel.react"),
     
     // stores
     GeoStore = require("../stores/GeoStore"),
     UsageDataStore = require("../stores/UsageDataStore"),
     TMCDataStore = require("../stores/TMCDataStore"),
 
-    Popup = require("../components/utils/NPMRDSpopup");
+    Popup = require("../components/utils/NPMRDSpopup"),
+
+    // mapView components
+    TMCsOverTime = require("../components/mapView/TMCsOverTime_Graph.react"),
+    TMCsAggregated = require("../components/mapView/TMCsAggregated_Chart.react"),
+    TMCMonthly = require("../components/mapView/TMCMonthly_Graph.react"),
+    LoadingIndicator = require("../components/mapView/LoadingIndicator.react");
 
 var linkShader = UsageDataStore.linkShader(),
     roadPaths = null;
@@ -138,15 +142,15 @@ var MapView = React.createClass({
     },
 
     _onDisplayTMCdata: function(data) {
-console.log("DisplayTMCdata", data.tmc)
+//console.log("DisplayTMCdata", data.tmc)
     },
 
     _onRemoveTMCdata: function(data) {
-console.log("RemoveTMCdata", data.tmc)
+//console.log("RemoveTMCdata", data.tmc)
     },
 
     _onCountyChange: function() {
-        //console.log("COUNTY_CHANGE");
+        console.log("COUNTY_CHANGE");
         var newState = this.state;
 
         newState.layers.roads.id++;
@@ -159,7 +163,7 @@ console.log("RemoveTMCdata", data.tmc)
     },
 
      _onDataPointSliderUpdate: function() {
-        //console.log("DATA_POINT_SLIDER_UPDATE");
+        console.log("DATA_POINT_SLIDER_UPDATE");
 
         if (!roadPaths) {
             var newState = this.state;
@@ -205,22 +209,34 @@ console.log("RemoveTMCdata", data.tmc)
         return (
             <div className="content container">
                 <div className="row">
+                    <LoadingIndicator />
+
                     <div className="col-lg-2">
-                      <ControlPanel loading={ this.props.loading }/>
+                      <ControlPanel />
                     </div>
                     <div className="col-lg-10" id="NPMRDS-map-div">
                         <LeafletMap height="600px" layers={this.state.layers}/>
                         <DataView />
-                        <NPMRDSLegend dataView={this.props.dataView}/>
+                        <NPMRDSLegend />
                     </div>
                 </div>
+
                 <div className="row">
                     <div className="col-log-10">
                         <DataPointSlider />
                     </div>
                 </div>
+
                 <div className="row">
-                    <NPMRDSTMCPanel />
+                    <TMCMonthly/>
+                </div>
+
+                <div className="row">
+                    <TMCsAggregated/>
+                </div>
+
+                <div className="row">
+                    <TMCsOverTime/>
                 </div>
             </div>
         );
@@ -229,19 +245,3 @@ console.log("RemoveTMCdata", data.tmc)
 });
 
 module.exports = MapView;
-
-
-                // <div className="row">
-                //     <div className="col-lg-12">
-                //         <section className="widget widget-tabs">
-                //             <header>
-                //                 <ul className="nav nav-tabs" id="NPMRDS-TMC-tabs">
-                //                     {this.state.tabs}
-                //                 </ul>
-                //             </header>
-                //             <div className="body tab-content">
-                //                     {this.state.panels}
-                //             </div>
-                //         </section>
-                //     </div>
-                // </div>

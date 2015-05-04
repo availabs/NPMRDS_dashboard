@@ -40,6 +40,26 @@ console.log("sending TMCdata for", TMCs);
 
 function TMCDataBuilder() {
 	function builder(tmc, cb) {
+		var sql = "SELECT travel_time_all, travel_time_truck, date, epoch, distance, weekday "+
+			"FROM [HERE_traffic_data.HERE_NY] AS here "+
+			"JOIN EACH [NPMRDS_LUT.TMC_ATTRIBUTES] AS lut on here.tmc = lut.tmc "+
+			"WHERE here.tmc = '"+tmc+"' ";
+
+		BIGquery(sql, function(error, result) {
+			if (error) {
+				cb({error:error, status:500});
+				return;
+			}
+console.log("completed query for", tmc)
+			cb(error, BIGquery.parseResult(result));
+		});
+	}
+
+	return builder;
+}
+/*
+function TMCDataBuilder() {
+	function builder(tmc, cb) {
 		var response = {},
 			totalJobs = 2,
 			completedJobs = 0;
@@ -111,3 +131,4 @@ console.log("completed query for monthly data")
 	}
 	return builder;
 }
+*/

@@ -1,8 +1,10 @@
 var BIGquery = require("./BigQuery")();
 
 function UsageDataBuilder() {
+	var DEFUALT_WEEKDAYS = ["monday", "tuesday", "wednesday", "thursday", "friday"];
 
 	function builder(request, cb) {
+		request.weekdays = request.weekdays || DEFUALT_WEEKDAYS;
 		var sql;
 		if (request.type == "state") {
 			sql = makeStateSQL(request, cb);

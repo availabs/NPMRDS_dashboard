@@ -8,10 +8,40 @@
 
 var io = require('./sails.io.js')(),
     d3 = require("d3"),
-    ServerActionCreators = require('../../actions/ServerActionsCreator');
+    assign = require('object-assign'),
+    ServerActionCreators = require('../../actions/ServerActionsCreator'),
+    EventEmitter = require('events').EventEmitter,
+    Constants = require('../../constants/AppConstants'),
+    Events = Constants.EventTypes;
 
+var LOADING = 0;
 
-module.exports = {
+var SailsWebApi = assign({}, EventEmitter.prototype, {
+    emitEvent: function(Event, data) {
+        this.emit(Event, data);
+    },
+    addChangeListener: function(Event, callback) {
+        this.on(Event, callback);
+    },
+    removeChangeListener: function(Event, callback) {
+      this.removeListener(Event, callback);
+    },
+    checkLoading: function(loading) {
+        if (loading) {
+            if (!LOADING) {
+                this.emitEvent(Events.SAILS_WEB_API_LOADING_START);
+                console.log("SAILS_WEB_API_LOADING_START");
+            }
+            ++LOADING;
+        }
+        else if (!loading) {
+            --LOADING;
+            if (!LOADING) {
+                this.emitEvent(Events.SAILS_WEB_API_LOADING_STOP);
+                console.log("SAILS_WEB_API_LOADING_STOP");
+            }
+        }
+    },
 
   initAdmin: function(user){
 
@@ -36,28 +66,36 @@ module.exports = {
   //------------
 
   getTMCdata: function(tmc) {
+    SailsWebApi.checkLoading(true);
     d3.json("/tmcdata/"+tmc, function(err, tmcData) {
       ServerActionCreators.receiveTMCdata(tmc, tmcData);
+        SailsWebApi.checkLoading(false);
     })
   },
 
   getCounties: function() {
+    SailsWebApi.checkLoading(true);
     d3.json("/geo_data/us_counties.json", function(err, topo) {
       ServerActionCreators.receiveCounties(topo);
+        SailsWebApi.checkLoading(false);
     })
   },
 
   getCountyRoads: function(fips) {
+    SailsWebApi.checkLoading(true);
     d3.json("/geo/getcounty/"+fips, function(err, topo) {
       ServerActionCreators.receiveCountyRoads(topo);
+        SailsWebApi.checkLoading(false);
     })
   },
 
   getCountyUsageData: function(fips, params) {
+    SailsWebApi.checkLoading(true);
     d3.xhr("/usage/getcounty/"+fips)
       .response(function(request) { return JSON.parse(request.responseText); })
       .post(JSON.stringify(params), function(err, data) {
         ServerActionCreators.receiveCountyData(fips, params, data);
+        SailsWebApi.checkLoading(false);
       })
   },
 
@@ -101,8 +139,6 @@ module.exports = {
       ServerActionCreators.deleteData(type,id);
     });
   },
+});
 
-  
-
-
-};
+module.exports = SailsWebApi;

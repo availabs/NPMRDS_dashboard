@@ -1,3 +1,7 @@
+body {
+  padding-bottom: 0px;
+}
+
 #NPMRDS-side-nav {
   background-color: #666;
   padding: 5px;
@@ -48,6 +52,14 @@
 	background-color: #333;
 }
 
+.NPMRDS-button-disabled {
+  background-color: #000;
+  cursor: wait;
+}
+.NPMRDS-button-disabled:hover {
+  background-color: #000;
+}
+
 .NPMRDS-data-point-slider-div {
 	text-align: center;
 	height: 50px;
@@ -55,19 +67,18 @@
 
 .NPMRDS-data-point-slider {
 	background-color: #666;
-	height: 50px;
-	width: 1000px;
 }
 
 .NPMRDS-legend {
   position: absolute;
-  right: 20px;
-  bottom: 20px;
+  right: 25px;
+  bottom: 10px;
   z-index: 10;
   text-align: center;
   overflow: hidden;
   background-color: #009;
   color: #000;
+  width: 160px;
 }
 .NPMRDS-legend-label {
   height: 30px;
@@ -104,11 +115,12 @@
   padding: 0 10px;
   height: 24px;
   line-height: 24px;
-}
-.NPMRDS-data-view-label-selected {
-  background-color: #333;
+  cursor: pointer;
 }
 .NPMRDS-data-view-label:hover {
+  background-color: #333;
+}
+.NPMRDS-data-view-label-selected {
   background-color: #333;
 }
 
@@ -116,24 +128,28 @@
   color: #f00;
 }
 
-#NPMRDS-TMC-panel {
+.NPMRDS-tmc-panel {
   background-color: #fff;
   color: #000;
   stroke: #000;
+  margin: 10px;
 }
-#NPMRDS-TMC-panel th {
-  color: #000;
-}
-#NPMRDS-TMC-panel text {
+.NPMRDS-tmc-panel text {
   fill: #000;
   stroke: none;
 }
 
-#NPMRDS-TMC-panel th.NPMRDS-dataview:hover {
-  color: #0f0;
+.NPMRDS-tmc-panel table th {
+  color: #000;
+}
+.NPMRDS-tmc-panel table .NPMRDS-dataview-label {
+  cursor: pointer;
+}
+.NPMRDS-tmc-panel table .NPMRDS-dataview-label-active {
+  color: #090;
 }
 
-.axis {
+svg .axis text {
   font: 10px sans-serif;
   -webkit-user-select: none;
   -moz-user-select: none;
@@ -144,7 +160,7 @@
   fill: none;
   stroke: #000;
   stroke-opacity: .3;
-  stroke-width: 10px;
+  stroke-width: 5px;
   stroke-linecap: round;
 }
 
@@ -168,21 +184,39 @@
 Loading Spinner
 ---------------*/
 
+.spinner-div {
+  background-color: #fff;
+  position: fixed;
+  right: 35px;
+  top: 75px;
+  z-index: 20;
+  color: #000;
+  width: 220px;
+  height: 245px;
+  text-align: center;
+  border: 10px solid #575757;
+}
+.spinner-div h3 {
+  font-weight: 800;
+}
+
 .spinner{
-  width: 155px;
-  height: 155px;
+  width: 150px;
+  height: 150px;
   border-radius: 100%;
   background-color: #D8D8D8;
-  border: 10px solid #575757;;
-  margin-top: 90px;
+  border: 10px solid #575757;
+  position: relative;
+  left:100px;
+  top:75px;
+  /*margin-top: 90px;
   margin-left: 90px;
-  transform: translateX(-50%) translateY(-50%) translateZ(0);
+  transform: translateX(-50%) translateY(-50%) translateZ(0);*/
   background-image: url('http://i.imgur.com/afmNQO7.jpg');
   background-size: 200%;
   -webkit-animation: gridLoop 10s infinite linear;
   -webkit-backface-visibility: hidden;
   overflow: hidden;
-  
 }
 @-webkit-keyframes gridLoop{
   0%{background-position: -5px 0%;transform: translateX(-50%) translateY(-50%) translateZ(0) rotate(0deg);}

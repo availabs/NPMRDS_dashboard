@@ -19,17 +19,27 @@ var scale = null,
 var NPMRDSLegend = React.createClass({
 	getInitialState: function() {
 		return {
-			display: {display: "none"}
+			display: {display: "none"},
+			dataView: "Speed"
 		}
 	},
   	componentDidMount: function() {
       	UsageDataStore.addChangeListener(Events.USAGE_DATA_PROCESSED, this._onUsageDataProcessed);
+      	UsageDataStore.addChangeListener(Events.TMC_DATAVIEW_CHANGE, this._onDataViewChange);
 
       	scale = linkShader.scale();
   	},
 
   	componentWillUnmount: function() {
       	UsageDataStore.removeChangeListener(Events.USAGE_DATA_PROCESSED, this._onUsageDataProcessed);
+      	UsageDataStore.removeChangeListener(Events.TMC_DATAVIEW_CHANGE, this._onDataViewChange);
+  	},
+  	_onDataViewChange: function(view) {
+  		var state = this.state;
+
+  		state.dataView = view;
+
+  		this.setState(state);
   	},
 
   	_onUsageDataProcessed: function() {
@@ -44,13 +54,13 @@ var NPMRDSLegend = React.createClass({
 		var bins = [],
 		scaleType='';
 		["Speed", "Congestion", "Time", "Flow"]
-		if(this.props.dataView === 'Speed' || this.props.dataView === 'Flow'){
+		if(this.state.dataView === 'Speed' || this.state.dataView === 'Flow'){
 			scaleType = ' mph'
 		}
-		else if(this.props.dataView === 'Congestion'){
+		else if(this.state.dataView === 'Congestion'){
 			scaleType = '%'
 		}
-		else if(this.props.dataView === 'Time'){
+		else if(this.state.dataView === 'Time'){
 			scaleType = ' seconds'
 		}
 		
@@ -75,7 +85,7 @@ var NPMRDSLegend = React.createClass({
 		}
 		return (
 			<div style={this.state.display} className="NPMRDS-legend">
-				<div className="NPMRDS-legend-label" data-toggle="collapse" data-target="#NPMRDS-Legend-Collapse">{this.props.dataView} Legend</div>
+				<div className="NPMRDS-legend-label" data-toggle="collapse" data-target="#NPMRDS-Legend-Collapse">{this.state.dataView} Legend</div>
 				<div id="NPMRDS-Legend-Collapse" className="collapse in">
 					{bins}
 				</div>
