@@ -35,20 +35,20 @@ function CrossFilter() {
 
 	weekday_Dimension.filter(function(weekday) { return weekday < 5; });
 
-	var TMC_group = tmc_Dimension.group().reduce(reduceAdd, reduceRemove, reduceInitial),
-		truck_group = travel_time_truck_Dimension.group().reduce(reduceAdd, reduceRemove, reduceInitial),
-		weekday_group = weekday_Dimension.group().reduce(reduceAdd, reduceRemove, reduceInitial),
+	var TMC_group = tmc_Dimension.group(),//.reduce(reduceAdd, reduceRemove, reduceInitial),
+		truck_group = travel_time_truck_Dimension.group(),//.reduce(reduceAdd, reduceRemove, reduceInitial),
+		weekday_group = weekday_Dimension.group(),//.reduce(reduceAdd, reduceRemove, reduceInitial),
 
-		year_group = year_Dimension.group().reduce(reduceAdd, reduceRemove, reduceInitial),
-		month_group = month_Dimension.group().reduce(reduceAdd, reduceRemove, reduceInitial),
-		day_group = day_Dimension.group().reduce(reduceAdd, reduceRemove, reduceInitial),
-		hour_group = hour_Dimension.group().reduce(reduceAdd, reduceRemove, reduceInitial),
-		epoch_group = epoch_Dimension.group().reduce(reduceAdd, reduceRemove, reduceInitial),
+		year_group = year_Dimension.group(),//.reduce(reduceAdd, reduceRemove, reduceInitial),
+		month_group = month_Dimension.group(),//.reduce(reduceAdd, reduceRemove, reduceInitial),
+		day_group = day_Dimension.group(),//.reduce(reduceAdd, reduceRemove, reduceInitial),
+		hour_group = hour_Dimension.group(),//.reduce(reduceAdd, reduceRemove, reduceInitial),
+		epoch_group = epoch_Dimension.group(),//.reduce(reduceAdd, reduceRemove, reduceInitial),
 
-		yyyymm_group = yyyymm_Dimension.group().reduce(reduceAdd, reduceRemove, reduceInitial),
-		yyyymmdd_group = yyyymmdd_Dimension.group().reduce(reduceAdd, reduceRemove, reduceInitial),
-		yyyymmddhh_group = yyyymmddhh_Dimension.group().reduce(reduceAdd, reduceRemove, reduceInitial),
-		yyyymmddeee_group = yyyymmddeee_Dimension.group().reduce(reduceAdd, reduceRemove, reduceInitial);
+		yyyymm_group = yyyymm_Dimension.group(),//.reduce(reduceAdd, reduceRemove, reduceInitial),
+		yyyymmdd_group = yyyymmdd_Dimension.group(),//.reduce(reduceAdd, reduceRemove, reduceInitial),
+		yyyymmddhh_group = yyyymmddhh_Dimension.group(),//.reduce(reduceAdd, reduceRemove, reduceInitial),
+		yyyymmddeee_group = yyyymmddeee_Dimension.group();//.reduce(reduceAdd, reduceRemove, reduceInitial);
 
 	var dimensionMap = {
 		tmc: tmc_Dimension,
@@ -94,7 +94,7 @@ function CrossFilter() {
 			calcIndices(data, data.values)
 			return data;
 		}
-		return groupMap[group].all()
+		return groupMap[group].reduce(reduceAdd, reduceRemove, reduceInitial).all()
 			.filter(function(d) {
 				if (!d.value.count) return false;
 				calcIndices(d.value, d.value.values);
@@ -125,6 +125,9 @@ function CrossFilter() {
 	}
 	crossfilter.session = function() {
 		return CrossFilerSession(crossfilter);
+	}
+	crossfilter.size = function() {
+		return cross_filter.size();
 	}
 	return crossfilter;
 
@@ -207,6 +210,9 @@ function CrossFilerSession(crossfilter) {
 		filtersMap[dimension] = filter;
 		crossfilter.filter(session, dimension, filter);
 		return session;
+	}
+	session.size = function() {
+		return crossfilter.size();
 	}
 	session.applyFilters = function() {
 		for (var dimension in filtersMap) {

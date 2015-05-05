@@ -61,16 +61,12 @@ var LineGraph = React.createClass({
 	},
 	addTMCtoGraph: function(tmc) {
 		var graphData = this.state.linegraph.data(),
-			TMCs = [],
 			group = this.state.linegraph.group();
 
-		for (var k in this.state.selectedTMCs) {
-			TMCs.push(this.state.selectedTMCs[k]);
-		}
-
 		crossfilter.filter("tmc", tmc);
-		var tmcData = crossfilter(group),
-			obj = {
+		var tmcData = crossfilter(group);
+console.log("TMCsOverTime::addTMCtoGraph, group:", group, tmc, crossfilter.size(), tmcData.reduce(function(a,c) { return a+c.value.values.length; }, 0));
+		var	obj = {
 				key: tmc,
 				values: tmcData.map(function(d) { return {
 					key: d.key,
@@ -297,7 +293,6 @@ function Linegraph() {
 			// 	.y(function(d) { return yScale(d.y); })
 			// 	.clipExtent([[0,0],[width-margin.right-margin.left,height-margin.bottom-margin.top]]);
 
-
 			d3.select("#TMC-over-time-div-"+selfID).call(labeller);
 			labeller.on("resolutionchange", graph.resolution);
 
@@ -334,7 +329,7 @@ function Linegraph() {
 			.attr("id", function(d) { return "chart-group-"+d.key})
 			.attr("class", "chart-group");
 
-		var pointsData = [];
+		// var pointsData = [];
 
 		groups.each(function(groupData) {
 			var group = d3.select(this);

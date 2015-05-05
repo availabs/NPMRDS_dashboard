@@ -71,6 +71,7 @@ var LineGraph = React.createClass({
 
 			if (tmc == currentTMC.toString()) {
 				currentTMC = TMCs.length ? TMCs[0] : null;
+				this.state.labeller.makeActive(0);
 				this.updateGraph();
 			}
 		}
@@ -166,10 +167,13 @@ function Labeller() {
 		tmcs.exit().remove();
 		tmcs.enter().append("div")
 			.attr("class", "resolution-label")
-			.style({float:"left",padding:"0px 10px",height:"30px","line-height":"30px"});
-		tmcs.on("click", dispatcher.tmcchange)
-			.text(function(d){return d.toString();})
+			.style({float:"left",padding:"0px 10px",height:"30px","line-height":"30px",cursor:"pointer"});
+		tmcs.on("click", highlight)
+			.text(function(d) { return d.toString(); })
 			.style("background-color", function(d) { return TMCDataStore.getTMCcolor(d.toString()); });
+		if (TMCs.length == 1) {
+			tmcs.each(highlight);
+		}
 		tmcs.append("span").attr("class", "glyphicon glyphicon-remove NPMRDS-tmc-remove")
 			.style("margin-left", "10px")
 			.on("click", function(d) { d3.event.stopPropagation();TMCDataStore.removeTMC(d.toString()); });
@@ -191,7 +195,27 @@ function Labeller() {
 		TMCs = d;
 		return labeller;
 	}
+	labeller.makeActive = function(n) {
+		tmcDiv.selectAll(".resolution-label")
+			.each(function(d, i) {
+				if (i == n) {
+					highlight.call(this, d);
+				}
+			})
+	}
 	return labeller;
+
+	function highlight(d) {
+		tmcDiv.selectAll(".resolution-label")
+			.style("font-weight", null)
+			.style("text-decoration", null)
+			.style("color", null);
+		d3.select(this)
+			.style("font-weight", 800)
+			.style("text-decoration", "underline")
+			.style("color", "#fff");
+		dispatcher.tmcchange(d);
+	}
 }
 
 function Popup() {
