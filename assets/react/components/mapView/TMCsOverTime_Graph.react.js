@@ -108,6 +108,7 @@ console.log("TMCsOverTime::addTMCtoGraph, group:", group, tmc, crossfilter.size(
 			TMCs.push(this.state.selectedTMCs[k]);
 		}
 
+console.log("TMCsOverTime::updateGraph, group:", group);
 		TMCs.forEach(function(tmc) {
 			crossfilter.filter("tmc", tmc);
 			var tmcData = crossfilter(group),
@@ -121,6 +122,7 @@ console.log("TMCsOverTime::addTMCtoGraph, group:", group, tmc, crossfilter.size(
 				};
 			graphData.push(obj);
 		});
+console.log("TMCsOverTime::updateGraph, graphData:", graphData);
 
 		this.state.linegraph.data(graphData)();
 
@@ -264,7 +266,7 @@ function Linegraph() {
 				group: "yyyymmdd",
 				filter: {
 					apply: function(v) { crossfilter.filter("yyyymm", v); },
-					remove: function() { crossfilter.filter("yyyymmdd", null); }
+					remove: function() { console.log("TMCsOverTime::graph, removing yyyymmdd filter");crossfilter.filter("yyyymmdd", null); }
 				} },
 			{ resolution: "Minutes",
 				data: [],
@@ -272,7 +274,7 @@ function Linegraph() {
 					return dateLabeler(Math.floor(d/10000000), Math.floor(d/100000)%100, Math.floor(d/1000)%100, d%1000, true) },
 				group: "yyyymmddeee",
 				filter: {
-					apply: function(v) { crossfilter.filter("yyyymmdd", v); },
+					apply: function(v) { console.log("TMCsOverTime::graph, applying yyyymmdd filter", v);crossfilter.filter("yyyymmdd", v); },
 					remove: function() {}
 				} }
 		],
@@ -467,8 +469,7 @@ function Linegraph() {
 		}
 		if (resolution != currentResolution) {
 			currentResolution = resolution;
-			//dispatcher.graphupdate();
-			dataResolutionObjects[currentResolution].filter.apply(v);
+			// dispatcher.graphupdate();
 			data = dataResolutionObjects[resolution].data;
 			graph();
 		}
