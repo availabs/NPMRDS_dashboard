@@ -35,20 +35,20 @@ function CrossFilter() {
 
 	weekday_Dimension.filter(function(weekday) { return weekday < 5; });
 
-	var TMC_group = tmc_Dimension.group(),//.reduce(reduceAdd, reduceRemove, reduceInitial),
-		truck_group = travel_time_truck_Dimension.group(),//.reduce(reduceAdd, reduceRemove, reduceInitial),
-		weekday_group = weekday_Dimension.group(),//.reduce(reduceAdd, reduceRemove, reduceInitial),
+	var TMC_group = tmc_Dimension.group().reduce(reduceAdd, reduceRemove, reduceInitial),
+		truck_group = travel_time_truck_Dimension.group().reduce(reduceAdd, reduceRemove, reduceInitial),
+		weekday_group = weekday_Dimension.group().reduce(reduceAdd, reduceRemove, reduceInitial),
 
-		year_group = year_Dimension.group(),//.reduce(reduceAdd, reduceRemove, reduceInitial),
-		month_group = month_Dimension.group(),//.reduce(reduceAdd, reduceRemove, reduceInitial),
-		day_group = day_Dimension.group(),//.reduce(reduceAdd, reduceRemove, reduceInitial),
-		hour_group = hour_Dimension.group(),//.reduce(reduceAdd, reduceRemove, reduceInitial),
-		epoch_group = epoch_Dimension.group(),//.reduce(reduceAdd, reduceRemove, reduceInitial),
+		year_group = year_Dimension.group().reduce(reduceAdd, reduceRemove, reduceInitial),
+		month_group = month_Dimension.group().reduce(reduceAdd, reduceRemove, reduceInitial),
+		day_group = day_Dimension.group().reduce(reduceAdd, reduceRemove, reduceInitial),
+		hour_group = hour_Dimension.group().reduce(reduceAdd, reduceRemove, reduceInitial),
+		epoch_group = epoch_Dimension.group().reduce(reduceAdd, reduceRemove, reduceInitial),
 
-		yyyymm_group = yyyymm_Dimension.group(),//.reduce(reduceAdd, reduceRemove, reduceInitial),
-		yyyymmdd_group = yyyymmdd_Dimension.group(),//.reduce(reduceAdd, reduceRemove, reduceInitial),
-		yyyymmddhh_group = yyyymmddhh_Dimension.group(),//.reduce(reduceAdd, reduceRemove, reduceInitial),
-		yyyymmddeee_group = yyyymmddeee_Dimension.group();//.reduce(reduceAdd, reduceRemove, reduceInitial);
+		yyyymm_group = yyyymm_Dimension.group().reduce(reduceAdd, reduceRemove, reduceInitial),
+		yyyymmdd_group = yyyymmdd_Dimension.group().reduce(reduceAdd, reduceRemove, reduceInitial),
+		yyyymmddhh_group = yyyymmddhh_Dimension.group().reduce(reduceAdd, reduceRemove, reduceInitial),
+		yyyymmddeee_group = yyyymmddeee_Dimension.group().reduce(reduceAdd, reduceRemove, reduceInitial);
 
 	var dimensionMap = {
 		tmc: tmc_Dimension,
@@ -85,17 +85,19 @@ function CrossFilter() {
 	var CURRENT_SESSION = null;
 
 	function crossfilter(session, group) {
+console.log("crossfilter", group);
 		if (session.id() != CURRENT_SESSION) {
 			CURRENT_SESSION = session.id();
 			session.applyFilters();
 		}
 		if (group == "all") {
 			var data = cross_filter.groupAll().reduce(reduceAdd, reduceRemove, reduceInitial).value();
-			calcIndices(data, data.values)
+				
+			calcIndices(data, data.values);
+
 			return data;
 		}
-		return groupMap[group].reduce(reduceAdd, reduceRemove, reduceInitial).all()
-			.filter(function(d) {
+		return groupMap[group].all().filter(function(d) {
 				if (!d.value.count) return false;
 				calcIndices(d.value, d.value.values);
 				return true;
@@ -117,8 +119,10 @@ function CrossFilter() {
 	}
 	crossfilter.filter = function(session, dimension, filter) {
 		if (session.id() != CURRENT_SESSION) {
+console.log("crossfilter.filter", session.id(), dimension, filter);
 			CURRENT_SESSION = session.id();
 			session.applyFilters();
+			return crossfilter;
 		}
 		dimensionMap[dimension].filter(filter);
 		return crossfilter;
@@ -130,6 +134,14 @@ function CrossFilter() {
 		return cross_filter.size();
 	}
 	return crossfilter;
+
+	function copyObject(obj) {
+		var newObj = {};
+
+		for (var k in obj) {
+			newObj[k] = obj[k];
+		}
+	}
 
 	function calcIndices(obj, values) {
 		values.sort(function(a, b) { return a-b; });
@@ -147,9 +159,14 @@ function CrossFilter() {
 		obj.miseryIndex = obj.nintyseventh/obj.freeflow;
 		obj.travelTimeIndex = obj.avgTime/obj.freeflow;
 		obj.freeflow = obj.distance/(obj.freeflow/3600);
+
+console.log("calcIndices", obj.count, values.length, obj.tmc);
 	}
 	function reduceAdd(accum, curr) {
-		accum.sum += (curr.travel_time_all || 0);
+		if (!curr.travel_time_all) {
+			return accum;
+		}
+		accum.sum += curr.travel_time_all;
 		accum.count++;
 		accum.tmc = curr.tmc;
 		accum.distance = curr.distance;
@@ -159,10 +176,11 @@ function CrossFilter() {
 	  	return accum;
 	}
 	function reduceRemove(accum, curr) {
+		if (!curr.travel_time_all) {
+			return accum;
+		}
 		accum.sum -= curr.travel_time_all;
 		accum.count--;
-		accum.tmc = curr.tmc;
-		accum.distance = curr.distance;
 
 		for (var i = 0; i < accum.values.length; i++) {
 			if (accum.values[i] == curr.travel_time_all) {
@@ -208,6 +226,7 @@ function CrossFilerSession(crossfilter) {
 	}
 	session.filter = function(dimension, filter) {
 		filtersMap[dimension] = filter;
+console.log("session.filter", dimension, filter, filtersMap[dimension]);
 		crossfilter.filter(session, dimension, filter);
 		return session;
 	}

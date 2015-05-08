@@ -63,9 +63,9 @@ var UsageDataStore = assign({}, EventEmitter.prototype, {
     	this.removeListener(Event, callback);
   	},
 
-	getUsageData: function() {
-		return usageData;
-	},
+	// getUsageData: function() {
+	// 	return usageData;
+	// },
 
 	loadData: function(params) {
 		dataPointCollectionsManager.reset();
