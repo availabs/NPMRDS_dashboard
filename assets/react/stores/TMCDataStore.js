@@ -42,13 +42,40 @@ var TMCDataStore = assign({}, EventEmitter.prototype, {
   	removeChangeListener: function(Event, callback) {
     	this.removeListener(Event, callback);
   	},
-	addTMC: function(tmc) {
-console.log("TMCDataStore: adding", tmc);
-		if (!(tmc in TMCdata)) {
-			SailsWebApi.getTMCdata(tmc);
+	addTMC: function(TMCs) {
+		if (!Array.isArray(TMCs)) {
+			TMCs = [TMCs];
+		}
+console.log("<TMCDataStore.addTMC> adding", TMCs);
+
+		var unloaded = [],
+			loaded = [];
+
+		TMCs.forEach(function(tmc) {
+			if (!(tmc in TMCdata)) {
+				unloaded.push(tmc);
+				//SailsWebApi.getTMCdata(tmc);
+			}
+			else {
+				//this.receiveTMCdata(tmc, TMCdata[tmc]);
+				loaded.push(tmc);
+			}
+		})
+console.log("<TMCDataStore.addTMC> unloaded / loaded",unloaded, loaded);
+
+		if (unloaded.length) {
+			var data = {};
+			loaded.forEach(function(t) {
+				data[t] = TMCdata[t];
+			})
+			SailsWebApi.getTMCdata(unloaded, data);
 		}
 		else {
-			this.receiveTMCdata(tmc, TMCdata[tmc]);
+			var data = {};
+			loaded.forEach(function(t) {
+				data[t] = TMCdata[t];
+			})
+			this.receiveTMCdata(loaded, data);
 		}
 	},
 	removeTMC: function(tmc) {
@@ -62,38 +89,46 @@ console.log("TMCDataStore: adding", tmc);
 	changeDataView: function(view) {
 		this.emitEvent(Events.TMC_DATAVIEW_CHANGE, view);
 	},
-	receiveTMCdata: function(tmc, data) {
-console.log("TMCDataStore: received data for", tmc);
-		colorMapper.add(tmc);
-    	selectedTMCs.push(tmc);
-    	data.tmc = new TMC(tmc);
+	receiveTMCdata: function(TMCs, data) {
+console.log("<TMCDataStore.receiveTMCdata> received data for", TMCs, data);
+if (TMCs.length > 1) {
+	console.log("<TMCDataStore.receiveTMCdata> multi TMC selection")
+}
+		for (var tmc in data) {
 
-    	if (!(tmc in TMCdata)) {
-    		TMCdata[tmc] = data;
+console.log("<TMCDataStore.receiveTMCdata> adding data for", tmc);
+			colorMapper.add(tmc);
+	    	selectedTMCs.push(tmc);
+	    	data[tmc].tmc = new TMC(tmc);
 
-			var BQschema = data.schema,
-				BQtypes = data.types,
-			
-				cfData = data.rows.map(function(row) {
-					var obj = {};
-					row.forEach(function(d, i) {
-						if (BQtypes[i] != "STRING") {
-							obj[BQschema[i]] = +d;
-						}
-						else {
-							obj[BQschema[i]] = d;
-						}
+	    	if (!(tmc in TMCdata)) {
+	    		TMCdata[tmc] = data[tmc];
+
+				var BQschema = data[tmc].schema,
+					BQtypes = data[tmc].types,
+				
+					cfData = data[tmc].rows.map(function(row) {
+						var obj = {};
+						row.forEach(function(d, i) {
+							if (BQtypes[i] != "STRING") {
+								obj[BQschema[i]] = +d;
+							}
+							else {
+								obj[BQschema[i]] = d;
+							}
+						});
+						obj.weekday = WEEKDAYS[obj.weekday];
+						obj.tmc = new TMC(tmc);
+						obj.time = (obj["date"]*1000) + (obj["epoch"]);
+						return obj;
 					});
-					obj.weekday = WEEKDAYS[obj.weekday];
-					obj.tmc = new TMC(tmc);
-					obj.time = (obj["date"]*1000) + (obj["epoch"]);
-					return obj;
-				});
 
-			crossfilter.add(cfData);
+				crossfilter.add(cfData);
+	    	}
+			this.emitEvent(Events.DISPLAY_TMC_DATA, data[tmc]);
+		}
+
 console.log("<TMCDataStore.receiveTMCdata> finished");
-    	}
-		this.emitEvent(Events.DISPLAY_TMC_DATA, data);
 	},
 	getTMCData: function(tmc) {
 		return TMCdata[tmc];

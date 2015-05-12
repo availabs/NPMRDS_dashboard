@@ -15,11 +15,12 @@ console.log("received request for TMCdata for", TMCs);
 			TMCs = [TMCs];
 		}
 
-		var response = {};
-		for (var i = 0; i < TMCs.length; i++) {
-			var tmc = TMCs[i];
+		var response = {},
+			num = 0;
 
-			dataBuilder(TMCs[i], function(error, result) {
+		for (var i = 0; i < TMCs.length; i++) {
+			dataBuilder(TMCs[i], function(error, result, tmc) {
+				++num;
 				if (error) {
 console.log("error", error);
 					res.send(error, 500);
@@ -27,7 +28,7 @@ console.log("error", error);
 				}
 				response[tmc] = result;
 
-				if (i == TMCs.length) {
+				if (num == TMCs.length) {
 console.log("sending TMCdata for", TMCs);
 					res.send(response);
 				}
@@ -50,8 +51,8 @@ function TMCDataBuilder() {
 				cb({error:error, status:500});
 				return;
 			}
-console.log("completed query for", tmc)
-			cb(error, BIGquery.parseResult(result));
+console.log("completed query for", tmc);
+			cb(error, BIGquery.parseResult(result), tmc);
 		});
 	}
 

@@ -85,7 +85,6 @@ function CrossFilter() {
 	var CURRENT_SESSION = null;
 
 	function crossfilter(session, group) {
-console.log("crossfilter", group);
 		if (session.id() != CURRENT_SESSION) {
 			CURRENT_SESSION = session.id();
 			session.applyFilters();
@@ -119,7 +118,6 @@ console.log("crossfilter", group);
 	}
 	crossfilter.filter = function(session, dimension, filter) {
 		if (session.id() != CURRENT_SESSION) {
-console.log("crossfilter.filter", session.id(), dimension, filter);
 			CURRENT_SESSION = session.id();
 			session.applyFilters();
 			return crossfilter;
@@ -159,8 +157,6 @@ console.log("crossfilter.filter", session.id(), dimension, filter);
 		obj.miseryIndex = obj.nintyseventh/obj.freeflow;
 		obj.travelTimeIndex = obj.avgTime/obj.freeflow;
 		obj.freeflow = obj.distance/(obj.freeflow/3600);
-
-console.log("calcIndices", obj.count, values.length, obj.tmc);
 	}
 	function reduceAdd(accum, curr) {
 		if (!curr.travel_time_all) {
@@ -226,7 +222,6 @@ function CrossFilerSession(crossfilter) {
 	}
 	session.filter = function(dimension, filter) {
 		filtersMap[dimension] = filter;
-console.log("session.filter", dimension, filter, filtersMap[dimension]);
 		crossfilter.filter(session, dimension, filter);
 		return session;
 	}

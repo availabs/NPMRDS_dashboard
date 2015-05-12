@@ -65,12 +65,24 @@ var SailsWebApi = assign({}, EventEmitter.prototype, {
   // get county geography
   //------------
 
-  getTMCdata: function(tmc) {
+  getTMCdata: function(tmc, data) {
     SailsWebApi.checkLoading(true);
-    d3.json("/tmcdata/"+tmc, function(err, tmcData) {
-      ServerActionCreators.receiveTMCdata(tmc, tmcData);
-        SailsWebApi.checkLoading(false);
-    })
+
+    if (!Array.isArray(tmc)) {
+      tmc = [tmc];
+    }
+console.log("SailsWebApi.getTMCdata: getting data", tmc, data);
+
+    d3.xhr(/tmcdata/)
+        .response(function(request) { return JSON.parse(request.responseText); })
+        .post(JSON.stringify({id: tmc}), function(err, tmcData) {
+console.log("SailsWebApi.getTMCdata", err, tmcData);
+            for (var k in data) {
+                tmcData[k] = data[k];
+            }
+            ServerActionCreators.receiveTMCdata(tmc, tmcData);
+            SailsWebApi.checkLoading(false);
+        });
   },
 
   getCounties: function() {

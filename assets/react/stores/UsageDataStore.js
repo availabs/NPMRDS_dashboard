@@ -14,6 +14,8 @@ var AppDispatcher = require('../dispatcher/AppDispatcher'),
     SailsWebApi = require("../utils/api/SailsWebApi"),
     GeoStore = require("./GeoStore"),
 
+    TMCDataStore = require("./TMCDataStore"),
+
     Events = Constants.EventTypes,
     CHANGE_EVENT = 'change',
 
@@ -30,8 +32,6 @@ var AppDispatcher = require('../dispatcher/AppDispatcher'),
 * usage data cache object
 */
 var usageData = {};
-
-
 
 dataPointSlider
 	.width(1400)
@@ -62,10 +62,6 @@ var UsageDataStore = assign({}, EventEmitter.prototype, {
   	removeChangeListener: function(Event, callback) {
     	this.removeListener(Event, callback);
   	},
-
-	// getUsageData: function() {
-	// 	return usageData;
-	// },
 
 	loadData: function(params) {
 		dataPointCollectionsManager.reset();
@@ -105,10 +101,18 @@ UsageDataStore.dispatchToken = AppDispatcher.register(function(payload) {
 
   	switch(action.type) {
   		case ActionTypes.RECEIVE_COUNTY_DATA:
-  			usageData = action.usageData;
-console.log("RECEIVE_COUNTY_DATA::usageData", usageData);
-  			processUsageData(action.params);
+console.log("RECEIVE_COUNTY_DATA::usageData", action.usageData);
+  			processUsageData(action.usageData, action.params);
 			UsageDataStore.emitChange();
+/*
+####################
+testing purposes
+####################
+*/
+TMCDataStore.addTMC(["120P17024","120P17023","120P17022","120P17021","120P17020","120P17019","120P17018"]);
+/*
+####################
+*/
   		break;
   		
   		case ActionTypes.DATA_VIEW_CHANGE:
@@ -121,9 +125,7 @@ console.log("RECEIVE_COUNTY_DATA::usageData", usageData);
 
 module.exports = UsageDataStore;
 
-function processUsageData(params) {
-  	//console.log("processUsageData", usageData);
-
+function processUsageData(usageData, params) {
 	var loadedRoadsByCounty = GeoStore.getLoadedRoadsByCounty(),
 		shiftedRoadsByCounty = {},
 		linkIDmap = {},
@@ -201,8 +203,6 @@ function processUsageData(params) {
 	}
 
 	GeoStore.setShiftedRoads(shiftedRoadsByCounty);
-	//console.log("processUSageData, sending: shiftedRoadsByCounty")
-	//ServerActionCreators.receiveShiftedCountyRoads(shiftedRoadsByCounty);
 
 	dataPointCollectionsManager.sort()
 		.dataLoaded(true)
@@ -214,8 +214,6 @@ function processUsageData(params) {
 				dataPointSlider
 					.data(d.data())
 					.show();
-
-				// legend.label(d.unitLabel());
 			})
 }
 
