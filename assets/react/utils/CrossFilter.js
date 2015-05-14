@@ -30,7 +30,7 @@ function CrossFilter() {
 
 		yyyymm_Dimension = cross_filter.dimension(function(d) { return Math.floor(d.date/100); }),
 		yyyymmdd_Dimension = cross_filter.dimension(function(d) { return d.date; }),
-		yyyymmddhh_Dimension = cross_filter.dimension(function(d) { return (d.date*100) + Math.floor(d.epoch/12); }),
+		yyyymmddhh_Dimension = cross_filter.dimension(function(d) { return d.hour; }),
 		yyyymmddeee_Dimension = cross_filter.dimension(function(d) { return d.time; });
 
 	weekday_Dimension.filter(function(weekday) { return weekday < 5; });

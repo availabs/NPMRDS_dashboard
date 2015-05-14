@@ -63,10 +63,8 @@ var LineGraph = React.createClass({
 		var graphData = this.state.linegraph.data(),
 			group = this.state.linegraph.group();
 
-console.log("TMCsOverTime::addTMCtoGraph, group:", group, tmc);
 		crossfilter.filter("tmc", tmc);
 		var tmcData = crossfilter(group);
-console.log("TMCsOverTime::addTMCtoGraph, group:", group, tmc, crossfilter.size(), tmcData.reduce(function(a,c) { return a+c.value.values.length; }, 0));
 		var	obj = {
 				key: tmc,
 				values: tmcData.map(function(d) { return {
@@ -109,7 +107,6 @@ console.log("TMCsOverTime::addTMCtoGraph, group:", group, tmc, crossfilter.size(
 			TMCs.push(this.state.selectedTMCs[k]);
 		}
 
-console.log("TMCsOverTime::updateGraph, group:", group);
 		TMCs.forEach(function(tmc) {
 			crossfilter.filter("tmc", tmc);
 			var tmcData = crossfilter(group),
@@ -123,7 +120,6 @@ console.log("TMCsOverTime::updateGraph, group:", group);
 				};
 			graphData.push(obj);
 		});
-console.log("TMCsOverTime::updateGraph, graphData:", graphData);
 
 		this.state.linegraph.data(graphData)();
 

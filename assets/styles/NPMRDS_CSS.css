@@ -60,13 +60,31 @@ body {
   background-color: #000;
 }
 
-.NPMRDS-data-point-slider-div {
-	text-align: center;
+#NPMRDS-data-point-slider-div {
+  background-color: #666;
+  position: relative;
+	text-align: right;
 	height: 50px;
 }
-
-.NPMRDS-data-point-slider {
+#NPMRDS-data-point-slider {
 	background-color: #666;
+}
+#NPMRDS-data-point-slider-controls {
+  display: inline;
+  height: 50px;
+  line-height: 50px;
+  float: left;
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  font-size: 30px;
+}
+#NPMRDS-data-point-slider-controls span {
+  margin: 0px 5px;
+  cursor: pointer;
+}
+#NPMRDS-data-point-slider-controls span:hover {
+  color: #900;
 }
 
 .NPMRDS-legend {

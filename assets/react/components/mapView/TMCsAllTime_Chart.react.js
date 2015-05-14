@@ -54,12 +54,12 @@ var TMCChart = React.createClass({
 		}
 	},
 	componentDidMount: function() {
-		d3.select("#TMC-aggregated-table-"+this.state.chart.id()).call(this.state.chart);
+		d3.select("#TMC-all-time-table-"+this.state.chart.id()).call(this.state.chart);
 
 		TMCDataStore.addChangeListener(Events.DISPLAY_TMC_DATA, this.TMCadded);
 		TMCDataStore.addChangeListener(Events.REMOVE_TMC_DATA, this.TMCremoved);
 
-		d3.select("#TMC-aggregated-div-"+this.state.chart.id()).style("display", "none");
+		d3.select("#TMC-all-time-div-"+this.state.chart.id()).style("display", "none");
 	},
 	componentWillUnmount: function() {
 		TMCDataStore.removeChangeListener(Events.DISPLAY_TMC_DATA, this.TMCadded);
@@ -98,7 +98,7 @@ var TMCChart = React.createClass({
 
 		this.state.chart.data(tableData)();
 
-		d3.select("#TMC-aggregated-div-"+this.state.chart.id()).style("display", null);
+		d3.select("#TMC-all-time-div-"+this.state.chart.id()).style("display", null);
 	},
 	removeTMCfromChart: function(tmc) {
 		var tableData = this.state.chart.data(),
@@ -110,14 +110,14 @@ var TMCChart = React.createClass({
 		}
 
 		if (tableData.length <= 1) {
-			d3.select("#TMC-aggregated-div-"+this.state.chart.id()).style("display", "none");
+			d3.select("#TMC-all-time-div-"+this.state.chart.id()).style("display", "none");
 		}
 	},
 	render: function() {
 		return (
-			<div className="col-lg-12 NPMRDS-tmc-panel NPMRDS-tmc-table-panel" id={"TMC-aggregated-div-"+this.state.chart.id()}>
+			<div className="col-lg-12 NPMRDS-tmc-panel NPMRDS-tmc-table-panel" id={"TMC-all-time-div-"+this.state.chart.id()}>
 				<div className="table-responsive">
-					<table className="table table-striped table-hover" id={"TMC-aggregated-table-"+this.state.chart.id()}></table>
+					<table className="table table-striped table-hover" id={"TMC-all-time-table-"+this.state.chart.id()}></table>
 				</div>
             </div>
 		);
@@ -201,7 +201,7 @@ function TMCchart() {
 	}
 	function dataview(view) {
 		TMCDataStore.changeDataView(view[0]);
-		d3.select("#TMC-aggregated-table-"+selfID).selectAll(".NPMRDS-dataview-label")
+		d3.select("#TMC-all-time-table-"+selfID).selectAll(".NPMRDS-dataview-label")
 			.classed("NPMRDS-dataview-label-active", false);
 		d3.select(this)
 			.classed("NPMRDS-dataview-label-active", true);

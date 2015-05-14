@@ -34,7 +34,7 @@ var AppDispatcher = require('../dispatcher/AppDispatcher'),
 var usageData = {};
 
 dataPointSlider
-	.width(1400)
+	.width(1300)
 	.height(50)
 	.update(function(d) {
 		linkShader
@@ -109,7 +109,7 @@ console.log("RECEIVE_COUNTY_DATA::usageData", action.usageData);
 testing purposes
 ####################
 */
-TMCDataStore.addTMC(["120P17024","120P17023","120P17022","120P17021","120P17020","120P17019","120P17018"]);
+//TMCDataStore.addTMC(["120P17024","120P17023","120P17022","120P17021","120P17020","120P17019","120P17018"]);
 /*
 ####################
 */
@@ -542,9 +542,10 @@ function DataPointSlider() {
 		dataPointIndex = 0,
 		svg,
 		controlsGroup,
-		width = 1300,
+		controlsDiv,
+		width = 1100,
 		height = 50,
-		margin = { left: 160, right: 30 },
+		margin = { left: 30, right: 30 },
 		scale = d3.scale.ordinal(),
 		sliderGroup,
 		brush = d3.svg.brush()
@@ -672,39 +673,73 @@ function DataPointSlider() {
 
 		axis.tickFormat(formatFunc);
 
-		controlsGroup.append("polygon")
-			.attr("points", "10,25 40,10, 40,40")
-			.attr("stroke", "none")
-			.attr("fill", "#00a")
+		controlsDiv = d3.select("#NPMRDS-data-point-slider-div")
+			.append("div").attr("id", "NPMRDS-data-point-slider-controls");
+
+		controlsDiv.append("span").attr("class", "glyphicon glyphicon-backward")
+			.on("click", function() {
+				dataPointIndex = 0;
+				slider(dataPointIndex);
+			})
+		controlsDiv.append("span").attr("class", "glyphicon glyphicon-step-backward")
 			.on("click", function() {
 				slider(--dataPointIndex);
-			});
-
-		controlsGroup.append("rect")
-			.attr("x", 50).attr("y", 10)
-			.attr("width", 30)
-			.attr("height", 30)
-			.attr("stroke", "none")
-			.attr("fill", "#0a0")
+			})
+		controlsDiv.append("span").attr("class", "glyphicon glyphicon-pause")
 			.on("click", function() {
 				if (interval) {
 					clearInterval(interval);
 					interval = null;
-					d3.select(this).attr("fill", "#a00");
+					d3.select(this).attr("class", "glyphicon glyphicon-play");
 				}
 				else {
 					interval = setInterval(advanceSlider, 2000);
-					d3.select(this).attr("fill", "#0a0");
+					d3.select(this).attr("class", "glyphicon glyphicon-pause");
 				}
 			})
-
-		controlsGroup.append("polygon")
-			.attr("points", "120,25 90,10, 90,40")
-			.attr("stroke", "none")
-			.attr("fill", "#00a")
+		controlsDiv.append("span").attr("class", "glyphicon glyphicon-step-forward")
 			.on("click", function() {
 				slider(++dataPointIndex);
-			});
+			})
+		controlsDiv.append("span").attr("class", "glyphicon glyphicon-forward")
+			.on("click", function() {
+				dataPointIndex = dataPoints.length-1;
+				slider(dataPointIndex);
+			})
+
+		// controlsGroup.append("polygon")
+		// 	.attr("points", "10,25 40,10, 40,40")
+		// 	.attr("stroke", "none")
+		// 	.attr("fill", "#00a")
+		// 	.on("click", function() {
+		// 		slider(--dataPointIndex);
+		// 	});
+
+		// controlsGroup.append("rect")
+		// 	.attr("x", 50).attr("y", 10)
+		// 	.attr("width", 30)
+		// 	.attr("height", 30)
+		// 	.attr("stroke", "none")
+		// 	.attr("fill", "#0a0")
+		// 	.on("click", function() {
+		// 		if (interval) {
+		// 			clearInterval(interval);
+		// 			interval = null;
+		// 			d3.select(this).attr("fill", "#a00");
+		// 		}
+		// 		else {
+		// 			interval = setInterval(advanceSlider, 2000);
+		// 			d3.select(this).attr("fill", "#0a0");
+		// 		}
+		// 	})
+
+		// controlsGroup.append("polygon")
+		// 	.attr("points", "120,25 90,10, 90,40")
+		// 	.attr("stroke", "none")
+		// 	.attr("fill", "#00a")
+		// 	.on("click", function() {
+		// 		slider(++dataPointIndex);
+		// 	});
 	}
 	slider.data = function(d) {
 		if (!arguments.length) {

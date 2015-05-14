@@ -30,7 +30,7 @@ var React = require('react'),
 
     // mapView components
     TMCsOverTime = require("../components/mapView/TMCsOverTime_Graph.react"),
-    TMCsAggregated = require("../components/mapView/TMCsAggregated_Chart.react"),
+    TMCsAllTime = require("../components/mapView/TMCsAllTime_Chart.react"),
     TMCMonthly = require("../components/mapView/TMCMonthly_Graph.react"),
     LoadingIndicator = require("../components/mapView/LoadingIndicator.react");
 
@@ -232,7 +232,7 @@ var MapView = React.createClass({
                 </div>
 
                 <div className="row">
-                    <TMCsAggregated/>
+                    <TMCsAllTime/>
                 </div>
 
                 <div className="row">
