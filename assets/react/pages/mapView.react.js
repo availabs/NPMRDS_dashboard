@@ -32,6 +32,9 @@ var React = require('react'),
     TMCsOverTime = require("../components/mapView/TMCsOverTime_Graph.react"),
     TMCsAllTime = require("../components/mapView/TMCsAllTime_Chart.react"),
     TMCMonthly = require("../components/mapView/TMCMonthly_Graph.react"),
+
+    TMCMonthly_Aggregated = require("../components/mapView/TMCMonthly_Aggregated_Graph.react"),
+
     LoadingIndicator = require("../components/mapView/LoadingIndicator.react");
 
 var linkShader = UsageDataStore.linkShader(),
@@ -225,6 +228,10 @@ var MapView = React.createClass({
                     <div className="col-log-10">
                         <DataPointSlider />
                     </div>
+                </div>
+
+                <div vlassName="row">
+                    <TMCMonthly_Aggregated/>
                 </div>
 
                 <div className="row">

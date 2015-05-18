@@ -73,18 +73,17 @@ body {
   display: inline;
   height: 50px;
   line-height: 50px;
-  float: left;
   position: absolute;
   top: 0px;
-  left: 0px;
+  left: 5px;
   font-size: 30px;
 }
 #NPMRDS-data-point-slider-controls span {
-  margin: 0px 5px;
+  margin: 0px 2px;
   cursor: pointer;
 }
 #NPMRDS-data-point-slider-controls span:hover {
-  color: #900;
+  color: #333;
 }
 
 .NPMRDS-legend {
@@ -165,6 +164,20 @@ body {
 }
 .NPMRDS-tmc-panel table .NPMRDS-dataview-label-active {
   color: #090;
+}
+
+.resolution-label {
+  float: left;
+  padding: 0px 20px;
+  height: 30px;
+  line-height: 30px;
+  background-color :#555;
+  color: #fff;
+  font-size: 13px;
+  cursor: pointer;
+}
+.resolution-label:hover {
+  background-color :#333;
 }
 
 svg .axis text {

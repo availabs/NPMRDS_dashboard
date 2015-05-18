@@ -92,13 +92,13 @@ function CrossFilter() {
 		if (group == "all") {
 			var data = cross_filter.groupAll().reduce(reduceAdd, reduceRemove, reduceInitial).value();
 				
-			calcIndices(data, data.values);
+			crossfilter.calcIndices(data, data.values);
 
 			return data;
 		}
 		return groupMap[group].all().filter(function(d) {
 				if (!d.value.count) return false;
-				calcIndices(d.value, d.value.values);
+				crossfilter.calcIndices(d.value, d.value.values);
 				return true;
 			})
 	}
@@ -131,17 +131,8 @@ function CrossFilter() {
 	crossfilter.size = function() {
 		return cross_filter.size();
 	}
-	return crossfilter;
 
-	function copyObject(obj) {
-		var newObj = {};
-
-		for (var k in obj) {
-			newObj[k] = obj[k];
-		}
-	}
-
-	function calcIndices(obj, values) {
+	crossfilter.calcIndices = function(obj, values) {
 		values.sort(function(a, b) { return a-b; });
 		obj.avgTime = obj.sum/obj.count;
 		obj.avgSpeed = obj.distance/(obj.avgTime/3600);
@@ -157,6 +148,16 @@ function CrossFilter() {
 		obj.miseryIndex = obj.nintyseventh/obj.freeflow;
 		obj.travelTimeIndex = obj.avgTime/obj.freeflow;
 		obj.freeflow = obj.distance/(obj.freeflow/3600);
+	}
+
+	return crossfilter;
+
+	function copyObject(obj) {
+		var newObj = {};
+
+		for (var k in obj) {
+			newObj[k] = obj[k];
+		}
 	}
 	function reduceAdd(accum, curr) {
 		if (!curr.travel_time_all) {

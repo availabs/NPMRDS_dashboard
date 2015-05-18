@@ -90,10 +90,6 @@ var TMCDataStore = assign({}, EventEmitter.prototype, {
 		this.emitEvent(Events.TMC_DATAVIEW_CHANGE, view);
 	},
 	receiveTMCdata: function(TMCs, data) {
-		if (TMCs.length > 1) {
-			aggregateData(TMCs, data);
-		}
-
 		for (var tmc in data) {
 			colorMapper.add(tmc);
 			selectedTMCs.push(tmc);
@@ -113,6 +109,9 @@ var TMCDataStore = assign({}, EventEmitter.prototype, {
 			this.emitEvent(Events.DISPLAY_TMC_DATA, data[tmc]);
 		}
 
+		if (TMCs.length > 1) {
+			aggregateData(TMCs, data);
+		}
 	},
 	getTMCData: function(tmc) {
 		return TMCdata[tmc];
@@ -140,7 +139,7 @@ function aggregateData(TMCs, data) {
 	var newData = [];
 	for (var tmc in data) {
 		var tmcData = parseData(tmc, data[tmc])
-			.sort(function(a, b) { return a.time-b.time; });
+			//.sort(function(a, b) { return a.time-b.time; });
 		newData.push(tmcData);
 	}
 	newData = d3.merge(newData);
@@ -170,7 +169,10 @@ function aggregateData(TMCs, data) {
 		})
 	});
 
-	var aggregated = [];
+	var aggregated = {
+		tmcs: TMCs,
+		values: []
+	};
 	for (var date in aggregatedSet) {
 		if (aggregatedSet[date].length == TMCs.length) {
 			var obj = {
@@ -179,11 +181,9 @@ function aggregateData(TMCs, data) {
 				month: Math.floor(aggregatedSet[date][0].date / 100),
 				travel_time_all: d3.sum(aggregatedSet[date], function(d) { return d.travel_time_all; }),
 				travel_time_truck: d3.sum(aggregatedSet[date], function(d) { return d.travel_time_truck; }),
-				weekday: aggregatedSet[date][0].weekday,
-				tmc: new TMC("combined"),
-				tmcs: TMCs
+				weekday: aggregatedSet[date][0].weekday
 			}
-			aggregated.push(obj);
+			aggregated.values.push(obj);
 		}
 	}
 

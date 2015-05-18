@@ -109,7 +109,9 @@ console.log("RECEIVE_COUNTY_DATA::usageData", action.usageData);
 testing purposes
 ####################
 */
-//TMCDataStore.addTMC(["120P17024","120P17023","120P17022","120P17021","120P17020","120P17019","120P17018"]);
+
+TMCDataStore.addTMC(["120P17024","120P17023","120P17022","120P17021","120P17020","120P17019","120P17018"]);
+
 /*
 ####################
 */

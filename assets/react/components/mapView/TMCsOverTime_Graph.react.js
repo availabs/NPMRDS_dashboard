@@ -171,17 +171,17 @@ function Labeller() {
 			.data(labels);
 		lbls.exit().remove();
 		lbls.enter().append("div")
-			.on("click", function(d, i){dispatcher.resolutionchange(i); })
+			.on("click", function(d, i) { dispatcher.resolutionchange(i); })
 			.attr("class", "resolution-label")
-			.style({float:"left",padding:"0px 20px",height:"30px","line-height":"30px",
-					"background-color":"#999"});
+			// .style({float:"left",padding:"0px 20px",height:"30px","line-height":"30px",
+			// 		"background-color":"#999"});
 		lbls.text(function(d){return d;});
 
-		var tmcs = tmcDiv.selectAll(".resolution-label")
+		var tmcs = tmcDiv.selectAll(".tmcs-label")
 			.data(TMCs);
 		tmcs.exit().remove();
 		tmcs.enter().append("div")
-			.attr("class", "resolution-label")
+			.attr("class", "tmcs-label")
 			.style({float:"left",padding:"0px 10px",height:"30px","line-height":"30px"});
 		tmcs.text(function(d){return d;})
 			.style("background-color", function(d) { return TMCDataStore.getTMCcolor(d); })

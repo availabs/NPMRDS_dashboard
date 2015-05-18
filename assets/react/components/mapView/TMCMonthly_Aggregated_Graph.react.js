@@ -7,74 +7,75 @@ var React = require('react'),
 
 	d3 = require("d3"),
 
-	crossfilter = TMCDataStore.getCrossFilter(),
-
 	UNIQUE_IDs = 0;
 
 var currentView = "avgSpeed",
 	currentTMC = null,
-	months = [];
+	weekdays = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
 
 var LineGraph = React.createClass({
 	getInitialState: function() {
 		return {
 			linegraph: Linegraph().id(UNIQUE_IDs++),
-			labeller: Labeller(),
-			selectedTMCs: {},
-			graphData: []
+			labeller: Labeller()
 		}
 	},
 	componentDidMount: function() {
-		d3.select("#TMC-monthly-graph-"+this.state.linegraph.id()).call(this.state.linegraph);
+		d3.select("#TMC-monthly-aggregated-graph-"+this.state.linegraph.id()).call(this.state.linegraph);
 		// this.state.linegraph.on("graphupdate", this.updateGraph);
 
-		d3.select("#TMC-monthly-div-"+this.state.linegraph.id()).call(this.state.labeller);
-		this.state.labeller.on("tmcchange", this.TMCchange);
+		d3.select("#TMC-monthly-aggregated-div-"+this.state.linegraph.id()).call(this.state.labeller);
+		this.state.labeller.on("tmcchange", this.TMCsChange);
 
-		d3.select("#TMC-monthly-div-"+this.state.linegraph.id()).style("display", "none");
+		d3.select("#TMC-monthly-aggregated-div-"+this.state.linegraph.id()).style("display", "none");
 
-		TMCDataStore.addChangeListener(Events.DISPLAY_TMC_DATA, this.TMCadded);
-		TMCDataStore.addChangeListener(Events.REMOVE_TMC_DATA, this.TMCremoved);
+		TMCDataStore.addChangeListener(Events.DISPLAY_AGGREGATED_DATA, this.TMCsAdded);
 
 		TMCDataStore.addChangeListener(Events.TMC_DATAVIEW_CHANGE, this.dataviewChange);
 	},
 	componentWillUnmount: function() {
-		TMCDataStore.removeChangeListener(Events.DISPLAY_TMC_DATA, this.TMCadded);
-		TMCDataStore.removeChangeListener(Events.REMOVE_TMC_DATA, this.TMCremoved);
+		TMCDataStore.removeChangeListener(Events.DISPLAY_AGGREGATED_DATA, this.TMCsAdded);
 		
 		TMCDataStore.removeChangeListener(Events.TMC_DATAVIEW_CHANGE, this.dataviewChange);
 	},
-	TMCadded: function(data) {
-		if (!(data.tmc.toString() in this.state.selectedTMCs)) {
-			this.state.selectedTMCs[data.tmc.toString()] = data.tmc;
-			var TMCs = [];
-			for (var k in this.state.selectedTMCs) {
-				TMCs.push(this.state.selectedTMCs[k]);
-			}
-			this.state.labeller.tmcs(TMCs)();
+	TMCsAdded: function(aggregatedData) {
+		var data = d3.nest()
+			.key(function(d) { return Math.floor(d.date/100); })
+			.key(function(d) { return d.weekday; })
+			.rollup(function(d) { return {
+				sum: d3.sum(d, function(d) { return d.travel_time_all; }),
+				count: d.length,
+				values: d.map(function(d) { return d.travel_time_all; }),
+				distance: d[0].distance }
+			})
+			.entries(aggregatedData.values);
 
-			if (!currentTMC) {
-				currentTMC = data.tmc;
-				this.updateGraph();
-			}
-		}
-	},
-	TMCremoved: function(tmc) {
-		if (tmc in this.state.selectedTMCs) {
-			delete this.state.selectedTMCs[tmc.toString()];
+		data.forEach(function(month) {
+			month.values = month.values.filter(function(d) {
+				if (d.key >= 5) return false;
+				calcIndices(d.values, d.values.values)
+				d.values = getValues(d.values);
+				return true;
+			})
+		})
 
-			var TMCs = [];
-			for (var k in this.state.selectedTMCs) {
-				TMCs.push(this.state.selectedTMCs[k]);
+		data = data.map(function(month) {
+			return {
+				key: month.key,
+				values: month.values.map(function(d) { return {x:+d.key, y:d.values}; })
 			}
-			this.state.labeller.tmcs(TMCs)();
+		})
 
-			if (tmc == currentTMC.toString()) {
-				currentTMC = TMCs.length ? TMCs[0] : null;
-				this.state.labeller.makeActive(0);
-				this.updateGraph();
-			}
-		}
+console.log("TMC_Monthly_Aggregated.TMCsAdded, data", data);
+
+		d3.select("#TMC-monthly-aggregated-div-"+this.state.linegraph.id()).style("display", null);
+
+		var graphData = this.state.linegraph.data();
+		data.forEach(function(month) {
+			graphData.push(month);
+		})
+		this.state.linegraph.data(graphData)();
+		this.state.labeller.tmcs(aggregatedData.tmcs.sort(function(a,b) { return a-b; }))();
 	},
 	dataviewChange: function(view) {
 		if (view != currentView) {
@@ -82,50 +83,22 @@ var LineGraph = React.createClass({
 			this.state.linegraph();
 		}
 	},
-	TMCchange: function(tmc) {
-		if (tmc != currentTMC) {
-			currentTMC = tmc;
-			this.updateGraph();
-		}
+	TMCsChange: function(tmc) {
 	},
 	updateGraph: function() {
 		var graphData = [];
-		
-		if (currentTMC) {
-			if (!months.length) {
-				months = crossfilter("yyyymm").map(function(d) { return d.key; });
-			}
-
-			crossfilter.filter("tmc", currentTMC);
-
-			months.forEach(function(month) {
-				crossfilter.filter("yyyymm", month);
-				var data = crossfilter("hour"),
-					obj = {
-						key: month,
-						values: data.map(function(d) { return {
-							key: d.key,
-							x: d.key,
-							y: getValues(d.value)
-						}})
-					};
-				graphData.push(obj);
-			})
-
-			this.state.linegraph.data(graphData)();
-		}
 
 		if (!graphData.length) {
-			d3.select("#TMC-monthly-div-"+this.state.linegraph.id()).style("display", "none");
+			d3.select("#TMC-monthly-aggregated-div-"+this.state.linegraph.id()).style("display", "none");
 		}
 		else {
-			d3.select("#TMC-monthly-div-"+this.state.linegraph.id()).style("display", null);
+			d3.select("#TMC-monthly-aggregated-div-"+this.state.linegraph.id()).style("display", null);
 		}
 	},
 	render: function() {
 		return (
-			<div className="col-lg-12 NPMRDS-tmc-panel" id={"TMC-monthly-div-"+this.state.linegraph.id()}>
-				<svg id={ "TMC-monthly-graph-"+this.state.linegraph.id() }></svg>
+			<div className="col-lg-12 NPMRDS-tmc-panel" id={"TMC-monthly-aggregated-div-"+this.state.linegraph.id()}>
+				<svg id={ "TMC-monthly-aggregated-graph-"+this.state.linegraph.id() }></svg>
             </div>
 		);
 	}
@@ -150,6 +123,25 @@ function getValues(values) {
 	}
 }
 
+function calcIndices(obj, values) {
+	values.sort(function(a, b) { return a-b; });
+
+	obj.avgTime = obj.sum/obj.count;
+	obj.avgSpeed = obj.distance/(obj.avgTime/3600);
+	obj.median = d3.median(values);
+	obj.eightieth = d3.quantile(values, 0.8);
+	obj.nintyfifth = d3.quantile(values, 0.95);
+	obj.nintyseventh = d3.quantile(values, 0.975);
+	obj.stddevTime = values.length > 1 ? d3.deviation(values) : 0;
+	obj.stddevSpeed = values.length > 1 ? d3.deviation(values.map(function(d) { return obj.distance/(d/3600); })) : 0;
+	obj.bufferTime = (obj.nintyfifth-obj.avgTime)/obj.avgTime;
+	obj.freeflow = d3.quantile(values, 0.7);
+	obj.planningTime = obj.nintyfifth/obj.freeflow;
+	obj.miseryIndex = obj.nintyseventh/obj.freeflow;
+	obj.travelTimeIndex = obj.avgTime/obj.freeflow;
+	obj.freeflow = obj.distance/(obj.freeflow/3600);
+}
+
 function Labeller() {
 	var tmcDiv,
 		TMCs = [],
@@ -167,16 +159,16 @@ function Labeller() {
 		tmcs.exit().remove();
 		tmcs.enter().append("div")
 			.attr("class", "tmcs-label")
-			.style({float:"left",padding:"0px 10px",height:"30px","line-height":"30px",cursor:"pointer"});
+			.style({float:"left",padding:"0px 10px",height:"30px","line-height":"30px"});
 		tmcs.on("click", highlight)
 			.text(function(d) { return d.toString(); })
 			.style("background-color", function(d) { return TMCDataStore.getTMCcolor(d.toString()); });
 		if (TMCs.length == 1) {
 			tmcs.each(highlight);
 		}
-		tmcs.append("span").attr("class", "glyphicon glyphicon-remove NPMRDS-tmc-remove")
-			.style("margin-left", "10px")
-			.on("click", function(d) { d3.event.stopPropagation();TMCDataStore.removeTMC(d.toString()); });
+		// tmcs.append("span").attr("class", "glyphicon glyphicon-remove NPMRDS-tmc-remove")
+		// 	.style("margin-left", "10px")
+		// 	.on("click", function(d) { d3.event.stopPropagation();TMCDataStore.removeTMC(d.toString()); });
 	}
 	labeller.on = function(e, l) {
 		if (!arguments.length) {
@@ -196,7 +188,7 @@ function Labeller() {
 		return labeller;
 	}
 	labeller.makeActive = function(n) {
-		tmcDiv.selectAll(".tmcs-label")
+		tmcDiv.selectAll(".resolution-label")
 			.each(function(d, i) {
 				if (i == n) {
 					highlight.call(this, d);
@@ -206,7 +198,7 @@ function Labeller() {
 	return labeller;
 
 	function highlight(d) {
-		tmcDiv.selectAll(".tmcs-label")
+		tmcDiv.selectAll(".resolution-label")
 			.style("font-weight", null)
 			.style("text-decoration", null)
 			.style("color", null);
@@ -225,7 +217,7 @@ function Popup() {
 
 	function popup(selection) {
 		if (selection) {
-			div = d3.select("#TMC-monthly-div-"+selfID).append("div")
+			div = d3.select("#TMC-monthly-aggregated-div-"+selfID).append("div")
 				.style({padding:"0px", color:"#000", height:"30px", 
 					"line-height":"30px", position:"absolute", left:"20px", top:"5px",
 					"font-size":"15pt"})
@@ -339,7 +331,7 @@ function Linegraph() {
 				.data([groupData.values]);
 			path.exit().remove();
 			path.enter().append("path")
-				.attr("id", "TMC-monthly-"+groupData.key+"-path")
+				.attr("id", "TMC-monthly-aggregated-"+groupData.key+"-path")
 				.attr({stroke: "#74c476",//function() { return colorScale(ndx); }, 
 					  	"stroke-width": 3, fill:"none", class:"NPMRDS-graph-path",
 						"stroke-opacity": 0.3})
@@ -349,7 +341,7 @@ function Linegraph() {
 				.data(groupData.values)
 			points.exit().remove();
 			points.enter().append("circle")
-				.attr("id", "TMC-monthly-"+groupData.key+"-point")
+				.attr("id", "TMC-monthly-aggregated-"+groupData.key+"-point")
 				.attr("class", function(d) { return "NPMRDS-graph-point"; })
 				.attr({fill: "#74c476",//function() { return colorScale(ndx); },
 				       r: 4, stroke: "none", "fill-opacity": 0.3})
@@ -387,8 +379,8 @@ function Linegraph() {
 		})
 
 		pointsData.forEach(function(point) {
-			point.points = d3.selectAll("#TMC-monthly-"+point.key+"-point");
-			point.path = d3.selectAll("#TMC-monthly-"+point.key+"-path");
+			point.points = d3.selectAll("#TMC-monthly-aggregated-"+point.key+"-point");
+			point.path = d3.selectAll("#TMC-monthly-aggregated-"+point.key+"-path");
 		})
 
 		if (voronoiGroup) {
@@ -451,16 +443,7 @@ function Linegraph() {
 	return graph;
 
 	function formatXaxis(d) {
-		if (d == 0) {
-			return "12:00AM";
-		}
-		if (d < 12) {
-			return d+":00AM";
-		}
-		if (d == 12) {
-			return d+":00PM";
-		}
-		return (d%12)+":00PM";
+		return weekdays[d];
 	}
 
 	function mousemove(d) {
