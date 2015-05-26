@@ -29,7 +29,9 @@ module.exports = {
 
     DATA_VIEW_CHANGE: null,
 
-    RECEIVE_TMC_DATA: null
+    RECEIVE_TMC_DATA: null,
+
+    RECEIVE_TMC_LOOKUP: null
   }),
 
   EventTypes: keyMirror({
@@ -49,7 +51,9 @@ module.exports = {
     TMC_DATAVIEW_CHANGE: "TMC_DATAVIEW_CHANGE",
 
     SAILS_WEB_API_LOADING_START: "SAILS_WEB_API_LOADING_START",
-    SAILS_WEB_API_LOADING_STOP: "SAILS_WEB_API_LOADING_STOP"
+    SAILS_WEB_API_LOADING_STOP: "SAILS_WEB_API_LOADING_STOP",
+
+    ROUTE_CREATED: "ROUTE_CREATED"
   }),
 
   PayloadSources: keyMirror({

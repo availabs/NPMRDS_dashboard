@@ -25,7 +25,6 @@ var LineGraph = React.createClass({
 		// this.state.linegraph.on("graphupdate", this.updateGraph);
 
 		d3.select("#TMC-monthly-aggregated-div-"+this.state.linegraph.id()).call(this.state.labeller);
-		this.state.labeller.on("tmcchange", this.TMCsChange);
 
 		d3.select("#TMC-monthly-aggregated-div-"+this.state.linegraph.id()).style("display", "none");
 
@@ -144,8 +143,7 @@ function calcIndices(obj, values) {
 
 function Labeller() {
 	var tmcDiv,
-		TMCs = [],
-		dispatcher = d3.dispatch("tmcchange");
+		TMCs = [];
 
 	function labeller(selection) {
 		if (selection) {
@@ -160,25 +158,9 @@ function Labeller() {
 		tmcs.enter().append("div")
 			.attr("class", "tmcs-label")
 			.style({float:"left",padding:"0px 10px",height:"30px","line-height":"30px"});
-		tmcs.on("click", highlight)
-			.text(function(d) { return d.toString(); })
-			.style("background-color", function(d) { return TMCDataStore.getTMCcolor(d.toString()); });
-		if (TMCs.length == 1) {
-			tmcs.each(highlight);
-		}
-		// tmcs.append("span").attr("class", "glyphicon glyphicon-remove NPMRDS-tmc-remove")
-		// 	.style("margin-left", "10px")
-		// 	.on("click", function(d) { d3.event.stopPropagation();TMCDataStore.removeTMC(d.toString()); });
-	}
-	labeller.on = function(e, l) {
-		if (!arguments.length) {
-			return labeller;
-		}
-		else if (arguments.length == 1) {
-			return dispatcher.on(e);
-		}
-		dispatcher.on(e, l);
-		return labeller;
+		tmcs.text(function(d) { return d.toString(); })
+			.style("background-color", function(d) { return TMCDataStore.getTMCcolor(d.toString()); })
+			.on("click", function(d) { TMCDataStore.addTMC(d); });
 	}
 	labeller.tmcs = function(d) {
 		if (!arguments.length) {
@@ -187,27 +169,7 @@ function Labeller() {
 		TMCs = d;
 		return labeller;
 	}
-	labeller.makeActive = function(n) {
-		tmcDiv.selectAll(".resolution-label")
-			.each(function(d, i) {
-				if (i == n) {
-					highlight.call(this, d);
-				}
-			})
-	}
 	return labeller;
-
-	function highlight(d) {
-		tmcDiv.selectAll(".resolution-label")
-			.style("font-weight", null)
-			.style("text-decoration", null)
-			.style("color", null);
-		d3.select(this)
-			.style("font-weight", 800)
-			.style("text-decoration", "underline")
-			.style("color", "#fff");
-		dispatcher.tmcchange(d);
-	}
 }
 
 function Popup() {

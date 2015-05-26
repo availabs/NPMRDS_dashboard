@@ -18,6 +18,7 @@ module.exports = {
 		requests: {
 			type: 'integer'
 		}
-  	}
+  	},
+  	migrate: "drop"
 };
 

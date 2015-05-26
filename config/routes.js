@@ -42,6 +42,7 @@ module.exports.routes = {
   /**
   * tmc statistical data, by tmc code
   */
-  '/tmcdata/:id?': 'tmcdata.getTMCData'
+  '/tmcdata/:id?': 'tmcdata.getTMCData',
+  '/tmclookup': 'tmcdata.TMClookup'
   
 };

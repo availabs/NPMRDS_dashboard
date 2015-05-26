@@ -90,6 +90,8 @@ var TMCDataStore = assign({}, EventEmitter.prototype, {
 		this.emitEvent(Events.TMC_DATAVIEW_CHANGE, view);
 	},
 	receiveTMCdata: function(TMCs, data) {
+		var parsedData = [];
+
 		for (var tmc in data) {
 			colorMapper.add(tmc);
 			selectedTMCs.push(tmc);
@@ -98,19 +100,23 @@ var TMCDataStore = assign({}, EventEmitter.prototype, {
 			if (!(tmc in TMCdata)) {
 				TMCdata[tmc] = data[tmc];
 
-				var BQschema = data[tmc].schema,
-					BQtypes = data[tmc].types,
+				// var BQschema = data[tmc].schema,
+				// 	BQtypes = data[tmc].types,
 
-					cfData = parseData(tmc, data[tmc]);
+				var cfData = parseData(tmc, data[tmc]);
+
+				parsedData.push(cfData);
 
 				crossfilter.add(cfData);
 			}
 
-			this.emitEvent(Events.DISPLAY_TMC_DATA, data[tmc]);
+			if (TMCs.length == 1) {
+				this.emitEvent(Events.DISPLAY_TMC_DATA, data[tmc]);
+			}
 		}
 
 		if (TMCs.length > 1) {
-			aggregateData(TMCs, data);
+			aggregateData(TMCs, parsedData);
 		}
 	},
 	getTMCData: function(tmc) {
@@ -135,14 +141,18 @@ TMCDataStore.dispatchToken = AppDispatcher.register(function(payload) {
     }
 });
 
-function aggregateData(TMCs, data) {
-	var newData = [];
-	for (var tmc in data) {
-		var tmcData = parseData(tmc, data[tmc])
-			//.sort(function(a, b) { return a.time-b.time; });
-		newData.push(tmcData);
-	}
-	newData = d3.merge(newData);
+function aggregateData(TMCs, parsedData) {
+
+	// var dataMap = {};
+
+	// parsedData.forEach(function(data) {
+	// 	data.sort(function(a, b) { return a.time-b.time; });
+	// 	dataMap[data[0].tmc.toString()] = data;
+	// });
+
+	// console.log(dataMap);
+
+	// return;
 
 	var nestData = d3.nest()
 		.key(function(d) { return d.tmc.toString(); })
@@ -157,7 +167,7 @@ function aggregateData(TMCs, data) {
 				weekday: d[0].weekday
 			};
 		})
-		.entries(newData);
+		.entries(d3.merge(parsedData));
 
 	var aggregatedSet = {};
 	nestData.forEach(function(tmc) {

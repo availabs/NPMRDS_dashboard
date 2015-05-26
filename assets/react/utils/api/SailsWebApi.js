@@ -111,6 +111,16 @@ console.log("SailsWebApi.getTMCdata", err, tmcData);
       })
   },
 
+  getTMClookup: function(links) {
+    SailsWebApi.checkLoading(true);
+    d3.xhr("/tmclookup")
+      .response(function(request) { return JSON.parse(request.responseText); })
+      .post(JSON.stringify({links:links}), function(err, data) {
+        ServerActionCreators.receiveTMClookup(data);
+        SailsWebApi.checkLoading(false);
+      })
+  },
+
   //---------------------------------------------------
   // Sails Rest Route
   //---------------------------------------------------

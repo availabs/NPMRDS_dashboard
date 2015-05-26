@@ -89,6 +89,13 @@ module.exports = {
     });
   },
   
+  receiveTMClookup: function(data) {
+    AppDispatcher.handleServerAction({
+      type: ActionTypes.RECEIVE_TMC_LOOKUP,
+      data: data
+    });
+  },
+  
   deleteData:function(id){
     AppDispatcher.handleServerAction({
       type: ActionTypes.DELETE_USER,

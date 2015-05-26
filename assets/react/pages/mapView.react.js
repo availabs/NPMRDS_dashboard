@@ -25,6 +25,7 @@ var React = require('react'),
     GeoStore = require("../stores/GeoStore"),
     UsageDataStore = require("../stores/UsageDataStore"),
     TMCDataStore = require("../stores/TMCDataStore"),
+    RouteStore = require("../stores/RouteStore"),
 
     Popup = require("../components/utils/NPMRDSpopup"),
 
@@ -35,7 +36,9 @@ var React = require('react'),
 
     TMCMonthly_Aggregated = require("../components/mapView/TMCMonthly_Aggregated_Graph.react"),
 
-    LoadingIndicator = require("../components/mapView/LoadingIndicator.react");
+    LoadingIndicator = require("../components/mapView/LoadingIndicator.react"),
+
+    Input = require("../utils/Input");
 
 var linkShader = UsageDataStore.linkShader(),
     roadPaths = null;
@@ -45,6 +48,7 @@ var MapView = React.createClass({
     getInitialState: function(){
         var mapView = this;
         return {
+            input: Input(),
             popup: Popup(),
             layers:{
                 county:{
@@ -62,12 +66,16 @@ var MapView = React.createClass({
                                 stroke:true
                             }
                         },
-                         onEachFeature: function (feature, layer) {
+                        onEachFeature: function (feature, layer) {
                             
                             layer.on({
-
                                 click: function(e){
-                                    GeoStore.toggleCounty(feature.id)
+                                    if (mapView.state.input.keyDown("ctrl")) {
+                                        RouteStore.addPoint([e.latlng.lat, e.latlng.lng]);
+                                    }
+                                    else {
+                                        GeoStore.toggleCounty(feature.id);
+                                    }
                                 },
                                 mouseover: function(e){
                                     this.setStyle({
@@ -118,6 +126,30 @@ var MapView = React.createClass({
                             
                         }
                     }
+                },
+                route: {
+                    id: 0,
+                    geo: { type: "FeatureCollection", features: [] },
+                    options: {
+                        style: function(feature) {
+                            return {
+                                stroke:true,
+                                color: "#009"
+                            }
+                        }
+                    }
+                },
+                intersects: {
+                    id: 0,
+                    geo: { type: "FeatureCollection", features: [] },
+                    options: {
+                        style: function(feature) {
+                            return {
+                                stroke:true,
+                                color: "#990"
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -126,12 +158,17 @@ var MapView = React.createClass({
     componentDidMount: function() {  //  Events.USAGE_DATA_PROCESSED
         GeoStore.addChangeListener(Events.COUNTY_CHANGE, this._onCountyChange);
         GeoStore.addChangeListener(Events.STATE_CHANGE, this._onStateChange);
+
         UsageDataStore.addChangeListener(Events.DATA_POINT_SLIDER_UPDATE, this._onDataPointSliderUpdate);
               
         TMCDataStore.addChangeListener(Events.DISPLAY_TMC_DATA, this._onDisplayTMCdata);
         TMCDataStore.addChangeListener(Events.REMOVE_TMC_DATA, this._onRemoveTMCdata);
 
+        RouteStore.addChangeListener(Events.ROUTE_CREATED, this._onRouteCreated);
+
         this.state.popup.init(d3.select("#NPMRDS-map-div"));
+
+        this.state.input.init();
     },
 
     componentWillUnmount: function() {
@@ -142,6 +179,22 @@ var MapView = React.createClass({
          
         TMCDataStore.removeChangeListener(Events.DISPLAY_TMC_DATA, this._onDisplayTMCdata);
         TMCDataStore.removeChangeListener(Events.REMOVE_TMC_DATA, this._onRemoveTMCdata);
+
+        RouteStore.removeChangeListener(Events.ROUTE_CREATED, this._onRouteCreated);
+
+        this.state.input.close();
+    },
+
+    _onRouteCreated: function(route) {
+        var newState = this.state;
+
+        newState.layers.route.id++;
+        newState.layers.route.geo = route;
+
+        newState.layers.intersects.id++;
+        newState.layers.intersects.geo.features = RouteStore.getIntersects(this.state.layers.roads.geo);
+
+        this.setState(newState);
     },
 
     _onDisplayTMCdata: function(data) {
@@ -208,6 +261,10 @@ var MapView = React.createClass({
         this.setState(newState);
     },
 
+    mapClick: function(e) {
+        alert(e.latlng);
+    },
+
     render: function() {
         return (
             <div className="content container">
@@ -218,7 +275,7 @@ var MapView = React.createClass({
                       <ControlPanel />
                     </div>
                     <div className="col-lg-10" id="NPMRDS-map-div">
-                        <LeafletMap height="600px" layers={this.state.layers}/>
+                        <LeafletMap height="600px" layers={this.state.layers} />
                         <DataView />
                         <NPMRDSLegend />
                     </div>

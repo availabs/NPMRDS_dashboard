@@ -63,8 +63,8 @@ function TopologyBuilder() {
 
 	// converts a geoJSON FeatureCollection to the specified type
 	function convert(collection) {
-	    return  topojson.simplify(topojson.topology({geo: collection}, {"property-transform": preserve, "quantization": 4e3}),
-	                                                {/*"minimum-area": 1e-6,*/ "coordinate-system": "cartesian"});
+	    return  topojson.simplify(topojson.topology({geo: collection}, {"property-transform": preserve, "quantization": 1e6}),
+	                                                {"minimum-area": 7e-7, "coordinate-system": "cartesian"});
 	}
 
 	// This method is used by the topojson topology conversion in order to preserve the geoJSON properties

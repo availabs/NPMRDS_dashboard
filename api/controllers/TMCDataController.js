@@ -42,6 +42,35 @@ console.log("sending TMC data for", TMCs);
 		}
 	},
 
+	TMClookup: function(req, res) {
+		var links = req.param("links");
+
+		if (!links || !Array.isArray(links)) {
+			res.send({status: 500, error:"Must post an array of linkIDs"}, 500);
+			return;
+		}
+
+		var sql = "SELECT lut.tmc AS tmc, lut.dir AS linkDir, attr.direction AS travelDir "+
+		            "FROM [NPMRDS_LUT.NPMRDS_LUT] AS lut "+
+		            "JOIN EACH [NPMRDS_LUT.TMC_ATTRIBUTES] AS attr ON lut.tmc = attr.tmc "+
+		            "WHERE lut.link_id IN ("+ links.join() +") "+
+		            "GROUP BY tmc, linkDir, travelDir;",
+		    response = {};
+
+		BIGquery(sql, function(error, result) {
+			if (error) {
+				res.send({error:error, status:500}, 500);
+				return;
+			}
+
+			result.rows.forEach(function(row) {
+				response[row.f[0].v] = { linkDir: row.f[1].v, travelDir: row.f[2].v };
+			});
+
+			res.send(response);
+		});
+	},
+
     _config: {}
 };
 

@@ -89,6 +89,14 @@ var Map = React.createClass({
           zoomControl: true,
           attributionControl:false
         });
+
+// add event listener to map object
+        if (this.props.onMapEvent) {
+            for (var key in this.props.onMapEvent) {
+                map.on(key, this.props.onMapEvent[key]);
+            }
+        }
+        
         if(this.props.layers){
             Object.keys(this.props.layers).forEach(function(key){
                 

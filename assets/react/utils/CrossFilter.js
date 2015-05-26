@@ -19,12 +19,12 @@ function CrossFilter() {
 	// available crossfilter dimensions
 		tmc_Dimension = cross_filter.dimension(function(d) { return d.tmc; }),
 		//travel_time_all_Dimension = cross_filter.dimension(function(d) { return d.travel_time_all; }),
-		travel_time_truck_Dimension = cross_filter.dimension(function(d) { return d.travel_time_truck; }),
+		//travel_time_truck_Dimension = cross_filter.dimension(function(d) { return d.travel_time_truck; }),
 		weekday_Dimension = cross_filter.dimension(function(d) { return d.weekday; }),
 
-		year_Dimension = cross_filter.dimension(function(d) { return Math.floor(d.date/10000); }),
+		//year_Dimension = cross_filter.dimension(function(d) { return Math.floor(d.date/10000); }),
 		month_Dimension = cross_filter.dimension(function(d) { return Math.floor(d.date/100)%100; }),
-		day_Dimension = cross_filter.dimension(function(d) { return d.date%100; }),
+		//day_Dimension = cross_filter.dimension(function(d) { return d.date%100; }),
 		hour_Dimension = cross_filter.dimension(function(d) { return Math.floor(d.epoch/12); }),
 		epoch_Dimension = cross_filter.dimension(function(d) { return d.epoch; }),
 
@@ -36,12 +36,12 @@ function CrossFilter() {
 	weekday_Dimension.filter(function(weekday) { return weekday < 5; });
 
 	var TMC_group = tmc_Dimension.group().reduce(reduceAdd, reduceRemove, reduceInitial),
-		truck_group = travel_time_truck_Dimension.group().reduce(reduceAdd, reduceRemove, reduceInitial),
+		//truck_group = travel_time_truck_Dimension.group().reduce(reduceAdd, reduceRemove, reduceInitial),
 		weekday_group = weekday_Dimension.group().reduce(reduceAdd, reduceRemove, reduceInitial),
 
-		year_group = year_Dimension.group().reduce(reduceAdd, reduceRemove, reduceInitial),
-		month_group = month_Dimension.group().reduce(reduceAdd, reduceRemove, reduceInitial),
-		day_group = day_Dimension.group().reduce(reduceAdd, reduceRemove, reduceInitial),
+		//year_group = year_Dimension.group().reduce(reduceAdd, reduceRemove, reduceInitial),
+		//month_group = month_Dimension.group().reduce(reduceAdd, reduceRemove, reduceInitial),
+		//day_group = day_Dimension.group().reduce(reduceAdd, reduceRemove, reduceInitial),
 		hour_group = hour_Dimension.group().reduce(reduceAdd, reduceRemove, reduceInitial),
 		epoch_group = epoch_Dimension.group().reduce(reduceAdd, reduceRemove, reduceInitial),
 
@@ -52,11 +52,11 @@ function CrossFilter() {
 
 	var dimensionMap = {
 		tmc: tmc_Dimension,
-		truck: travel_time_truck_Dimension,
+		//truck: travel_time_truck_Dimension,
 		weekday: weekday_Dimension,
-		year: year_Dimension,
-		month: month_Dimension,
-		day: day_Dimension,
+		//year: year_Dimension,
+		//month: month_Dimension,
+		//day: day_Dimension,
 		hour: hour_Dimension,
 		epoch: epoch_Dimension,
 		yyyymm: yyyymm_Dimension,
@@ -67,11 +67,11 @@ function CrossFilter() {
 
 	var groupMap = {
 		tmc: TMC_group,
-		truck: truck_group,
+		//truck: truck_group,
 		weekday: weekday_group,
-		year: year_group,
-		month: month_group,
-		day: day_group,
+		//year: year_group,
+		//month: month_group,
+		//day: day_group,
 		hour: hour_group,
 		epoch: epoch_group,
 		yyyymm: yyyymm_group,
@@ -198,11 +198,11 @@ function CrossFilerSession(crossfilter) {
 	var id = "CFsession-"+UNIQUE_IDs++,
 		filtersMap = {
 			tmc: null,
-			truck: null,
+			//truck: null,
 			weekday: function(weekday) { return weekday < 5; },
-			year: null,
-			month: null,
-			day: null,
+			//year: null,
+			//month: null,
+			//day: null,
 			hour: null,
 			epoch: null,
 			yyyymm: null,

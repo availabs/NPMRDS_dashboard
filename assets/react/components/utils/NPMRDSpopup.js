@@ -2,12 +2,12 @@ function Popup() {
 	var div = null;
 
 	function popup(data) {
-		if (!data.properties.tmc) {
-			return;
-		}
 		popup.display(true);
 		div.html(function() {
-			var html = "<h4>"+data.properties.tmc+"</h4>";
+			var html = "";
+			if (data.properties.tmc) {
+				html += "<h4>"+data.properties.tmc+"</h4>";
+			}
 			if (data.properties.name) {
 				html += "<p>"+data.properties.name;
 				if (!data.properties.travelDir) {
