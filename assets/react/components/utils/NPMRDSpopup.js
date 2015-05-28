@@ -23,6 +23,9 @@ function Popup() {
 				}
 				html += data.properties.travelDir+"</p>";
 			}
+			if (data.properties.linkDir) {
+				html += "link direction "+data.properties.linkDir;
+			}
 			return html;
 		});
 	}

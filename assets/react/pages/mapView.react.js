@@ -165,6 +165,7 @@ var MapView = React.createClass({
         TMCDataStore.addChangeListener(Events.REMOVE_TMC_DATA, this._onRemoveTMCdata);
 
         RouteStore.addChangeListener(Events.ROUTE_CREATED, this._onRouteCreated);
+        RouteStore.addChangeListener(Events.INTERSECTS_CREATED, this._onIntersectsCreated);
 
         this.state.popup.init(d3.select("#NPMRDS-map-div"));
 
@@ -181,6 +182,7 @@ var MapView = React.createClass({
         TMCDataStore.removeChangeListener(Events.REMOVE_TMC_DATA, this._onRemoveTMCdata);
 
         RouteStore.removeChangeListener(Events.ROUTE_CREATED, this._onRouteCreated);
+        RouteStore.removeChangeListener(Events.INTERSECTS_CREATED, this._onIntersectsCreated);
 
         this.state.input.close();
     },
@@ -191,8 +193,17 @@ var MapView = React.createClass({
         newState.layers.route.id++;
         newState.layers.route.geo = route;
 
+        setTimeout(RouteStore.getIntersects, 250, GeoStore.getRoads());
+
+        this.setState(newState);
+    },
+
+    _onIntersectsCreated: function(intersects) {
+        var newState = this.state;
+console.log("mapView._onIntersectsCreated", intersects);
+
         newState.layers.intersects.id++;
-        newState.layers.intersects.geo.features = RouteStore.getIntersects(GeoStore.getRoads());
+        newState.layers.intersects.geo.features = intersects;
 
         this.setState(newState);
     },

@@ -11,6 +11,7 @@ var AppDispatcher = require('../dispatcher/AppDispatcher'),
     Events = Constants.EventTypes,
 
     TMCDataStore = require("./TMCDataStore"),
+    GeoStore = require("./GeoStore"),
 
     routeCreator = require("../components/utils/RouteCreator")();
 
@@ -37,6 +38,7 @@ console.log("RouteStore.addPoint: point", point);
   		return routeCreator.route().buffer;
   	},
   	getIntersects: function(roads) {
+console.log("RouteStore.getIntersects: roads", roads)
 	    var intersects = [],
 	    	linkIDs = [];
 
@@ -51,9 +53,11 @@ console.log("RouteStore.addPoint: point", point);
 	    });
 
 console.log("RouteStore.getIntersects: linkIDs", linkIDs);
-		SailsWebApi.getTMClookup(linkIDs);
+		if (linkIDs.length) {
+			SailsWebApi.getTMClookup(linkIDs);
+		}
 
-	    return intersects;
+		RouteStore.emitEvent(Events.INTERSECTS_CREATED, intersects);
   	}
 })
 

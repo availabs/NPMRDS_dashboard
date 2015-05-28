@@ -29,13 +29,25 @@ var x = 0;
 			tmc_Dimension.filter(tmc);
 			currentTMC = tmc;
 		}
-		var cfData = hour_group.all().filter(function(d) { return d.key==hour && d.value.count; });
+		var cfData = hour_group.all(),
+			distance = cfData[0].value.distance,
+			tmc = cfData[0].value.tmc;
+
+		var filtered = cfData.filter(function(d) { return d.key==hour && d.value.count; });
+var n = 1;		
+while (!filtered.length) {
+	filtered = cfData.filter(function(d) {
+		return d.key >= hour-n && d.key <= hour+n && d.value.count; 
+	});
+	++n;
+}	
+
 		return {
-			sum: d3.sum(cfData, function(d){return d.value.sum;}),
-			count: d3.sum(cfData, function(d){return d.value.count;}),
-			distance: cfData[0].value.distance,
-			tmc: cfData[0].value.tmc,
-			values: d3.merge(cfData.map(function(d) { return d.value.values }))
+			sum: d3.sum(filtered, function(d){return d.value.sum;}),
+			count: d3.sum(filtered, function(d){return d.value.count;}),
+			distance: distance,
+			tmc: tmc,
+			values: d3.merge(filtered.map(function(d) { return d.value.values }))
 		}
 	}
 	return model;
