@@ -6,6 +6,9 @@ var React = require('react'),
     TMCDataStore = require("../../stores/TMCDataStore"),
 
 	d3 = require("d3"),
+	crossfilter = TMCDataStore.getCrossFilter(),
+
+	TMCmodel = require("../../utils/TMCModel")(),
 
 	UNIQUE_IDs = 0;
 
@@ -37,44 +40,101 @@ var LineGraph = React.createClass({
 		
 		TMCDataStore.removeChangeListener(Events.TMC_DATAVIEW_CHANGE, this.dataviewChange);
 	},
-	TMCsAdded: function(aggregatedData) {
-		var data = d3.nest()
-			.key(function(d) { return Math.floor(d.date/100); })
-			.key(function(d) { return d.weekday; })
-			.rollup(function(d) { return {
-				sum: d3.sum(d, function(d) { return d.travel_time_all; }),
-				count: d.length,
-				values: d.map(function(d) { return d.travel_time_all; }),
-				distance: d[0].distance }
-			})
-			.entries(aggregatedData.values);
-
-		data.forEach(function(month) {
-			month.values = month.values.filter(function(d) {
-				if (d.key >= 5) return false;
-				calcIndices(d.values, d.values.values)
-				d.values = getValues(d.values);
-				return true;
-			})
+	TMCsAdded: function(data) {
+console.log(data);
+		data.data.forEach(function(tmcData) {
+			TMCmodel.add(tmcData[0].tmc, tmcData);
 		})
 
-		data = data.map(function(month) {
-			return {
-				key: month.key,
-				values: month.values.map(function(d) { return {x:+d.key, y:d.values}; })
+		var mergedData = d3.merge(data.data).filter(function(d) { return d.weekday<5; });
+		//TMCmodel.add(mergedData);
+
+		var hourSet = d3.set();
+		mergedData.forEach(function(d){hourSet.add(d.hour);});
+		var hours = hourSet.values();
+console.log("TMC_Monthly_Aggregated.TMCsAdded, mergedData completed",mergedData);
+
+		var nestedData = d3.nest()
+			.key(function(d) { return d.tmc; })
+			.key(function(d) { return d.hour; })
+			.rollup(function(d) {
+				return {
+					sum: d3.sum(d, function(d) { return d.travel_time_all; }),
+					count: d.length,
+					distance: d[0].distance,
+					tmc: d[0].tmc,
+					values: d.map(function(d){return d.travel_time_all;})
+				};
+			})
+			.entries(mergedData);
+console.log("TMC_Monthly_Aggregated.TMCsAdded, nestedData completed");
+
+		var dataMap = {},
+			newData = [];
+
+		nestedData.forEach(function(tmc) {
+			dataMap[tmc.key] = {};
+			tmc.values.forEach(function(hour) {
+				dataMap[tmc.key][hour.key] = hour.values;
+				hour.values.hour = hour.key;
+				newData.push(hour.values);
+			})
+		})
+console.log("TMC_Monthly_Aggregated.TMCsAdded, dataMap completed");
+
+var x = 0;
+		for (var tmc in dataMap) {
+			hours.forEach(function(hour) {
+				if (!(hour in dataMap[tmc])) {
+					var nd = TMCmodel.getHour(tmc, (+hour)%100);
+					nd.hour = hour;
+					newData.push(nd);
+					x++;
+				}
+			})
+		}
+console.log("TMC_Monthly_Aggregated.TMCsAdded, newData completed");
+
+		var finalData = d3.nest()
+			.key(function(d) { return Math.floor(d.hour/10000); })
+			.key(function(d) { return d.hour%100; })
+			.rollup(function(d) {
+				return {
+					sum: d3.sum(d, function(d) { return d.sum; }),
+					count: d3.sum(d, function(d) { return d.count; }),
+					distance: d[0].distance,
+					tmc: d[0].tmc,
+					values: d3.merge(d.map(function(d) { return d.values; }))
+				};
+			})
+			.entries(newData);
+console.log("TMC_Monthly_Aggregated.TMCsAdded, finalData completed",finalData);
+
+		var graphData = [];
+		finalData.forEach(function(monthObj) {
+			var obj = {
+				key: monthObj.key,
+				values: monthObj.values.map(function(d) {
+					crossfilter.calcIndices(d.values, d.values.values)
+					return {
+						x: d.key,
+						y: getValues(d.values)
+					};
+				})
 			}
+			graphData.push(obj);
 		})
+console.log("TMC_Monthly_Aggregated.TMCsAdded, graphData completed",graphData);
 
-console.log("TMC_Monthly_Aggregated.TMCsAdded, data", data);
+		if (!graphData.length) {
+			d3.select("#TMC-monthly-aggregated-div-"+this.state.linegraph.id()).style("display", "none");
+		}
+		else {
+			d3.select("#TMC-monthly-aggregated-div-"+this.state.linegraph.id()).style("display", null);
+		}
 
-		d3.select("#TMC-monthly-aggregated-div-"+this.state.linegraph.id()).style("display", null);
-
-		var graphData = this.state.linegraph.data();
-		data.forEach(function(month) {
-			graphData.push(month);
-		})
 		this.state.linegraph.data(graphData)();
-		this.state.labeller.tmcs(aggregatedData.tmcs.sort(function(a,b) { return a-b; }))();
+		this.state.labeller.tmcs(data.tmcs)();
 	},
 	dataviewChange: function(view) {
 		if (view != currentView) {
@@ -85,14 +145,6 @@ console.log("TMC_Monthly_Aggregated.TMCsAdded, data", data);
 	TMCsChange: function(tmc) {
 	},
 	updateGraph: function() {
-		var graphData = [];
-
-		if (!graphData.length) {
-			d3.select("#TMC-monthly-aggregated-div-"+this.state.linegraph.id()).style("display", "none");
-		}
-		else {
-			d3.select("#TMC-monthly-aggregated-div-"+this.state.linegraph.id()).style("display", null);
-		}
 	},
 	render: function() {
 		return (
@@ -405,7 +457,7 @@ function Linegraph() {
 	return graph;
 
 	function formatXaxis(d) {
-		return weekdays[d];
+		return d;
 	}
 
 	function mousemove(d) {

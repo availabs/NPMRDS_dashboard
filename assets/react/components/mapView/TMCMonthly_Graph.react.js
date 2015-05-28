@@ -6,7 +6,6 @@ var React = require('react'),
     TMCDataStore = require("../../stores/TMCDataStore"),
 
 	d3 = require("d3"),
-
 	crossfilter = TMCDataStore.getCrossFilter(),
 
 	UNIQUE_IDs = 0;

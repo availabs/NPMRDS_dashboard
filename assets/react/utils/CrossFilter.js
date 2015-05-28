@@ -102,6 +102,16 @@ function CrossFilter() {
 				return true;
 			})
 	}
+	crossfilter.getData = function(session, group) {
+		if (session.id() != CURRENT_SESSION) {
+			CURRENT_SESSION = session.id();
+			session.applyFilters();
+		}
+		if (group == "all") {
+			return cross_filter.groupAll().reduce(reduceAdd, reduceRemove, reduceInitial).value();
+		}
+		return groupMap[group].all().filter(function(d) { return d.value.count; });
+	}
 	crossfilter.on = function(e, l) {
 		if (arguments.length == 1) {
 			return dispatcher.on(e);
@@ -131,7 +141,6 @@ function CrossFilter() {
 	crossfilter.size = function() {
 		return cross_filter.size();
 	}
-
 	crossfilter.calcIndices = function(obj, values) {
 		values.sort(function(a, b) { return a-b; });
 		obj.avgTime = obj.sum/obj.count;
@@ -152,13 +161,6 @@ function CrossFilter() {
 
 	return crossfilter;
 
-	function copyObject(obj) {
-		var newObj = {};
-
-		for (var k in obj) {
-			newObj[k] = obj[k];
-		}
-	}
 	function reduceAdd(accum, curr) {
 		if (!curr.travel_time_all) {
 			return accum;
@@ -214,6 +216,9 @@ function CrossFilerSession(crossfilter) {
 	function session(group) {
 		return crossfilter(session, group);
 	}
+	session.getData = function(group) {
+		return crossfilter.getData(session, group);
+	}
 	session.id = function() {
 		return id;
 	}
@@ -222,9 +227,15 @@ function CrossFilerSession(crossfilter) {
 		return session;
 	}
 	session.filter = function(dimension, filter) {
+		if (filtersMap[dimension] == filter) {
+			return;
+		}
 		filtersMap[dimension] = filter;
 		crossfilter.filter(session, dimension, filter);
 		return session;
+	}
+	session.calcIndices = function(obj, values) {
+		crossfilter.calcIndices(obj, values);
 	}
 	session.size = function() {
 		return crossfilter.size();

@@ -79,6 +79,7 @@ console.log("SailsWebApi.getTMCdata: getting data", tmc, data);
 console.log("SailsWebApi.getTMCdata", err, tmcData);
             for (var k in data) {
                 tmcData[k] = data[k];
+                tmc.push(k);
             }
             ServerActionCreators.receiveTMCdata(tmc, tmcData);
             SailsWebApi.checkLoading(false);

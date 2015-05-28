@@ -11,6 +11,7 @@ var AppDispatcher = require('../dispatcher/AppDispatcher'),
     Events = Constants.EventTypes,
 
 	crossfilter = require("../utils/CrossFilter")(),
+	//TMCmodel = require("../utils/TMCModel")(),
 
 	selectedTMCs = [],
 	TMCdata = {},
@@ -91,27 +92,26 @@ var TMCDataStore = assign({}, EventEmitter.prototype, {
 	},
 	receiveTMCdata: function(TMCs, data) {
 		var parsedData = [];
+console.log("TMCDataStore.receiveTMCdata", TMCs, data)
 
 		for (var tmc in data) {
 			colorMapper.add(tmc);
 			selectedTMCs.push(tmc);
 			data[tmc].tmc = new TMC(tmc);
 
+			var cfData = parseData(tmc, data[tmc]);
+
 			if (!(tmc in TMCdata)) {
 				TMCdata[tmc] = data[tmc];
-
-				// var BQschema = data[tmc].schema,
-				// 	BQtypes = data[tmc].types,
-
-				var cfData = parseData(tmc, data[tmc]);
-
-				parsedData.push(cfData);
 
 				crossfilter.add(cfData);
 			}
 
 			if (TMCs.length == 1) {
 				this.emitEvent(Events.DISPLAY_TMC_DATA, data[tmc]);
+			}
+			else {
+				parsedData.push(cfData);
 			}
 		}
 
@@ -143,61 +143,9 @@ TMCDataStore.dispatchToken = AppDispatcher.register(function(payload) {
 
 function aggregateData(TMCs, parsedData) {
 
-	// var dataMap = {};
+console.log("TMCDataStore.aggregateData, parsedData", parsedData);
 
-	// parsedData.forEach(function(data) {
-	// 	data.sort(function(a, b) { return a.time-b.time; });
-	// 	dataMap[data[0].tmc.toString()] = data;
-	// });
-
-	// console.log(dataMap);
-
-	// return;
-
-	var nestData = d3.nest()
-		.key(function(d) { return d.tmc.toString(); })
-		.key(function(d) { return d.date; })
-		.rollup(function(d) {
-			return {
-				distance: d[0].distance,
-				date: d[0].date,
-				tmc: d[0].tmc,
-				travel_time_all: d3.sum(d, function(d) { return d.travel_time_all; }) / d.length,
-				travel_time_truck: d3.sum(d, function(d) { return d.travel_time_truck; }) / d.length,
-				weekday: d[0].weekday
-			};
-		})
-		.entries(d3.merge(parsedData));
-
-	var aggregatedSet = {};
-	nestData.forEach(function(tmc) {
-		tmc.values.forEach(function(date) {
-			if (!(date.key in aggregatedSet)) {
-				aggregatedSet[date.key] = [];
-			}
-			aggregatedSet[date.key].push(date.values)
-		})
-	});
-
-	var aggregated = {
-		tmcs: TMCs,
-		values: []
-	};
-	for (var date in aggregatedSet) {
-		if (aggregatedSet[date].length == TMCs.length) {
-			var obj = {
-				distance: d3.sum(aggregatedSet[date], function(d) { return d.distance; }),
-				date: aggregatedSet[date][0].date,
-				month: Math.floor(aggregatedSet[date][0].date / 100),
-				travel_time_all: d3.sum(aggregatedSet[date], function(d) { return d.travel_time_all; }),
-				travel_time_truck: d3.sum(aggregatedSet[date], function(d) { return d.travel_time_truck; }),
-				weekday: aggregatedSet[date][0].weekday
-			}
-			aggregated.values.push(obj);
-		}
-	}
-
-	TMCDataStore.emitEvent(Events.DISPLAY_AGGREGATED_DATA, aggregated);
+	TMCDataStore.emitEvent(Events.DISPLAY_AGGREGATED_DATA, {data:parsedData, tmcs:TMCs});
 }
 
 function parseData(tmc, data) {
