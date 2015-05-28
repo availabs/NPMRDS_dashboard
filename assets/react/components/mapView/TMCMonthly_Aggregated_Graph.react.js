@@ -52,7 +52,7 @@ console.log(data);
 		var hourSet = d3.set();
 		mergedData.forEach(function(d){hourSet.add(d.hour);});
 		var hours = hourSet.values();
-console.log("TMC_Monthly_Aggregated.TMCsAdded, mergedData completed",mergedData);
+console.log("TMC_Monthly_Aggregated.TMCsAdded, mergedData completed");
 
 		var nestedData = d3.nest()
 			.key(function(d) { return d.tmc; })
@@ -108,7 +108,7 @@ console.log("TMC_Monthly_Aggregated.TMCsAdded, newData completed");
 				};
 			})
 			.entries(newData);
-console.log("TMC_Monthly_Aggregated.TMCsAdded, finalData completed",finalData);
+console.log("TMC_Monthly_Aggregated.TMCsAdded, finalData completed");
 
 		var graphData = [];
 		finalData.forEach(function(monthObj) {
@@ -124,7 +124,7 @@ console.log("TMC_Monthly_Aggregated.TMCsAdded, finalData completed",finalData);
 			}
 			graphData.push(obj);
 		})
-console.log("TMC_Monthly_Aggregated.TMCsAdded, graphData completed",graphData);
+console.log("TMC_Monthly_Aggregated.TMCsAdded, graphData completed");
 
 		if (!graphData.length) {
 			d3.select("#TMC-monthly-aggregated-div-"+this.state.linegraph.id()).style("display", "none");
@@ -209,7 +209,7 @@ function Labeller() {
 		tmcs.exit().remove();
 		tmcs.enter().append("div")
 			.attr("class", "tmcs-label")
-			.style({float:"left",padding:"0px 10px",height:"30px","line-height":"30px"});
+			.style({float:"left",padding:"0px 10px",height:"30px","line-height":"30px",cursor:"pointer"});
 		tmcs.text(function(d) { return d.toString(); })
 			.style("background-color", function(d) { return TMCDataStore.getTMCcolor(d.toString()); })
 			.on("click", function(d) { TMCDataStore.addTMC(d); });

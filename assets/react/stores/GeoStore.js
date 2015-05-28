@@ -19,25 +19,6 @@ var _counties = {type:"FeatureCollection", features: []},
     _shiftedRoadsFeatures = [],
     _currentState = 0;
 
-// function _addUsers(rawData) {
-//   //console.log('stores/UserStore/_addUsers',rawData);
-//   rawData.forEach(function(user) {
-    
-//       _users[user.id] = user;
-    
-//   });
-// };
-
-// function _deleteUser(id){
-//   //console.log('stores/userstore/deleteuser',id)
-//   delete _users[id];
-//   _editUserID = null;
-// }
-
-// function _setEditUserID(id){
-//     _editUserID = id;
-// };
-
 var GeoStore = assign({}, EventEmitter.prototype, {
 
   emitChange: function() {
@@ -94,6 +75,20 @@ var GeoStore = assign({}, EventEmitter.prototype, {
           GeoStore.emitCountyChange();
       }
   },
+
+    getRoads: function() {
+        var roads = {
+            type: "FeatureCollection",
+            features: []
+        }
+
+        for (var road in _loadedRoads) {
+            if (_loadedRoads[road]=="loaded") {
+                roads.features = roads.features.concat(_roadsCache[road]);
+            }
+        }
+        return roads;
+    },
 
   getLoadedRoads: function() {
     if (_shiftedRoadsFeatures.length) {

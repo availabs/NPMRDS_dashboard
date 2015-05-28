@@ -12,36 +12,7 @@ var AppDispatcher = require('../dispatcher/AppDispatcher'),
 
     TMCDataStore = require("./TMCDataStore"),
 
-    routeCreator = require("../components/utils/RouteCreator")(),
-
-    definedRoutes = {},
-
-    UNIQUE_ROUTE_IDs = 0;
-/*
-	crossfilter = require("../utils/CrossFilter")(),
-
-	selectedTMCs = [],
-	TMCdata = {},
-
-	WEEKDAYS = {
-		"monday": 0,
-		"tuesday": 1,
-		"wednesday": 2,
-		"thursday": 3,
-		"friday": 4,
-		"saturday": 5,
-		"sunday": 6
-	},
-
-	UNIQUE_COMBINED_TMCs = 0,
-
-	colorMapper = TMCColorMapper();
-
-crossfilter.on("crossfilterupdate", function(cf) {
-	//TMCDataStore.emitEvent()
-	console.log("crossfilter updated");
-})
-*/
+    routeCreator = require("../components/utils/RouteCreator")();
 
 var RouteStore = assign({}, EventEmitter.prototype, {
 	emitEvent: function(Event, data) {

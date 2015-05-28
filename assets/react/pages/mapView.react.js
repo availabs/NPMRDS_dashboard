@@ -155,7 +155,7 @@ var MapView = React.createClass({
         }
     },
 
-    componentDidMount: function() {  //  Events.USAGE_DATA_PROCESSED
+    componentDidMount: function() {
         GeoStore.addChangeListener(Events.COUNTY_CHANGE, this._onCountyChange);
         GeoStore.addChangeListener(Events.STATE_CHANGE, this._onStateChange);
 
@@ -192,7 +192,7 @@ var MapView = React.createClass({
         newState.layers.route.geo = route;
 
         newState.layers.intersects.id++;
-        newState.layers.intersects.geo.features = RouteStore.getIntersects(this.state.layers.roads.geo);
+        newState.layers.intersects.geo.features = RouteStore.getIntersects(GeoStore.getRoads());
 
         this.setState(newState);
     },
