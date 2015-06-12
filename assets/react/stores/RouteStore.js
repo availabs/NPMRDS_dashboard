@@ -100,6 +100,11 @@ console.log("RouteStore.RECEIVE_TMC_LOOKUP", action.data);
       			TMCDataStore.addTMC(tmcs);
             break;
 
+        case ActionTypes.ROUTE_SAVED:
+console.log("RouteStore.ROUTE_SAVED");
+            RouteStore.emitEvent(Events.ROUTE_SAVED);
+            break;
+
         case ActionTypes.ROUTE_LOADED:
             var points = JSON.parse(action.result.points);
 console.log("RouteStore.ROUTE_LOADED", points);
