@@ -12,7 +12,7 @@ var DataPointSlider = React.createClass({
 		}
 	},
   	componentDidMount: function() {
-  		UsageDataStore.setSVG(d3.select("#NPMRDS-data-point-slider"))
+  		UsageDataStore.setSVG(d3.select("#NPMRDS-data-point-slider"));
       	UsageDataStore.addChangeListener(Events.DATA_POINT_SLIDER_SHOW, this._onDataSliderUpdate);
   	},
 

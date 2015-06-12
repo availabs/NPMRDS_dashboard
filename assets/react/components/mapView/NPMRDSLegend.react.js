@@ -3,9 +3,9 @@ var React = require('react'),
 
 	Events = require('../../constants/AppConstants').EventTypes,
 
-    UsageDataStore = require("../../stores/UsageDataStore");
+    UsageDataStore = require("../../stores/UsageDataStore"),
 
-var linkShader = UsageDataStore.linkShader();
+	linkShader = UsageDataStore.linkShader();
 
 var scale = null,
 	selection = null,
@@ -18,9 +18,10 @@ var scale = null,
 
 var NPMRDSLegend = React.createClass({
 	getInitialState: function() {
+		var views = UsageDataStore.getDataViews();
 		return {
-			display: {display: "none"},
-			dataView: "Speed"
+			display: { display: "none" },
+			dataView: views.current
 		}
 	},
   	componentDidMount: function() {
@@ -77,9 +78,9 @@ var NPMRDSLegend = React.createClass({
 				else {
 					text = ""+Math.round(v[0])+" - "+Math.round(v[1])+scaleType;
 				}
-				var bgColor = {"background-color":d};
+				var bgColor = {"backgroundColor":d};
 				return (
-					<div className="NPMRDS-legend-bin" style={bgColor}>{text}</div>
+					<div className="NPMRDS-legend-bin" style={bgColor}  key={i}>{text}</div>
 				)
 			})
 		}

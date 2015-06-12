@@ -15,9 +15,9 @@ var DataView = React.createClass({
 			.classed("NPMRDS-data-view-label-selected", true);
 	},
 	render: function() {
-		var views = DataViews.map(function(view) {
+		var views = DataViews.map(function(view, i) {
 			return (
-				<li onClick={changeView} className="NPMRDS-data-view-label" data-bind={view}>
+				<li onClick={changeView} className="NPMRDS-data-view-label" data-bind={view} key={i}>
 					{view}
 				</li>
 			);

@@ -15,6 +15,8 @@ var AppDispatcher = require('../dispatcher/AppDispatcher'),
 
     routeCreator = require("../components/utils/RouteCreator")();
 
+var routePoints = {};
+
 var RouteStore = assign({}, EventEmitter.prototype, {
 	emitEvent: function(Event, data) {
 		this.emit(Event, data);
@@ -25,20 +27,45 @@ var RouteStore = assign({}, EventEmitter.prototype, {
   	removeChangeListener: function(Event, callback) {
     	this.removeListener(Event, callback);
   	},
-  	addPoint: function(point) {
-console.log("RouteStore.addPoint: point", point);
-        routeCreator
-            .points(point)
-            .call(bufferedRoute);
+    clearPoints: function() {
+        routePoints = {};
+    },
+  	addPoint: function(id, point) {
+console.log("RouteStore.addPoint:", id, point);
+        if (point.length < 2) {
+            delete routePoints[id];
+        }
+        else if (point.length == 2) {
+            routePoints[id] = point;
+        }
   	},
+    calcRoute: function() {
+        var points = [];
+        for (var id in routePoints) {
+            points.push(routePoints[id]);
+        }
+        points.sort(function(a,b){return a-b;});
+console.log("RouteStore.calcRoute, points:", points);
+
+        routeCreator
+            .points(points)
+            .call(bufferedRoute);
+    },
   	getRoute: function() {
   		return routeCreator.route().route;
   	},
+    getRouteData: function() {
+        var data = {},
+            route = routeCreator.route().route;
+
+        data.points = routeCreator.points();
+
+        return data;
+    },
   	getBufferedRoute: function() {
   		return routeCreator.route().buffer;
   	},
   	getIntersects: function(roads) {
-console.log("RouteStore.getIntersects: roads", roads)
 	    var intersects = [],
 	    	linkIDs = [];
 
@@ -52,7 +79,6 @@ console.log("RouteStore.getIntersects: roads", roads)
 	        }
 	    });
 
-console.log("RouteStore.getIntersects: linkIDs", linkIDs);
 		if (linkIDs.length) {
 			SailsWebApi.getTMClookup(linkIDs);
 		}
@@ -67,19 +93,26 @@ RouteStore.dispatchToken = AppDispatcher.register(function(payload) {
     switch(action.type) {
         case ActionTypes.RECEIVE_TMC_LOOKUP:
 console.log("RouteStore.RECEIVE_TMC_LOOKUP", action.data);
-
-			var tmcs = [];
-
-			for (var tmc in action.data) {
-				tmcs.push(tmc);
-			}
-
-			TMCDataStore.addTMC(tmcs);
-
+      			var tmcs = [];
+      			for (var tmc in action.data) {
+      				tmcs.push(tmc);
+      			}
+      			TMCDataStore.addTMC(tmcs);
             break;
 
-    	default:
-    		break;
+        case ActionTypes.ROUTE_LOADED:
+            var points = JSON.parse(action.result.points);
+console.log("RouteStore.ROUTE_LOADED", points);
+            RouteStore.emitEvent(Events.ROUTE_LOADED, points);
+            break;
+
+        case ActionTypes.RECEIVE_SAVED_ROUTES:
+console.log("RouteStore.RECEIVE_SAVED_ROUTES", action.result);
+            RouteStore.emitEvent(Events.RECEIVED_SAVED_ROUTES, action.result);
+            break;
+
+        default:
+    		    break;
     }
 });
 

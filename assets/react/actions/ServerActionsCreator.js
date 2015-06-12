@@ -1,9 +1,3 @@
-/**
- * This file is provided by Facebook for testing and evaluation purposes
- * only. Facebook reserves all rights not expressly granted.
- *
- */
-
 var AppDispatcher = require('../dispatcher/AppDispatcher');
 var Constants = require('../constants/AppConstants');
 
@@ -34,6 +28,29 @@ module.exports = {
   //------------------------------------
   // CRUD Handlers
   //------------------------------------
+  
+  routeSaved: function(err, res) {
+    AppDispatcher.handleServerAction({
+      type: ActionTypes.ROUTE_SAVED,
+      error: err,
+      result: res
+    });
+  },
+  routeLoaded: function(err, res) {
+console.log("ServerActionsCreator.routeLoaded",err, res);
+    AppDispatcher.handleServerAction({
+      type: ActionTypes.ROUTE_LOADED,
+      error: err,
+      result: res
+    });
+  },
+  receiveSavedRoutes: function(err, res) {
+    AppDispatcher.handleServerAction({
+      type: ActionTypes.RECEIVE_SAVED_ROUTES,
+      error: err,
+      result: res
+    });
+  },
 
   changeDataView: function(view) {
     AppDispatcher.handleServerAction({

@@ -10,11 +10,13 @@ var React = require('react'),
     d3 = require('d3'),
     colorbrewer = require('colorbrewer'),
     topojson = require('topojson');
-    
+
+L.Icon.Default.imagePath = '/images';
 
 var map = null,
     layers = {};
 
+var mapMarkers = {};
 
 var Map = React.createClass({
     
@@ -38,7 +40,7 @@ var Map = React.createClass({
                 var currLayer = nextProps.layers[key];
                 if(layers[key]){
                     //if layer existed previously check version ids
-                    if(currLayer.id !== layers[key].id && currLayer.geo.features.length > 0){
+                    if(currLayer.id !== layers[key].id) {// && currLayer.geo.features.length > 0){
                         scope._updateLayer(key,currLayer)        
                     }
                 }else if(currLayer.geo.features.length > 0){
@@ -48,22 +50,53 @@ var Map = React.createClass({
                     console.log('MAP/recieve props/ DEAD END')
                 }
             });
-        }    
+        }
+        if (nextProps.markers) {
+            var activeMarkers = {};
+            nextProps.markers.forEach(function(data, i) {
+                activeMarkers[data.id] = true;
+
+                if (!(data.id in mapMarkers)) {
+                    var options = data.options || {},
+                        marker = new L.Marker(data.latlng, options);
+                        if (data.events) {
+                            for (var key in data.events) {
+                                marker.on(key, data.events[key]);
+                            }
+                        }
+                        mapMarkers[data.id] = marker;
+                        map.addLayer(marker);
+                }
+            })
+
+            for (var id in mapMarkers) {
+                if (!activeMarkers[id]) {
+                    map.removeLayer(mapMarkers[id]);
+                    delete mapMarkers[id];
+                }
+            }
+        }
     },
     
     _updateLayer : function(key,layer){
         if(map.hasLayer(layers[key].layer)){
             map.removeLayer(layers[key].layer)
         }
-        layers[key] = {
-            id:layer.id,
-            layer: new L.geoJson(layer.geo,layer.options)
+        layers[key] = {id:layer.id};
+        if (!layer.geo.features.length) {
+            return;
         }
+        layers[key].layer = new L.geoJson(layer.geo,layer.options);
+
         map.addLayer(layers[key].layer);
         if(layer.options.zoomOnLoad && layer.geo.features.length > 0){
             var ezBounds = d3.geo.bounds(layer.geo);
             map.fitBounds([ezBounds[0].reverse(),ezBounds[1].reverse()]);
         }
+    },
+
+    _updateMarker: function(marker) {
+
     },
 
     render: function() {
@@ -83,7 +116,7 @@ var Map = React.createClass({
             mapquestOSM = L.tileLayer("http://{s}.tiles.mapbox.com/v3/"+key+"/{z}/{x}/{y}.png");
         
         map = L.map("map", {
-          center: [39.8282, -98.5795],
+          center: this.props.center || [39.8282, -98.5795],
           zoom: 4,
           layers: [mapquestOSM],//[mapquestOSM],
           zoomControl: true,

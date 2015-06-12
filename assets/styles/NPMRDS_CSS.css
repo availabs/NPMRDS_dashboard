@@ -210,6 +210,18 @@ svg .axis text {
   cursor: crosshair;
 }
 
+/* application.css changes */
+.nav-tabs > li > a {
+  color: #fff;
+}
+
+.content {
+  padding: 20px 2%;
+}
+
+.widget {
+  margin-bottom: 20px;
+}
 
 /*-------------
 Loading Spinner
@@ -218,7 +230,7 @@ Loading Spinner
 .spinner-div {
   background-color: #fff;
   position: fixed;
-  right: 35px;
+  right: 30px;
   top: 75px;
   z-index: 20;
   color: #000;

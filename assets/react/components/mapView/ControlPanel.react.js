@@ -1,7 +1,10 @@
 var React = require('react'),
     d3 = require("d3"),
 
+    ViewActionsCreator = require("../../actions/ViewActionsCreator"),
+
     UsageDataStore = require("../../stores/UsageDataStore"),
+    TMCDataStore = require("../../stores/TMCDataStore"),
     SailsWebApi = require("../../utils/api/SailsWebApi"),
 
     Constants = require('../../constants/AppConstants'),
@@ -23,6 +26,7 @@ var ControlPanel = React.createClass({
     componentWillUnmount: function() {
         SailsWebApi.removeChangeListener(Events.SAILS_WEB_API_LOADING_START, this._onDataLoadingStart);
         SailsWebApi.removeChangeListener(Events.SAILS_WEB_API_LOADING_STOP, this._onDataLoadingStop);
+
     },
     _onDataLoadingStart: function() {
         this.state.loading = true;
@@ -90,73 +94,67 @@ var ControlPanel = React.createClass({
             })
         params.weekdays = weekdays;
         
-        console.log('loadParams',params);
-        
+        console.log('<ControlPanel.getParams> params:', params);
+
         if (!this.state.loading) {
-            UsageDataStore.loadData(params);
+            ViewActionsCreator.setControlPanelParams(params);
         }
     },
 
     render: function() {
-        var options = _RESOLUTIONS_.map(function(reso) {
-            return (<option>{reso}</option>);
+        var options = _RESOLUTIONS_.map(function(reso, i) {
+            return (<option key={i}>{reso}</option>);
         });
 
         var checkboxes = _WEEKDAYS_.map(function(day, i) {
             return (
-                <div>
+                <div key={i}>
                     <input type="checkbox" defaultChecked={i<_WEEKDAYS_.length-2} value={day} />
                     <span className="NPMRDS-checkbox">{day.slice(0, 2)}</span>
                 </div>
             );
         })
 
-      
-
         return (
           	<section className="widget">
-                    <header>
-                        <h4>Control Panel</h4>
-                        <p>Select NPMRDS data bounds</p>
-                        
-                    </header>
-                    <div className="body">
-                        <div className="form-group">
-                            <label for="search-input">Date Bounds</label>
-                            <div className="input-group">
-                                <input id="startDate" className='form-control' type="date" color="#000"/>
-                                <input id="endDate" className='form-control' type="date" />
-                            </div>
-                        </div>
-                        <div className="form-group">
-                            <label for="search-input">Time Bounds</label>
-                            <div className="input-group">
-                                <input className='form-control' id="startTime" type="time" />
-                                <input className='form-control' id="endTime" type="time" />
-                            </div>
-                        </div>
-                        <div className="form-group">
-                            <label for="search-input">Resolution</label>
-                            
-                            <select id="resolution" className="form-control">
-                                {options}
-                            </select>
-                        </div>
-                        <div className="form-group">
-                            <label for="search-input">Weekdays</label>
-                            <br/>
-                            <div id="NPMRDS-weekday-selector">
-                                {checkboxes}
-                            </div>
-                        </div>
-                        <div className="form-group">
-                            <div id="NPMRDS-CP-submit" className="NPMRDS-submit NPMRDS-label" onClick={this.getParams}>Load Data</div>
+                <header>
+                    <h4>Control Panel</h4>
+                    <p>Select NPMRDS data bounds</p>
+                </header>
+                <div className="body">
+                    <div className="form-group">
+                        <label for="search-input">Date Bounds</label>
+                        <div className="input-group">
+                            <input id="startDate" className='form-control' type="date" color="#000"/>
+                            <input id="endDate" className='form-control' type="date" />
                         </div>
                     </div>
-                </section>
-            
-               
-            
+                    <div className="form-group">
+                        <label for="search-input">Time Bounds</label>
+                        <div className="input-group">
+                            <input className='form-control' id="startTime" type="time" />
+                            <input className='form-control' id="endTime" type="time" />
+                        </div>
+                    </div>
+                    <div className="form-group">
+                        <label for="search-input">Resolution</label>
+                        
+                        <select id="resolution" className="form-control">
+                            {options}
+                        </select>
+                    </div>
+                    <div className="form-group">
+                        <label for="search-input">Weekdays</label>
+                        <br/>
+                        <div id="NPMRDS-weekday-selector">
+                            {checkboxes}
+                        </div>
+                    </div>
+                    <div className="form-group">
+                        <div id="NPMRDS-CP-submit" className="NPMRDS-submit NPMRDS-label" onClick={this.getParams}>Load Data</div>
+                    </div>
+                </div>
+            </section>
         );
     }
 });

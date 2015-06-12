@@ -8,10 +8,15 @@ var React = require('react'),
 	d3 = require("d3"),
 
 	crossfilter = TMCDataStore.getCrossFilter(),
+	avgCrossfilter = TMCDataStore.getCrossFilter(),
 
 	UNIQUE_IDs = 0;
 
 var currentView = "avgSpeed";
+
+var months = ["All Time", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+var params = {};
 
 var LineGraph = React.createClass({
 	getInitialState: function() {
@@ -41,6 +46,9 @@ var LineGraph = React.createClass({
 		
 		TMCDataStore.removeChangeListener(Events.TMC_DATAVIEW_CHANGE, this.dataViewChange);
 	},
+	testEventDispatcher: function(args) {
+		console.log("<TMCsOverTime_Graph.testEventDispatcher> args:", arguments);
+	},
 	TMCadded: function(data) {
 		if (!(data.tmc.toString() in this.state.selectedTMCs)) {
 			this.state.selectedTMCs[data.tmc.toString()] = data.tmc;
@@ -61,7 +69,17 @@ var LineGraph = React.createClass({
 	},
 	addTMCtoGraph: function(tmc) {
 		var graphData = this.state.linegraph.data(),
-			group = this.state.linegraph.group();
+			group = this.state.linegraph.group(),
+			avgLines = this.state.linegraph.avgLines();
+
+		// params = TMCDataStore.getParams(false);
+		// applyParams(this.state.linegraph.resolution());
+		// console.log("TMCsOverTime_Graph",params);
+
+		avgCrossfilter.filter("tmc", tmc);
+		var all = getValues(avgCrossfilter("all"));
+		avgLines.push({key: tmc, values: all});
+		this.state.linegraph.avgLines(avgLines);
 
 		crossfilter.filter("tmc", tmc);
 		var tmcData = crossfilter(group);
@@ -78,20 +96,19 @@ var LineGraph = React.createClass({
 		d3.select("#TMC-over-time-div-"+this.state.linegraph.id()).style("display", null);
 
 		this.state.linegraph.data(graphData)();
-		// this.state.labeller
-		// 	.labels(this.state.linegraph.labels())
-		// 	.tmcs(TMCs.map(function(d) { return d.toString(); }))();
 	},
 	removeTMCfromGraph: function(tmc) {
 		var graphData = this.state.linegraph.data(),
+			avgLines = this.state.linegraph.avgLines(),
 			len = graphData.length;
 
 		graphData = graphData.filter(function(d) { return d.key.toString() != tmc; });
+		avgLines = avgLines.filter(function(d) { return d.key.toString() != tmc; });
+
 		if (len != graphData.length) {
-			this.state.linegraph.data(graphData)();
-			// this.state.labeller
-			// 	.labels(this.state.linegraph.labels())
-			// 	.tmcs(graphData.map(function(d) { return d.key.toString(); }))();
+			this.state.linegraph
+				.avgLines(avgLines)
+				.data(graphData)();
 		}
 
 		if (!graphData.length) {
@@ -106,6 +123,10 @@ var LineGraph = React.createClass({
 		for (var k in this.state.selectedTMCs) {
 			TMCs.push(this.state.selectedTMCs[k]);
 		}
+
+		// params = TMCDataStore.getParams(false);
+		// applyParams(this.state.linegraph.resolution());
+		// console.log("TMCsOverTime_Graph",params);
 
 		TMCs.forEach(function(tmc) {
 			crossfilter.filter("tmc", tmc);
@@ -134,6 +155,16 @@ var LineGraph = React.createClass({
 });
 
 module.exports = LineGraph;
+
+var WEEKDAYS = {
+    "monday": 0,
+    "tuesday" : 1,
+    "wednesday": 2,
+    "thursday": 3,
+    "friday": 4,
+    "saturday": 5,
+    "sunday": 6
+}
 
 function getValues(values) {
 	return {
@@ -167,6 +198,7 @@ function Labeller() {
 				.style({position:"absolute",right:"0px",top:"0px"});
 			return;
 		}
+
 		var lbls = labelDiv.selectAll(".resolution-label")
 			.data(labels);
 		lbls.exit().remove();
@@ -175,18 +207,36 @@ function Labeller() {
 			.attr("class", "resolution-label")
 			// .style({float:"left",padding:"0px 20px",height:"30px","line-height":"30px",
 			// 		"background-color":"#999"});
-		lbls.text(function(d){return d;});
+		lbls.text(function(d) {
+			if (d==Infinity) {
+				return months[0];
+			}
+			if (d < 999999) {
+				return months[d%100]+" "+(Math.floor(d/100));
+			}
+			return months[Math.floor(d/100)%100]+" "+(d%100);
+		});
 
 		var tmcs = tmcDiv.selectAll(".tmcs-label")
 			.data(TMCs);
 		tmcs.exit().remove();
-		tmcs.enter().append("div")
-			.attr("class", "tmcs-label")
+		var enter = tmcs.enter().append("div");
+
+		enter.attr("class", "tmcs-label")
 			.style({float:"left",padding:"0px 10px",height:"30px","line-height":"30px"});
-		tmcs.text(function(d){return d;})
-			.style("background-color", function(d) { return TMCDataStore.getTMCcolor(d); })
-			.append("span").attr("class", "glyphicon glyphicon-remove NPMRDS-tmc-remove")
-				.style("margin-left", "10px")
+
+		tmcs.style("background-color", function(d) { return TMCDataStore.getTMCcolor(d); })
+
+		var text = enter.append("div")
+				.style({ display: "inline" })
+				.text(function(d) { return TMCDataStore.getTMCname(d); });
+
+		enter.on("mouseover", function(d) { d3.select(this).selectAll("div").text(d); })
+			.on("mouseout", function(d) { d3.select(this).selectAll("div").text(TMCDataStore.getTMCname(d)); });
+
+		var buttons = enter.append("span")
+				.attr("class", "glyphicon glyphicon-remove NPMRDS-tmc-remove")
+				.style({ "margin-left": "10px", display: "inline" })
 				.on("click",TMCDataStore.removeTMC);
 	}
 	labeller.on = function(e, l) {
@@ -216,9 +266,40 @@ function Labeller() {
 	return labeller;
 }
 
+function applyParams(resolution) {
+	var timeBounds = params.timeBounds ? params.timeBounds.map(function(d) { return Math.floor(d/5); }) : [];
+	if (timeBounds.length == 1) {
+		crossfilter.filter("epoch", timeBounds[0]);
+	}
+	else if (timeBounds.length == 2) {
+		crossfilter.filter("epoch", function(d) { return timeBounds[0] <= d && d < timeBounds[1]; });
+	}
+
+	var weekdays = params.weekdays.map(function(d) { return WEEKDAYS[d]; }).sort(function(a, b) { return a-b; });
+	if (weekdays.length == 1) {
+		crossfilter.filter("weekday", weekdays[1]);
+	}
+	else if (weekdays.length > 1) {
+		crossfilter.filter("weekday", function(d) { return weekdays[0] <= d && d <= weekdays[weekdays.length-1]; });
+	}
+
+	if (resolution != "Monthly") {
+		return;
+	}
+console.log("applyParams ???")
+	var dateBounds = params.dateBounds || [];
+	if (dateBounds.length == 1) {
+		crossfilter.filter("yyyymmdd", dateBounds[0]);
+	}
+	else if (dateBounds.length == 2) {
+		crossfilter.filter("yyyymmdd", function(d) { return dateBounds[0] <= d && d <= dateBounds[1]; });
+	}
+}
+
 function Linegraph() {
 	var selfID,
 		data = [],
+		avgLines = [],
 		margin = { left: 50, top: 50, right: 25, bottom: 50 },
 		_svg,
 		svg,
@@ -248,7 +329,7 @@ function Linegraph() {
 	var currentResolution = 0,
 		dataResolutionObjects = [
 			{ resolution: "Monthly",
-				data: [],
+				time: Infinity,
 				tickFormat: function(d) {
 					return dateLabeler(Math.floor(d/100), d%100) },
 				group: "yyyymm",
@@ -257,21 +338,21 @@ function Linegraph() {
 					remove: function() { crossfilter.filter("yyyymm", null); crossfilter.filter("yyyymmdd", null); }
 				} },
 			{ resolution: "Daily",
-				data: [],
+				time: 0,
 				tickFormat: function(d) {
 					return dateLabeler(Math.floor(d/10000), Math.floor(d/100)%100, d%100) },
 				group: "yyyymmdd",
 				filter: {
 					apply: function(v) { crossfilter.filter("yyyymm", v); },
-					remove: function() { console.log("TMCsOverTime::graph, removing yyyymmdd filter");crossfilter.filter("yyyymmdd", null); }
+					remove: function() { crossfilter.filter("yyyymmdd", null); }
 				} },
 			{ resolution: "Minutes",
-				data: [],
+				time: 0,
 				tickFormat: function(d) {
 					return dateLabeler(Math.floor(d/10000000), Math.floor(d/100000)%100, Math.floor(d/1000)%100, d%1000, true) },
 				group: "yyyymmddeee",
 				filter: {
-					apply: function(v) { console.log("TMCsOverTime::graph, applying yyyymmdd filter", v);crossfilter.filter("yyyymmdd", v); },
+					apply: function(v) { crossfilter.filter("yyyymmdd", v); },
 					remove: function() {}
 				} }
 		],
@@ -301,7 +382,7 @@ function Linegraph() {
 		}
 
 		labels = dataResolutionObjects.filter(function(d, i) { return i <= currentResolution; })
-			.map(function(d) { return d.resolution; });
+			.map(function(d) { return d.time; });
 
 		labeller
 			.labels(labels)
@@ -310,6 +391,15 @@ function Linegraph() {
 		var	values = d3.merge(data.map(function(d) { return d.values; })),
 			yExtent = d3.extent(values.map(function(d) { return d.y[currentView]; })),
 			xValues = d3.set(values.map(function(d) { return d.x; })).values().sort(function(a, b) { return a-b; });
+
+		avgLines.forEach(function(line) {
+			if (line.values[currentView] < yExtent[0]) {
+				yExtent[0] = line.values[currentView];
+			}
+			if (line.values[currentView] > yExtent[1]) {
+				yExtent[1] = line.values[currentView];
+			}
+		})
 
 		xScale.domain(xValues);
 		yScale.domain([yExtent[0]*.9, yExtent[1]*1.1]);
@@ -330,7 +420,16 @@ function Linegraph() {
 
 		// var pointsData = [];
 
-		groups.each(function(groupData) {
+		groups.each(function(d) {
+// console.log(d);
+			var groupData;
+			// if (currentResolution == 1 && params.dateBounds) {
+			// 	groupData = {key: d.key};
+			// 	groupData.values = d.values.filter(function(d) { return params.dateBounds[0] <= d.key && d.key <= params.dateBounds[params.dateBounds.length-1]; });
+			// }
+			// else {
+				groupData = d;
+			// }
 			var group = d3.select(this);
 
 			var path = group.selectAll("path")
@@ -386,6 +485,50 @@ function Linegraph() {
 			})
 		})
 
+		var resolutionData = [];
+		if (currentResolution > 0) {
+			data.forEach(function(tmc) {
+				crossfilter.filter("tmc", tmc.key);
+				var resData = crossfilter("all");
+				resolutionData.push({key:tmc.key,values:getValues(resData)});
+			})
+		}
+		var resGroups = svg.selectAll(".res-group").data(resolutionData, function(d) { return d.key; });
+		resGroups.exit().remove();
+		resGroups.enter().append("g")
+			.attr("class", "res-group");
+		resGroups.each(function(groupData) {
+			var avgLine = d3.select(this).selectAll("line").data([groupData.values]);
+			avgLine.exit().remove();
+			avgLine.enter().append("line")
+				.attr({stroke: function(d) { return TMCDataStore.getTMCcolor(groupData.key) }, 
+					"stroke-width": 3, fill:"none", class:"NPMRDS-graph-path",
+					"stroke-dasharray": "6,6"})
+				.attr("x1", 0)
+				.attr("x2", (width-margin.left-margin.right))
+			avgLine.transition()
+				.attr("y1", function(d) { return yScale(d[currentView]); })
+				.attr("y2", function(d) { return yScale(d[currentView]); });
+		})
+
+		var avgGroups = svg.selectAll(".avg-group").data(avgLines, function(d) { return d.key; });
+		avgGroups.exit().remove();
+		avgGroups.enter().append("g")
+			.attr("class", "avg-group");
+		avgGroups.each(function(groupData) {
+			var avgLine = d3.select(this).selectAll("line").data([groupData.values]);
+			avgLine.exit().remove();
+			avgLine.enter().append("line")
+				.attr({stroke: function(d) { return TMCDataStore.getTMCcolor(groupData.key) }, 
+					"stroke-width": 3, fill:"none", class:"NPMRDS-graph-path",
+					"stroke-dasharray": "3,3"})
+				.attr("x1", 0)
+				.attr("x2", (width-margin.left-margin.right))
+			avgLine.transition()
+				.attr("y1", function(d) { return yScale(d[currentView]); })
+				.attr("y2", function(d) { return yScale(d[currentView]); });
+		})
+
 		// pointsData.forEach(function(point) {
 		// 	point.points = d3.selectAll("#esc-linegraph-"+point.key+"-point");
 		// 	point.path = d3.selectAll("#esc-linegraph-"+point.key+"-path");
@@ -431,7 +574,13 @@ function Linegraph() {
 			return data;
 		}
 		data = d;
-		dataResolutionObjects[currentResolution].data = data;
+		return graph;
+	}
+	graph.avgLines = function(d) {
+		if (!arguments.length) {
+			return avgLines;
+		}
+		avgLines = d;
 		return graph;
 	}
 	graph.width = function(w) {
@@ -466,8 +615,7 @@ function Linegraph() {
 		}
 		if (resolution != currentResolution) {
 			currentResolution = resolution;
-			// dispatcher.graphupdate();
-			data = dataResolutionObjects[resolution].data;
+			dispatcher.graphupdate();
 			graph();
 		}
 		return graph;
@@ -514,12 +662,13 @@ function Linegraph() {
 			currentResolution++;
 			dataResolutionObjects[currentResolution].filter.apply(d.x);
 
+			dataResolutionObjects[currentResolution].time = d.x;
+
 			dispatcher.graphupdate();
 		}
 	}
 
 	function dateLabeler(year, month, day, hour, bool) {
-		var months = [null, "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 		if (arguments.length == 2) {
 			return months[month]+" "+year;

@@ -35,7 +35,7 @@ function CacheManager() {
 			            	manager.update(id);
 			            	delete activeUpdateTasks[id];
 			            }
-			    });
+			    	});
 			}
 	    })
 	}

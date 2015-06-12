@@ -158,6 +158,13 @@ function CrossFilter() {
 		obj.travelTimeIndex = obj.avgTime/obj.freeflow;
 		obj.freeflow = obj.distance/(obj.freeflow/3600);
 	}
+	crossfilter.clearAll = function() {
+		for (var key in dimensionMap) {
+			dimensionMap.filter(null);
+		}
+		cross_filter.remove();
+		CURRENT_SESSION = -1;
+	}
 
 	return crossfilter;
 
@@ -245,6 +252,9 @@ function CrossFilerSession(crossfilter) {
 			crossfilter.filter(session, dimension, filtersMap[dimension]);
 		}
 		return session;
+	}
+	session.clearAll = function() {
+		crossfilter.clearAll();
 	}
 	return session;
 }

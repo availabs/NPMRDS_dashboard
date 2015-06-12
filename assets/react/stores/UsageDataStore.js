@@ -14,7 +14,7 @@ var AppDispatcher = require('../dispatcher/AppDispatcher'),
     SailsWebApi = require("../utils/api/SailsWebApi"),
     GeoStore = require("./GeoStore"),
 
-    TMCDataStore = require("./TMCDataStore"),
+    // TMCDataStore = require("./TMCDataStore"),
 
     Events = Constants.EventTypes,
     CHANGE_EVENT = 'change',
@@ -41,7 +41,7 @@ dataPointSlider
 			.reverse(dataView == "Congestion" || dataView == "Time")
 			.data(d);
 		UsageDataStore.emitEvent(Events.DATA_POINT_SLIDER_UPDATE);
-		UsageDataStore.emitEvent(Events.USAGE_DATA_PROCESSED);
+		// UsageDataStore.emitEvent(Events.USAGE_DATA_PROCESSED);
 	});
 
 dataPointCollectionsManager.init();
@@ -64,19 +64,19 @@ var UsageDataStore = assign({}, EventEmitter.prototype, {
   	},
 
 	loadData: function(params) {
-		dataPointCollectionsManager.reset();
-
 		var loadedRoads = GeoStore.getLoadedRoads();
 
 		if (!loadedRoads.length) {
 			return;
 		}
 
+		dataPointCollectionsManager.reset();
+
 		params.links = loadedRoads.map(function(road) { return road.properties.linkID; });
 		SailsWebApi.getCountyUsageData(36, params);
 
-		//console.log('data is loading')
-		UsageDataStore.emitChange();
+		// console.log('data is loading')
+		// UsageDataStore.emitChange();
 	},
 	linkShader: function() {
 		return linkShader;
@@ -103,19 +103,13 @@ UsageDataStore.dispatchToken = AppDispatcher.register(function(payload) {
   		case ActionTypes.RECEIVE_COUNTY_DATA:
 console.log("RECEIVE_COUNTY_DATA::usageData", action.usageData);
   			processUsageData(action.usageData, action.params);
-			UsageDataStore.emitChange();
-/*
-####################
-testing purposes
-####################
-*/
+			UsageDataStore.emitEvent(Events.USAGE_DATA_PROCESSED);
+			// UsageDataStore.emitChange();
+			break;
 
-//TMCDataStore.addTMC(["120P17024","120P17023","120P17022","120P17021","120P17020","120P17019","120P17018"]);
-
-/*
-####################
-*/
-  		break;
+		case ActionTypes.CONTROL_PANEL_PARAMS_LOADED:
+			UsageDataStore.loadData(action.params);
+  			break;
   		
   		case ActionTypes.DATA_VIEW_CHANGE:
   			dataView = action.view;
@@ -176,7 +170,7 @@ function processUsageData(usageData, params) {
 			if (linkID in linkIDmap) {
 				linkIDmap[linkID].forEach(function(tmc, data) {
 					var dir = tmc.match(regex)[1],
-						direction = (/[Nn]/.test(dir) ? -1.0 : 1.0);
+						direction = (/[Nn]/.test(dir) ? 1.0 : -1.0);
 
 					if (/[Nn]/.test(dir) && /[Tt]/.test(data.linkDir)) {
 						direction *= -1;

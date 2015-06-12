@@ -61,9 +61,31 @@ var SailsWebApi = assign({}, EventEmitter.prototype, {
     this.recieveVoters(campaign.id)
   
   },
-  //------------
-  // get county geography
-  //------------
+
+  saveRoute: function(routeData) {
+    var url = "/routes/save/" + routeData.owner + "/" + routeData.name + "/" + JSON.stringify(routeData.points);
+    d3.xhr(url)
+        .response(function(request) { return JSON.parse(request.responseText); })
+        .get(function(err, res) {
+            ServerActionCreators.routeSaved(err, res);
+        });
+  },
+  loadRoute: function(routeData) {
+    var url = "/routes/load/" + routeData.owner + "/" + routeData.name;
+    d3.xhr(url)
+        .response(function(request) { return JSON.parse(request.responseText); })
+        .get(function(err, res) {
+            ServerActionCreators.routeLoaded(err, res);
+        });
+  },
+  getSavedRoutes: function(owner) {
+    var url = "/routes/getsaved/"+owner;
+    d3.xhr(url)
+        .response(function(request) { return JSON.parse(request.responseText); })
+        .get(function(err, res) {
+            ServerActionCreators.receiveSavedRoutes(err, res);
+        });
+  },
 
   getTMCdata: function(tmc, data) {
     SailsWebApi.checkLoading(true);
@@ -73,7 +95,7 @@ var SailsWebApi = assign({}, EventEmitter.prototype, {
     }
 console.log("SailsWebApi.getTMCdata: getting data", tmc, data);
 
-    d3.xhr(/tmcdata/)
+    d3.xhr("/tmcdata/")
         .response(function(request) { return JSON.parse(request.responseText); })
         .post(JSON.stringify({id: tmc}), function(err, tmcData) {
 console.log("SailsWebApi.getTMCdata", err, tmcData);

@@ -15,6 +15,7 @@ var AppDispatcher = require('../dispatcher/AppDispatcher'),
 
 	selectedTMCs = [],
 	TMCdata = {},
+	parsedTMCdata = {},
 
 	WEEKDAYS = {
 		"monday": 0,
@@ -28,12 +29,15 @@ var AppDispatcher = require('../dispatcher/AppDispatcher'),
 
 	UNIQUE_COMBINED_TMCs = 0,
 
-	colorMapper = TMCColorMapper();
+	colorMapper = TMCColorMapper(),
+	nameMapper = TMCNameMapper();
 
-crossfilter.on("crossfilterupdate", function(cf) {
-	//TMCDataStore.emitEvent()
-	console.log("crossfilter updated");
-})
+var controlPanelParams = {};
+
+// crossfilter.on("crossfilterupdate", function(cf) {
+// 	TMCDataStore.emitEvent()
+// 	console.log("crossfilter updated");
+// })
 
 var TMCDataStore = assign({}, EventEmitter.prototype, {
 	emitEvent: function(Event, data) {
@@ -91,32 +95,42 @@ var TMCDataStore = assign({}, EventEmitter.prototype, {
 		this.emitEvent(Events.TMC_DATAVIEW_CHANGE, view);
 	},
 	receiveTMCdata: function(TMCs, data) {
-		var parsedData = [];
+		var parsedData = [],
+			tmcData = {};
 console.log("TMCDataStore.receiveTMCdata", TMCs, data)
 
 		for (var tmc in data) {
 			colorMapper.add(tmc);
 			selectedTMCs.push(tmc);
-			data[tmc].tmc = new TMC(tmc);
+			var newTMC = new TMC(tmc);
+			data[tmc].tmc = newTMC;
 
 			var cfData = parseData(tmc, data[tmc]);
 
 			if (!(tmc in TMCdata)) {
+				parsedTMCdata[tmc] = cfData;
+
 				TMCdata[tmc] = data[tmc];
 
 				crossfilter.add(cfData);
+
+				for (var i=0; i<data[tmc].schema.length;i++) {
+					if (data[tmc].schema[i]=="road_name") {
+						nameMapper.add(tmc, data[tmc].rows[0][i]);
+						break;
+					}
+				}
 			}
 
-			if (TMCs.length == 1) {
-				this.emitEvent(Events.DISPLAY_TMC_DATA, data[tmc]);
-			}
-			else {
-				parsedData.push(cfData);
-			}
+			parsedData.push(cfData);
+			tmcData = data[tmc];
 		}
 
-		if (TMCs.length > 1) {
-			aggregateData(TMCs, parsedData);
+		if (TMCs.length == 1) {
+			this.emitEvent(Events.DISPLAY_TMC_DATA, tmcData);
+		}
+		else if (TMCs.length > 1) {
+			this.emitEvent(Events.DISPLAY_AGGREGATED_DATA, {data:parsedData, tmcs:TMCs});
 		}
 	},
 	getTMCData: function(tmc) {
@@ -127,6 +141,17 @@ console.log("TMCDataStore.receiveTMCdata", TMCs, data)
 	},
 	getTMCcolor: function(tmc) {
 		return colorMapper(tmc);
+	},
+	getTMCname: function(tmc) {
+		var name = nameMapper(tmc);
+console.log("TMCDataStore.getTMCname", tmc, name);
+		if (!name || !name.length) {
+			return tmc.toString();
+		}
+		return name;
+	},
+	getParams: function() {
+		return controlPanelParams;
 	}
 })
 
@@ -137,16 +162,11 @@ TMCDataStore.dispatchToken = AppDispatcher.register(function(payload) {
     	case ActionTypes.RECEIVE_TMC_DATA:
     		TMCDataStore.receiveTMCdata(action.tmc, action.data);
     		break;
-    	default:
+		case ActionTypes.CONTROL_PANEL_PARAMS_LOADED:
+			controlPanelParams = action.params;
+			break;
     }
 });
-
-function aggregateData(TMCs, parsedData) {
-
-console.log("TMCDataStore.aggregateData, parsedData", parsedData);
-
-	TMCDataStore.emitEvent(Events.DISPLAY_AGGREGATED_DATA, {data:parsedData, tmcs:TMCs});
-}
 
 function parseData(tmc, data) {
 	var BQschema = data.schema,
@@ -170,7 +190,7 @@ function parseData(tmc, data) {
 	});
 }
 
-function convertTMC(tmc) {
+function TMCstring2number(tmc) {
 	var regex = /(\d{3})([NP])(\d{5})/,
 		match = regex.exec(tmc);
 
@@ -188,7 +208,7 @@ function TMC(tmc) {
 	}
 	else {
 		this.__tmcString__ = tmc;
-		this.__tmcNumber__ = convertTMC(tmc);
+		this.__tmcNumber__ = TMCstring2number(tmc);
 	}
 }
 TMC.prototype.toString = function() {
@@ -196,6 +216,23 @@ TMC.prototype.toString = function() {
 }
 TMC.prototype.valueOf = function() {
 	return this.__tmcNumber__;
+}
+
+function TMCNameMapper() {
+	var TMCmap = d3.map();
+
+	function mapper(TMC) {
+		var tmc = TMC.toString();
+		if (TMCmap.has(tmc)) {
+			return TMCmap.get(tmc);
+		}
+		return "";
+	}
+	mapper.add = function(tmc, name) {
+		TMCmap.set(tmc.toString(), name);
+		return mapper;
+	}
+	return mapper;
 }
 
 function TMCColorMapper() {

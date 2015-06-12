@@ -5,6 +5,8 @@ var React = require('react'),
     Events = require('../../constants/AppConstants').EventTypes,
     TMCDataStore = require("../../stores/TMCDataStore"),
 
+    ControlPanel = require("./ControlPanel.react"),
+
 	d3 = require("d3"),
 	crossfilter = TMCDataStore.getCrossFilter(),
 
@@ -164,18 +166,28 @@ function Labeller() {
 		var tmcs = tmcDiv.selectAll(".tmcs-label")
 			.data(TMCs);
 		tmcs.exit().remove();
-		tmcs.enter().append("div")
+		var enter = tmcs.enter().append("div")
 			.attr("class", "tmcs-label")
 			.style({float:"left",padding:"0px 10px",height:"30px","line-height":"30px",cursor:"pointer"});
+
 		tmcs.on("click", highlight)
-			.text(function(d) { return d.toString(); })
 			.style("background-color", function(d) { return TMCDataStore.getTMCcolor(d.toString()); });
+
+		var text = enter.append("div")
+				.style({ display: "inline" })
+				.text(function(d) { return TMCDataStore.getTMCname(d); });
+
 		if (TMCs.length == 1) {
 			tmcs.each(highlight);
 		}
-		tmcs.append("span").attr("class", "glyphicon glyphicon-remove NPMRDS-tmc-remove")
-			.style("margin-left", "10px")
-			.on("click", function(d) { d3.event.stopPropagation();TMCDataStore.removeTMC(d.toString()); });
+
+		enter.on("mouseover", function(d) { d3.select(this).selectAll("div").text(d); })
+			.on("mouseout", function(d) { d3.select(this).selectAll("div").text(TMCDataStore.getTMCname(d)); });
+
+		var buttons = enter.append("span")
+				.attr("class", "glyphicon glyphicon-remove NPMRDS-tmc-remove")
+				.style({ "margin-left": "10px", display: "inline" })
+				.on("click", function(d) { d3.event.stopPropagation();TMCDataStore.removeTMC(d.toString()); });
 	}
 	labeller.on = function(e, l) {
 		if (!arguments.length) {
@@ -205,11 +217,11 @@ function Labeller() {
 	return labeller;
 
 	function highlight(d) {
-		tmcDiv.selectAll(".tmcs-label")
+		tmcDiv.selectAll(".tmcs-label").selectAll("div")
 			.style("font-weight", null)
 			.style("text-decoration", null)
 			.style("color", null);
-		d3.select(this)
+		d3.select(this).selectAll("div")
 			.style("font-weight", 800)
 			.style("text-decoration", "underline")
 			.style("color", "#fff");

@@ -13,6 +13,7 @@ var React = require('react'),
     
 
     ControlPanel = require("../components/mapView/ControlPanel.react"),
+    RouteControl = require("../components/mapView/RouteControl.react"),
     DataPointSlider = require("../components/mapView/DataPointSlider.react"),
 
     NPMRDSLegend = require("../components/mapView/NPMRDSLegend.react"),
@@ -29,6 +30,8 @@ var React = require('react'),
 
     Popup = require("../components/utils/NPMRDSpopup"),
 
+    ViewActionsCreator = require("../actions/ViewActionsCreator"),
+
     // mapView components
     TMCsOverTime = require("../components/mapView/TMCsOverTime_Graph.react"),
     TMCsAllTime = require("../components/mapView/TMCsAllTime_Chart.react"),
@@ -43,6 +46,8 @@ var React = require('react'),
 var linkShader = UsageDataStore.linkShader(),
     roadPaths = null;
 
+var UNIQUE_MARKER_IDs = 0;
+
 var MapView = React.createClass({
   
     getInitialState: function(){
@@ -50,6 +55,7 @@ var MapView = React.createClass({
         return {
             input: Input(),
             popup: Popup(),
+            markers: [],
             layers:{
                 county:{
                     id:0,
@@ -71,7 +77,7 @@ var MapView = React.createClass({
                             layer.on({
                                 click: function(e){
                                     if (mapView.state.input.keyDown("ctrl")) {
-                                        RouteStore.addPoint([e.latlng.lat, e.latlng.lng]);
+                                        mapView.addRoutePoint(e.latlng.lat, e.latlng.lng);
                                     }
                                     else {
                                         GeoStore.toggleCounty(feature.id);
@@ -166,10 +172,17 @@ var MapView = React.createClass({
 
         RouteStore.addChangeListener(Events.ROUTE_CREATED, this._onRouteCreated);
         RouteStore.addChangeListener(Events.INTERSECTS_CREATED, this._onIntersectsCreated);
+        RouteStore.addChangeListener(Events.ROUTE_LOADED, this._onRouteLoaded);
 
         this.state.popup.init(d3.select("#NPMRDS-map-div"));
 
-        this.state.input.init();
+        this.state.input
+            .init()
+            .on("keyup", function(key) {
+                if (key == "ctrl") {
+                    RouteStore.calcRoute();
+                }
+            })
     },
 
     componentWillUnmount: function() {
@@ -183,29 +196,9 @@ var MapView = React.createClass({
 
         RouteStore.removeChangeListener(Events.ROUTE_CREATED, this._onRouteCreated);
         RouteStore.removeChangeListener(Events.INTERSECTS_CREATED, this._onIntersectsCreated);
+        RouteStore.removeChangeListener(Events.ROUTE_LOADED, this._onRouteLoaded);
 
         this.state.input.close();
-    },
-
-    _onRouteCreated: function(route) {
-        var newState = this.state;
-
-        newState.layers.route.id++;
-        newState.layers.route.geo = route;
-
-        setTimeout(RouteStore.getIntersects, 250, GeoStore.getRoads());
-
-        this.setState(newState);
-    },
-
-    _onIntersectsCreated: function(intersects) {
-        var newState = this.state;
-console.log("mapView._onIntersectsCreated", intersects);
-
-        newState.layers.intersects.id++;
-        newState.layers.intersects.geo.features = intersects;
-
-        this.setState(newState);
     },
 
     _onDisplayTMCdata: function(data) {
@@ -214,6 +207,16 @@ console.log("mapView._onIntersectsCreated", intersects);
 
     _onRemoveTMCdata: function(data) {
 //console.log("RemoveTMCdata", data.tmc)
+    },
+
+    _onStateChange: function() {
+        console.log("STATE_CHANGE");
+        var newState = this.state;
+
+        newState.layers.county.id++;
+        newState.layers.county.geo = GeoStore.getState(36);
+
+        this.setState(newState);
     },
 
     _onCountyChange: function() {
@@ -227,10 +230,14 @@ console.log("mapView._onIntersectsCreated", intersects);
         this.setState(newState);
 
         roadPaths = null;
+
+        if (!newState.layers.roads.geo.features.length) {
+            this._onStateChange();
+        }
     },
 
-     _onDataPointSliderUpdate: function() {
-        console.log("DATA_POINT_SLIDER_UPDATE");
+    _onDataPointSliderUpdate: function() {
+console.log("DATA_POINT_SLIDER_UPDATE");
 
         if (!roadPaths) {
             var newState = this.state;
@@ -242,38 +249,101 @@ console.log("mapView._onIntersectsCreated", intersects);
             this.setState(newState);
               
             roadPaths = d3.selectAll(".roads")
-            .datum(function() {
-              var path = d3.select(this),
-                  match = path.attr("class").match(/id-(\w+) tmc-(\w+)/),
-                  linkID = +match[1],
-                  tmc = match[2];
-              return {
-                properties: {
-                  linkID:linkID,
-                  tmc:tmc
-                }
-              };
-            });
+                .datum(function() {
+                    var path = d3.select(this),
+                        match = path.attr("class").match(/id-(\w+) tmc-(\w+)/),
+                        linkID = +match[1],
+                        tmc = match[2];
+                    return {
+                        properties: {
+                            linkID:linkID,
+                            tmc:tmc
+                        }
+                    };
+                });
         }
-
-        roadPaths
-          .attr("stroke", linkShader);
-
-        console.log("_onDataPointSliderUpdate completed")
+        roadPaths.attr("stroke", linkShader);
+console.log("_onDataPointSliderUpdate completed");
     },
 
-    _onStateChange: function() {
-        console.log("STATE_CHANGE");
+    _onRouteLoaded: function(points) {
+        var mapView = this,
+            state = this.state;
+
+        RouteStore.clearPoints();
+
+        var markerData = points.map(function(point) {
+                var markerID = UNIQUE_MARKER_IDs++;
+                RouteStore.addPoint(markerID, point);
+                return {
+                    id: markerID,
+                    latlng: point,
+                    options: { draggable: true },
+                    events: {
+                        dragend: function(e) {
+                            RouteStore.addPoint(markerID, [e.target._latlng.lat, e.target._latlng.lng]);
+                            RouteStore.calcRoute();
+                        },
+                        click: function(e) {
+                            if (mapView.state.input.keyDown("ctrl")) {
+                                mapView.state.markers = mapView.state.markers.filter(function(d) { return d.id != markerID; });
+                                RouteStore.addPoint(markerID, []);
+                                RouteStore.calcRoute();
+                            }
+                        }
+                    }
+                };
+            });
+
+        state.markers = markerData;
+        RouteStore.calcRoute();
+        this.setState(state);
+    },
+
+    addRoutePoint: function(lat, lng) {
+        var mapView = this,
+            state = this.state,
+            markerID = UNIQUE_MARKER_IDs++,
+            markerData = {
+                id: markerID,
+                latlng: [lat, lng],
+                options: { draggable: true },
+                events: {
+                    dragend: function(e) {
+                        RouteStore.addPoint(markerID, [e.target._latlng.lat, e.target._latlng.lng]);
+                        RouteStore.calcRoute();
+                    },
+                    click: function(e) {
+                        if (mapView.state.input.keyDown("ctrl")) {
+                            mapView.state.markers = mapView.state.markers.filter(function(d) { return d.id != markerID; });
+                            RouteStore.addPoint(markerID, []);
+                            RouteStore.calcRoute();
+                        }
+                    }
+                }
+            };
+        RouteStore.addPoint(markerID, [lat, lng]);
+
+        state.markers.push(markerData);
+        this.setState(state);
+    },
+
+    _onRouteCreated: function(route) {
         var newState = this.state;
 
-        newState.layers.county.id++;
-        newState.layers.county.geo = GeoStore.getState(36);
+        newState.layers.route.id++;
+        newState.layers.route.geo = route;
 
         this.setState(newState);
     },
 
-    mapClick: function(e) {
-        alert(e.latlng);
+    _onIntersectsCreated: function(intersects) {
+        var newState = this.state;
+
+        newState.layers.intersects.id++;
+        newState.layers.intersects.geo.features = intersects;
+
+        this.setState(newState);
     },
 
     render: function() {
@@ -283,10 +353,33 @@ console.log("mapView._onIntersectsCreated", intersects);
                     <LoadingIndicator />
 
                     <div className="col-lg-2">
-                      <ControlPanel />
+                        <section>
+                            <header>
+                                <ul className="nav nav-tabs">
+                                    <li className="active">
+                                        <a href="#control-panel" data-toggle="tab" aria-expanded="true">
+                                            Main
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="#route-panel" data-toggle="tab" aria-expanded="false">
+                                            Routes
+                                        </a>
+                                    </li>
+                                </ul>
+                            </header>
+                            <div className="body tab-content">
+                                <div id="control-panel" className="tab-pane clearfix active">
+                                    <ControlPanel />
+                                </div>
+                                <div id="route-panel" className="tab-pane">
+                                    <RouteControl />
+                                </div>
+                            </div>
+                        </section>
                     </div>
                     <div className="col-lg-10" id="NPMRDS-map-div">
-                        <LeafletMap height="600px" layers={this.state.layers} />
+                        <LeafletMap height="615px" layers={this.state.layers} markers={this.state.markers} />
                         <DataView />
                         <NPMRDSLegend />
                     </div>

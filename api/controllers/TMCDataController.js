@@ -76,7 +76,7 @@ console.log("sending TMC data for", TMCs);
 
 function TMCDataBuilder() {
 	function builder(tmc, cb) {
-		var sql = "SELECT travel_time_all, travel_time_truck, date, epoch, distance, weekday "+
+		var sql = "SELECT travel_time_all, travel_time_truck, date, epoch, distance, weekday, road_name "+
 			"FROM [HERE_traffic_data.HERE_NY] AS here "+
 			"JOIN EACH [NPMRDS_LUT.TMC_ATTRIBUTES] AS lut on here.tmc = lut.tmc "+
 			"WHERE here.tmc = '"+tmc+"' ";

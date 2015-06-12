@@ -21,7 +21,7 @@ function RouteCreator() {
 		if (!arguments.length) {
 			return points;
 		}
-		points.push(p);
+		points = p;
 		return router;
 	}
 	router.call = function(func) {
@@ -34,7 +34,14 @@ function RouteCreator() {
 					}
 					func(error, makeRoute(error, result));
 				});
-			points = [];
+		}
+		else {
+			routeCollection = {
+				type: "FeatureCollection",
+				features: []
+			}
+			bufferedRoute = routeCollection;
+			func(null, routeCollection);
 		}
 		return router;
 	}
@@ -65,22 +72,25 @@ function RouteCreator() {
 			type: "FeatureCollection",
 			features: []
 		}
-		result.response.route[0].leg[0].link.forEach(function(link) {
-			var feature = {
-					type: "Feature",
-					properties: {
-						linkID: link.linkId
+
+		result.response.route[0].leg.forEach(function(leg) {
+			leg.link.forEach(function(link) {
+				var feature = {
+						type: "Feature",
+						properties: {
+							linkID: link.linkId
+						},
+						geometry: {
+							type: "LineString",
+							coordinates: []
+						}
 					},
-					geometry: {
-						type: "LineString",
-						coordinates: []
-					}
-				},
-				shape = link.shape.map(function(string) {
-					return string.split(",").reverse().map(function(d){return +d;});
-				});
-			feature.geometry.coordinates = shape;
-			routeCollection.features.push(feature);
+					shape = link.shape.map(function(string) {
+						return string.split(",").reverse().map(function(d){return +d;});
+					});
+				feature.geometry.coordinates = shape;
+				routeCollection.features.push(feature);
+			});
 		});
 		bufferedRoute = router.buffer(routeCollection);
 		return routeCollection;

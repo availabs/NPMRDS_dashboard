@@ -43,6 +43,12 @@ module.exports.routes = {
   * tmc statistical data, by tmc code
   */
   '/tmcdata/:id?': 'tmcdata.getTMCData',
-  '/tmclookup': 'tmcdata.TMClookup'
-  
+  '/tmclookup': 'tmcdata.TMClookup',
+
+  /**
+  * route saving and loading
+  */
+  '/routes/save/:owner/:name/:points': 'routedata.saveRoute',
+  '/routes/load/:owner/:name': 'routedata.loadRoute',
+  '/routes/getsaved/:owner': 'routedata.getSavedRoutes'
 };

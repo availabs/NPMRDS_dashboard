@@ -1,20 +1,27 @@
-
-
 module.exports = {
 	attributes: {
 		id: {
-  			type: 'integer',
-  			unique: true,
-  			primaryKey: true
+			type: "integer",
+			primaryKey: true,
+			autoIncrement: true
 		},
-		waypoints: {
-        	type: 'text'
+		points: {
+        	type: 'text',
+        	required: true
 		},
 		tmc_codes: {
 			type: 'text'
 		},
-		linkids: {
+		links: {
 			type: 'text'
+		},
+		owner: {
+			type: 'string',
+        	required: true
+		},
+		name: {
+			type: 'string',
+        	required: true
 		}
   	},
   	migrate: "drop"
