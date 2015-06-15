@@ -63,6 +63,7 @@ module.exports = {
     ROUTE_CREATED: null,
     INTERSECTS_CREATED: null,
     
+    ROUTE_SAVED: null,
     ROUTE_LOADED: null,
     RECEIVE_SAVED_ROUTES: null
   }),

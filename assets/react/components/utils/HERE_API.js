@@ -16,18 +16,21 @@ function HERE_API() {
 			path = options.path || "/routing/7.2/",
 			resource = "calculateroute",
 			format = options.format || ".json",
-			mode = options.mode || "fastest;car;traffic:disabled";
+			mode = options.mode || "fastest;car;traffic:disabled",
+			routeAttributes = options.routeAttributes || "none,legs",
+			legAttributes = options.legAttributes || "links",
+			linkAttributes = options.linkAttributes || "shape,length";
 
 		request = baseURL+path+resource+format+
 			"?app_id="+app_id+
 			"&app_code="+app_code+
 			"&mode="+mode+
-			"&routeAttributes=none,legs"+
-			"&legAttributes=links"+
-			"&linkAttributes=shape,length";
+			"&routeAttributes="+routeAttributes+
+			"&legAttributes="+legAttributes+
+			"&linkAttributes="+linkAttributes;
 
 		points.forEach(function(point, i) {
-			request += "&waypoint"+i+"=geo!"+point
+			request += "&waypoint"+i+"=geo!"+point;
 		});
 		return here;
 	}

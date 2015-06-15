@@ -23,6 +23,7 @@ var RoutePanel = React.createClass({
         SailsWebApi.addChangeListener(Events.SAILS_WEB_API_LOADING_START, this._onDataLoadingStart);
         SailsWebApi.addChangeListener(Events.SAILS_WEB_API_LOADING_STOP, this._onDataLoadingStop);
 
+        RouteStore.addChangeListener(Events.ROUTE_SAVED, this.routeSaved);
         RouteStore.addChangeListener(Events.RECEIVED_SAVED_ROUTES, this.displaySavedRoutes);
 
         var owner = UserStore.getSessionUser().username;
@@ -32,6 +33,7 @@ var RoutePanel = React.createClass({
         SailsWebApi.removeChangeListener(Events.SAILS_WEB_API_LOADING_START, this._onDataLoadingStart);
         SailsWebApi.removeChangeListener(Events.SAILS_WEB_API_LOADING_STOP, this._onDataLoadingStop);
         
+        RouteStore.removeChangeListener(Events.ROUTE_SAVED, this.routeSaved);
         RouteStore.removeChangeListener(Events.RECEIVED_SAVED_ROUTES, this.displaySavedRoutes);
     },
     _onDataLoadingStart: function() {
@@ -64,6 +66,7 @@ var RoutePanel = React.createClass({
 			alert("Please give your route a name of at least 5 characters, starting with a letter or underscore.");
 			return;
 		}
+console.log("RouteControl, saving route:",name);
 
         var data = {
             owner: UserStore.getSessionUser().username,
@@ -72,12 +75,17 @@ var RoutePanel = React.createClass({
         }
         SailsWebApi.saveRoute(data);
 	},
+    routeSaved: function() {
+console.log("route saved!!!");
+        var owner = UserStore.getSessionUser().username;
+        SailsWebApi.getSavedRoutes(owner);
+    },
     loadRoute: function(data) {
         var name = d3.select("#savedRoutes").property("value").trim(),
             currentRouteName = d3.select("#routeName").property("value").trim();
 
-        if (name == this.state.savedRoutes[0] || name == currentRouteName) {
-            d3.select("#savedRoutes").property("selectedIndex", 0);
+        if (name == this.state.savedRoutes[0]) {// || name == currentRouteName) {
+            // d3.select("#savedRoutes").property("selectedIndex", 0);
             return;
         }
 
