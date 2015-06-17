@@ -4,7 +4,8 @@ var React = require('react'),
 
     Events = require('../../constants/AppConstants').EventTypes,
     TMCDataStore = require("../../stores/TMCDataStore"),
-
+    saveSvgAsPng = require('save-svg-as-png'),
+	
 	d3 = require("d3"),
 
 	crossfilter = TMCDataStore.getCrossFilter(),
@@ -145,10 +146,14 @@ var LineGraph = React.createClass({
 		this.state.linegraph.data(graphData)();
 
 	},
+	savePng:function(){
+		saveSvgAsPng.saveSvgAsPng(document.getElementById("TMC-over-time-graph-"+this.state.linegraph.id() ), "diagram.png");
+	},
 	render: function() {
 		return (
 			<div className="col-lg-12 NPMRDS-tmc-panel" id={"TMC-over-time-div-"+this.state.linegraph.id()}>
 				<svg id={ "TMC-over-time-graph-"+this.state.linegraph.id() }></svg>
+				<button className='btn btn-danger' style={{position:'absolute',bottom:'10px',right:'10px'}} onClick={this.savePng}>Export</button>
             </div>
 		);
 	}

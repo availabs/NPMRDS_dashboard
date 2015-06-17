@@ -6,9 +6,11 @@ var React = require('react'),
     TMCDataStore = require("../../stores/TMCDataStore"),
 
 	d3 = require("d3"),
+	saveSvgAsPng = require('save-svg-as-png'),
 	crossfilter = TMCDataStore.getCrossFilter(),
 
 	TMCmodel = require("../../utils/TMCModel")(),
+
 
 	UNIQUE_IDs = 0;
 
@@ -146,10 +148,14 @@ console.log("TMC_Monthly_Aggregated.TMCsAdded, graphData completed");
 	},
 	updateGraph: function() {
 	},
+	savePng:function(){
+		saveSvgAsPng.saveSvgAsPng(document.getElementById("MC-monthly-aggregated-div-"+this.state.linegraph.id() ), "diagram.png");
+	},
 	render: function() {
 		return (
 			<div className="col-lg-12 NPMRDS-tmc-panel" id={"TMC-monthly-aggregated-div-"+this.state.linegraph.id()}>
 				<svg id={ "TMC-monthly-aggregated-graph-"+this.state.linegraph.id() }></svg>
+				<button className='btn btn-danger' style={{position:'absolute',bottom:'10px',right:'10px'}} onClick={this.savePng}>Export</button>
             </div>
 		);
 	}
