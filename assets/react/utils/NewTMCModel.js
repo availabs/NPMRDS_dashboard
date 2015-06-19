@@ -18,31 +18,33 @@ function TMCModel() {
 			loadedTMCs[tmc] = data.slice().sort(function(a, b) { return a.time-b.time; });
 			return model;
 		},
-		get: function(tmc, time) {
+		get: function(tmc, date, epoch) {
 			// var data = loadedTMCs[tmc].filter(function(d) { return d.time==time; });
 
 			// if (data.length) {
 			// 	return data[0];
 			// }
-			
-			var points = getNearest(tmc, time);
 
-			if (points.length == 1) {
-				return points[0];
-			}
+			// var points = getNearest(tmc, time);
 
-			var x0 = totalEpochs(points[0].date, points[0].epoch),
-				x1 = totalEpochs(points[1].date, points[1].epoch),
+			// if (points.length == 1) {
+			// 	return points[0];
+			// }
 
-				slope = (points[0].travel_time_all-points[1].travel_time_all)/(x0-x1),
+			// var x0 = totalEpochs(points[0].date, points[0].epoch),
+			// 	x1 = totalEpochs(points[1].date, points[1].epoch),
 
-				x = totalEpochs(Math.floor(time/1000), time%1000);
+			// 	slope = (points[0].travel_time_all-points[1].travel_time_all)/(x0-x1),
 
-if (!(x0<x&&x<x1)) {
-	console.log(points[0].time, time, points[1].time);
-	console.log(x0, x, x1);
-}
+			// 	x = totalEpochs(Math.floor(time/1000), time%1000);
 
+			var yyyymm = Math.floor(date/100),
+
+				data = loadedTMCs[tmc].filter(function(d) {
+					return Math.floor(d.date/100)==yyyymm && d.epoch==epoch;
+				}),
+
+				value = d3.sum(data, function(d) { return d.travel_time_all; }) / data.length;
 		}
 	}
 
