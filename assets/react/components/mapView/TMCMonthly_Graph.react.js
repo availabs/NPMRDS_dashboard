@@ -8,6 +8,7 @@ var React = require('react'),
     ControlPanel = require("./ControlPanel.react"),
 
 	d3 = require("d3"),
+	saveSvgAsPng = require('save-svg-as-png'),
 	crossfilter = TMCDataStore.getCrossFilter(),
 
 	UNIQUE_IDs = 0;
@@ -123,10 +124,17 @@ var LineGraph = React.createClass({
 			d3.select("#TMC-monthly-div-"+this.state.linegraph.id()).style("display", null);
 		}
 	},
+	savePng:function(){
+		//console.log('test',saveSvgAsPng)
+		saveSvgAsPng.saveSvgAsPng(document.getElementById("TMC-monthly-graph-"+this.state.linegraph.id() ), "diagram.png");
+	},
+
 	render: function() {
+
 		return (
 			<div className="col-lg-12 NPMRDS-tmc-panel" id={"TMC-monthly-div-"+this.state.linegraph.id()}>
 				<svg id={ "TMC-monthly-graph-"+this.state.linegraph.id() }></svg>
+				<button className='btn btn-danger' style={{position:'absolute',bottom:'10px',right:'10px'}} onClick={this.savePng}>Export</button>
             </div>
 		);
 	}
