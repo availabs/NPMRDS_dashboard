@@ -9,6 +9,7 @@ var React = require('react'),
 	crossfilter = TMCDataStore.getCrossFilter(),
 
 	TMCmodel = require("../../utils/TMCModel")(),
+	newTMCmodel = require("../../utils/NewTMCModel")(),
 
 	UNIQUE_IDs = 0;
 
@@ -41,13 +42,40 @@ var LineGraph = React.createClass({
 		TMCDataStore.removeChangeListener(Events.TMC_DATAVIEW_CHANGE, this.dataviewChange);
 	},
 	TMCsAdded: function(data) {
-console.log(data);
+		var TMCmap = d3.map();
+
 		data.data.forEach(function(tmcData) {
-			TMCmodel.add(tmcData[0].tmc, tmcData);
+			var tmc = tmcData[0].tmc.toString();
+			newTMCmodel.add(tmc, tmcData);
+			TMCmap.set(tmc, {distance: tmcData[0].distance, road_name: tmcData[0].road_name});
 		})
 
+		var TMCs = TMCmap.keys();
+
 		var mergedData = d3.merge(data.data).filter(function(d) { return d.weekday<5; });
-		//TMCmodel.add(mergedData);
+
+var nested = d3.nest()
+	.key(function(d) { return d.time; })
+	.key(function(d) { return d.tmc.toString(); })
+	.entries(mergedData);
+console.log("Aggregated data", TMCs);
+
+var totalMissing = 0,
+	total = 0;
+
+nested.forEach(function(timeObj) {
+	if (timeObj.values.length < TMCs.length) {
+		var includedTMCs = d3.set(timeObj.values.map(function(d) { return d.key; })),
+			missingTMCs = TMCs.filter(function(d) { return !includedTMCs.has(d); });
+		missingTMCs.forEach(function(tmc) {
+			newTMCmodel.get(tmc, +timeObj.key);
+		})
+		totalMissing += missingTMCs.length;
+	}
+	total += timeObj.values.length;
+})
+console.log("total values / total missing values:", total, "/",totalMissing);
+return;
 
 		var hourSet = d3.set();
 		mergedData.forEach(function(d){hourSet.add(d.hour);});

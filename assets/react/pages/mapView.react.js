@@ -201,11 +201,11 @@ var MapView = React.createClass({
         this.state.input.close();
     },
 
-    _onDisplayTMCdata: function(data) {
+    _onDisplayTMCdata: function(tmc) {
 //console.log("DisplayTMCdata", data.tmc)
     },
 
-    _onRemoveTMCdata: function(data) {
+    _onRemoveTMCdata: function(tmc) {
 //console.log("RemoveTMCdata", data.tmc)
     },
 

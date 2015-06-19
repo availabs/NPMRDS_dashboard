@@ -128,6 +128,8 @@ function processUsageData(usageData, params) {
 		regex = /\d{3}([nNpP])\d{5}/;
 
 	dataPointSlider.resolution(params.resolution);
+	
+console.log("UsageDataStore.processUsageData", usageData);
 
 	usageData.forEach(function(point) {
 		dataPointCollectionsManager.addPoint(point.point, params.resolution);

@@ -13,9 +13,8 @@ var AppDispatcher = require('../dispatcher/AppDispatcher'),
 	crossfilter = require("../utils/CrossFilter")(),
 	//TMCmodel = require("../utils/TMCModel")(),
 
-	selectedTMCs = [],
+	selectedTMCs = {},
 	TMCdata = {},
-	parsedTMCdata = {},
 
 	WEEKDAYS = {
 		"monday": 0,
@@ -27,17 +26,10 @@ var AppDispatcher = require('../dispatcher/AppDispatcher'),
 		"sunday": 6
 	},
 
-	UNIQUE_COMBINED_TMCs = 0,
-
 	colorMapper = TMCColorMapper(),
 	nameMapper = TMCNameMapper();
 
 var controlPanelParams = {};
-
-// crossfilter.on("crossfilterupdate", function(cf) {
-// 	TMCDataStore.emitEvent()
-// 	console.log("crossfilter updated");
-// })
 
 var TMCDataStore = assign({}, EventEmitter.prototype, {
 	emitEvent: function(Event, data) {
@@ -54,83 +46,56 @@ var TMCDataStore = assign({}, EventEmitter.prototype, {
 			TMCs = [TMCs];
 		}
 
-		var unloaded = [],
-			loaded = [];
-
-		TMCs.forEach(function(tmc) {
-			if (!(tmc in TMCdata)) {
-				unloaded.push(tmc);
-				//SailsWebApi.getTMCdata(tmc);
-			}
-			else {
-				//this.receiveTMCdata(tmc, TMCdata[tmc]);
-				loaded.push(tmc);
-			}
-		})
+		var unloaded = TMCs.filter(function(tmc) { return !(tmc in TMCdata); });
 
 		if (unloaded.length) {
-			var data = {};
-			loaded.forEach(function(t) {
-				data[t] = TMCdata[t];
-			})
-			SailsWebApi.getTMCdata(unloaded, data);
+			SailsWebApi.getTMCdata(TMCs, unloaded);
 		}
 		else {
-			var data = {};
-			loaded.forEach(function(t) {
-				data[t] = TMCdata[t];
-			})
-			this.receiveTMCdata(loaded, data);
+			this.displayTMCdata(TMCs);
 		}
 	},
 	removeTMC: function(tmc) {
-		var len = selectedTMCs.length;
-		selectedTMCs = selectedTMCs.filter(function(d) { return tmc != d; });
-		if (selectedTMCs.length < len) {
+		if (selectedTMCs[tmc]) {
 			TMCDataStore.emitEvent(Events.REMOVE_TMC_DATA, tmc);
 			colorMapper.remove(tmc);
+			delete selectedTMCs[tmc];
 		}
 	},
 	changeDataView: function(view) {
 		this.emitEvent(Events.TMC_DATAVIEW_CHANGE, view);
 	},
-	receiveTMCdata: function(TMCs, data) {
-		var parsedData = [],
-			tmcData = {};
-console.log("TMCDataStore.receiveTMCdata", TMCs, data)
+	receiveTMCdata: function(requestedTMCs, data) {
+console.log("TMCDataStore.receiveTMCdata", requestedTMCs, data);
 
-		for (var tmc in data) {
-			colorMapper.add(tmc);
-			selectedTMCs.push(tmc);
-			var newTMC = new TMC(tmc);
-			data[tmc].tmc = newTMC;
+		var parsedData = d3.nest()
+				.key(function(d) { return d.tmc.toString(); })
+				.entries(parseData(data));
 
-			var cfData = parseData(tmc, data[tmc]);
+console.log("TMCDataStore.receiveTMCdata", parsedData);
 
-			if (!(tmc in TMCdata)) {
-				parsedTMCdata[tmc] = cfData;
+		parsedData.forEach(function(data) {
+			TMCdata[data.key] = data.values;
+			crossfilter.add(data.values);
+			nameMapper.add(data.key, data.values[0].road_name);
+		});
 
-				TMCdata[tmc] = data[tmc];
-
-				crossfilter.add(cfData);
-
-				for (var i=0; i<data[tmc].schema.length;i++) {
-					if (data[tmc].schema[i]=="road_name") {
-						nameMapper.add(tmc, data[tmc].rows[0][i]);
-						break;
-					}
-				}
+		this.displayTMCdata(requestedTMCs);
+	},
+	displayTMCdata: function(TMCs) {
+console.log("TMCDataStore.displayTMCdata", TMCs);
+		TMCs.forEach(function(tmc) {
+			if (!(tmc in selectedTMCs) && TMCs.length==1) {
+				selectedTMCs[tmc] = true;
+				colorMapper.add(tmc);
 			}
-
-			parsedData.push(cfData);
-			tmcData = data[tmc];
-		}
-
+		})
 		if (TMCs.length == 1) {
-			this.emitEvent(Events.DISPLAY_TMC_DATA, tmcData);
+			this.emitEvent(Events.DISPLAY_TMC_DATA, new TMC(TMCs[0]));
 		}
 		else if (TMCs.length > 1) {
-			this.emitEvent(Events.DISPLAY_AGGREGATED_DATA, {data:parsedData, tmcs:TMCs});
+			var data = TMCs.map(function(d) { return TMCdata[d]; });
+			this.emitEvent(Events.DISPLAY_AGGREGATED_DATA, { data: data, tmcs: TMCs });
 		}
 	},
 	getTMCData: function(tmc) {
@@ -160,7 +125,7 @@ TMCDataStore.dispatchToken = AppDispatcher.register(function(payload) {
 
     switch(action.type) {
     	case ActionTypes.RECEIVE_TMC_DATA:
-    		TMCDataStore.receiveTMCdata(action.tmc, action.data);
+    		TMCDataStore.receiveTMCdata(action.tmcs, action.data);
     		break;
 		case ActionTypes.CONTROL_PANEL_PARAMS_LOADED:
 			controlPanelParams = action.params;
@@ -168,7 +133,7 @@ TMCDataStore.dispatchToken = AppDispatcher.register(function(payload) {
     }
 });
 
-function parseData(tmc, data) {
+function parseData(data) {
 	var BQschema = data.schema,
 		BQtypes = data.types;
 
@@ -183,7 +148,7 @@ function parseData(tmc, data) {
 			}
 		});
 		obj.weekday = WEEKDAYS[obj.weekday];
-		obj.tmc = new TMC(tmc);
+		obj.tmc = new TMC(obj.tmc);
 		obj.time = (obj["date"]*1000) + (obj["epoch"]);
 		obj.hour = (obj["date"]*100) + (Math.floor(obj["epoch"]/12));
 		return obj;
@@ -202,14 +167,14 @@ function TMCstring2number(tmc) {
 }
 
 function TMC(tmc) {
-	if (tmc == "combined") {
-		this.__tmcString__ = "combined-"+UNIQUE_COMBINED_TMCs++;
-		this.__tmcNumber__ = 13370000+UNIQUE_COMBINED_TMCs;
-	}
-	else {
+	// if (tmc == "combined") {
+	// 	this.__tmcString__ = "combined-"+UNIQUE_COMBINED_TMCs++;
+	// 	this.__tmcNumber__ = 13370000+UNIQUE_COMBINED_TMCs;
+	// }
+	// else {
 		this.__tmcString__ = tmc;
 		this.__tmcNumber__ = TMCstring2number(tmc);
-	}
+	// }
 }
 TMC.prototype.toString = function() {
 	return this.__tmcString__;

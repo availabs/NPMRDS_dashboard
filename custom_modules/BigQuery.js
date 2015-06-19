@@ -82,7 +82,7 @@ function BigQueryTest() {
 			query.checkJob(result["jobReference"]["jobId"], function(error, status) {
 				var state = status["status"]["state"];
 				if (state == "RUNNING") {
-					console.log("Job still running:", result["jobReference"]["jobId"]);
+console.log("<BigQuery> Job still running:", result["jobReference"]["jobId"]);
 					setTimeout(wait, 2000, result, cb);
 					return;
 				}
@@ -127,18 +127,21 @@ function BigQueryTest() {
 				auth: jwt,
 				pageToken: pageToken
 			}
-console.log(pageToken)
+console.log("<BigQuery> Getting more rows:", params.jobId);
 			bigQuery.jobs.getQueryResults(params, function(error, data) {
 				if(error) {
 					console.log(error);
 					cb({status: 500, error:error});
 					return;
 				}
+console.log("<BigQuery> Received additional rows:", params.jobId);
 
 				if (data.rows.length) {
-					data.rows.forEach(function(row) {
-						result.rows.push(row);
-					})
+					// data.rows.forEach(function(row) {
+					// 	result.rows.push(row);
+					// })
+					result.rows = result.rows.concat(data.rows);
+console.log("<BigQuery> Combined rows:", params.jobId);
 				}
 
 		    	if (result.totalRows > result.rows.length) {

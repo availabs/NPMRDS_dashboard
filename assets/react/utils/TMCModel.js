@@ -23,7 +23,6 @@ function TMCModel() {
 		}
 		return model;
 	}
-var x = 0;
 	model.getHour = function(tmc, hour) {
 		if (tmc != currentTMC) {
 			tmc_Dimension.filter(tmc);
@@ -34,13 +33,15 @@ var x = 0;
 			tmc = cfData[0].value.tmc;
 
 		var filtered = cfData.filter(function(d) { return d.key==hour && d.value.count; });
-var n = 1;		
-while (!filtered.length) {
-	filtered = cfData.filter(function(d) {
-		return d.key >= hour-n && d.key <= hour+n && d.value.count; 
-	});
-	++n;
-}	
+
+// this retrieves data from closest hours in the rare instance when there exists no data for a requested hour
+		var n = 0;
+		while (!filtered.length) {
+			filtered = cfData.filter(function(d) {
+				return d.key >= hour-n && d.key <= hour+n && d.value.count; 
+			});
+			++n;
+		}	
 
 		return {
 			sum: d3.sum(filtered, function(d){return d.value.sum;}),

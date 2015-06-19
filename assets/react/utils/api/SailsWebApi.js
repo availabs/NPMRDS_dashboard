@@ -1,10 +1,4 @@
 'use strict';
-/*
- * This file is provided by Facebook for testing and evaluation purposes
- * only. Facebook reserves all rights not expressly granted.
- *
- *.
- */
 
 var io = require('./sails.io.js')(),
     d3 = require("d3"),
@@ -87,25 +81,45 @@ var SailsWebApi = assign({}, EventEmitter.prototype, {
         });
   },
 
-  getTMCdata: function(tmc, data) {
-    SailsWebApi.checkLoading(true);
+  getTMCdata: function(requestedTMCs, unloadedTMCs) {
 
-    if (!Array.isArray(tmc)) {
-      tmc = [tmc];
+    if (!Array.isArray(unloadedTMCs)) {
+      unloadedTMCs = [unloadedTMCs];
     }
-console.log("SailsWebApi.getTMCdata: getting data", tmc, data);
+console.log("SailsWebApi.getTMCdata: getting data for", unloadedTMCs);
 
-    d3.xhr("/tmcdata/")
-        .response(function(request) { return JSON.parse(request.responseText); })
-        .post(JSON.stringify({id: tmc}), function(err, tmcData) {
-console.log("SailsWebApi.getTMCdata", err, tmcData);
-            for (var k in data) {
-                tmcData[k] = data[k];
-                tmc.push(k);
-            }
-            ServerActionCreators.receiveTMCdata(tmc, tmcData);
+    var requests = [],
+        i = 0,
+        responses = 0,
+        data = { rows: [], numRows: 0 };
+
+    while (i < unloadedTMCs.length) {
+        requests.push(unloadedTMCs.slice(i, i+2));
+        i += 2;
+    }
+
+    requests = [unloadedTMCs];
+
+    requests.forEach(function(request) {
+        SailsWebApi.checkLoading(true);
+
+console.log("SailsWebApi.getTMCdata: requesting data for", request);
+
+        d3.json("/tmcdata/"+JSON.stringify(request), function(err, tmcData) {
             SailsWebApi.checkLoading(false);
+            data.rows = data.rows.concat(tmcData.rows);
+            data.numRows += tmcData.numRows;
+
+            if (++responses == requests.length) {
+                data.schema = tmcData.schema;
+                data.types = tmcData.types;
+
+console.log("SailsWebApi.getTMCdata: recieved data for", unloadedTMCs);
+                ServerActionCreators.receiveTMCdata(requestedTMCs, data);
+            }
         });
+    })
+    
   },
 
   getCounties: function() {

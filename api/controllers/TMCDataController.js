@@ -3,10 +3,10 @@ var BIGquery = require("../../custom_modules/BigQuery")(),
 
 module.exports = {
 	getTMCData: function(req, res) {
-		var TMCs = req.param("id");
+		var TMCs = JSON.parse(req.param("id"));
 
 		if (!TMCs) {
-			res.send({status: 404, error: "Missing required parameter: TMC code"});
+			res.badRequest("Missing required parameter: TMC code");
 			return;
 		}
 console.log("TMC data requested for", TMCs);
@@ -15,38 +15,22 @@ console.log("TMC data requested for", TMCs);
 			TMCs = [TMCs];
 		}
 
-		var response = {},
-			num = 0;
-
-		makeRequest(0);
-
-		function makeRequest(i) {
-console.log("sending query for", TMCs[i]);
-			dataBuilder(TMCs[i], function(error, result, tmc) {
-				++num;
-				if (error) {
-		console.log("error", error);
-					res.send(error, 500);
-					return
-				}
-				response[tmc] = result;
-
-				if (num == TMCs.length) {
-console.log("sending TMC data for", TMCs);
-					res.send(response);
-				}
-			})
-			if (++i < TMCs.length) {
-				setTimeout(makeRequest, 250, i);
+		dataBuilder(TMCs, function(error, result) {
+			if (error) {
+				res.serverError(error);
 			}
-		}
+			else {
+console.log("Sending TMC data for", TMCs);
+				res.send(result);
+			}
+		})
 	},
 
 	TMClookup: function(req, res) {
 		var links = req.param("links");
 
 		if (!links || !Array.isArray(links)) {
-			res.send({status: 500, error:"Must post an array of linkIDs"}, 500);
+			res.badRequest("Must include an array of linkIDs");
 			return;
 		}
 
@@ -59,15 +43,15 @@ console.log("sending TMC data for", TMCs);
 
 		BIGquery(sql, function(error, result) {
 			if (error) {
-				res.send({error:error, status:500}, 500);
-				return;
+				res.serverError(error);
 			}
+			else {
+				result.rows.forEach(function(row) {
+					response[row.f[0].v] = { linkDir: row.f[1].v, travelDir: row.f[2].v };
+				});
 
-			result.rows.forEach(function(row) {
-				response[row.f[0].v] = { linkDir: row.f[1].v, travelDir: row.f[2].v };
-			});
-
-			res.send(response);
+				res.send(response);
+			}
 		});
 	},
 
@@ -76,18 +60,24 @@ console.log("sending TMC data for", TMCs);
 
 function TMCDataBuilder() {
 	function builder(tmc, cb) {
-		var sql = "SELECT travel_time_all, travel_time_truck, date, epoch, distance, weekday, road_name "+
+		var sql = "SELECT travel_time_all, travel_time_truck, date, epoch, distance, weekday, road_name, here.tmc AS tmc "+
 			"FROM [HERE_traffic_data.HERE_NY] AS here "+
-			"JOIN EACH [NPMRDS_LUT.TMC_ATTRIBUTES] AS lut on here.tmc = lut.tmc "+
-			"WHERE here.tmc = '"+tmc+"' ";
+			"JOIN EACH [NPMRDS_LUT.TMC_ATTRIBUTES] AS lut ON here.tmc = lut.tmc "+
+			"WHERE here.tmc __WHERE_CLAUSE__;";
+
+		if (tmc.length == 1) {
+			sql = sql.replace("__WHERE_CLAUSE__", "= '"+tmc[0]+"'");
+		}
+		else {
+			sql = sql.replace("__WHERE_CLAUSE__", "IN ("+tmc.map(function(d) { return "'"+d+"'"; })+")");
+		}
 
 		BIGquery(sql, function(error, result) {
 			if (error) {
-				cb({error:error, status:500});
+				cb(error);
 				return;
 			}
-console.log("completed query for", tmc);
-			cb(error, BIGquery.parseResult(result), tmc);
+			cb(error, BIGquery.parseResult(result));
 		});
 	}
 

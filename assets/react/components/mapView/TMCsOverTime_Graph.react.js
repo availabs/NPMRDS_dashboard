@@ -49,10 +49,10 @@ var LineGraph = React.createClass({
 	testEventDispatcher: function(args) {
 		console.log("<TMCsOverTime_Graph.testEventDispatcher> args:", arguments);
 	},
-	TMCadded: function(data) {
-		if (!(data.tmc.toString() in this.state.selectedTMCs)) {
-			this.state.selectedTMCs[data.tmc.toString()] = data.tmc;
-			this.addTMCtoGraph(data.tmc);
+	TMCadded: function(tmc) {
+		if (!(tmc.toString() in this.state.selectedTMCs)) {
+			this.state.selectedTMCs[tmc.toString()] = tmc;
+			this.addTMCtoGraph(tmc);
 		}
 	},
 	TMCremoved: function(tmc) {

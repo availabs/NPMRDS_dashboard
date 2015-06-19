@@ -89,10 +89,10 @@ console.log("ServerActionsCreator.routeLoaded",err, res);
     });
   },
 
-  receiveTMCdata: function(tmc, data) {
+  receiveTMCdata: function(requestedTMCs, data) {
     AppDispatcher.handleServerAction({
       type: ActionTypes.RECEIVE_TMC_DATA,
-      tmc: tmc,
+      tmcs: requestedTMCs,
       data: data
     });
   },

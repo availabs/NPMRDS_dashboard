@@ -10,10 +10,11 @@ module.exports = {
 		        	.exec(function(error, result) {
 			            if (error) {
 			            	console.log(error);
-			            	res.send(error, 500);
-			            	return;
+			            	res.serverError(error);
 			            }
-			            res.send({ error: error, result: result });
+			            else {
+			            	res.send({ error: error, result: result });
+			            }
 			    	});
 		    }
 		    else {
@@ -21,10 +22,11 @@ module.exports = {
 		        	.exec(function(error, result) {
 			            if (error) {
 			            	console.log(error);
-			            	res.send(error, 500);
-			            	return;
+			            	res.serverError(error);
 			            }
-			            res.send(result);
+			            else {
+			            	res.send(result);
+			            }
 			    	});
 		    }
 		})
@@ -36,11 +38,10 @@ module.exports = {
 		Routedata.find({ owner: owner, name: name }).exec(function(error, result) {
             if (error) {
             	console.log(error);
-            	res.send(error, 500);
-            	return;
+			    res.serverError(error);
             }
-			if (!result.length) {
-				res.send({ error: "no route named: "+name }, 400);
+			else if (!result.length) {
+				res.badRequest("no route named: "+name);
 			}
 			else {
 				res.send(result.pop());
@@ -53,10 +54,9 @@ module.exports = {
 		Routedata.find({ owner: owner }).exec(function(error, result) {
             if (error) {
             	console.log(error);
-            	res.send(error, 500);
-            	return;
+			    res.serverError(error);
             }
-			if (!result.length) {
+			else if (!result.length) {
 				res.send([]);
 			}
 			else {

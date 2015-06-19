@@ -45,9 +45,9 @@ var LineGraph = React.createClass({
 		
 		TMCDataStore.removeChangeListener(Events.TMC_DATAVIEW_CHANGE, this.dataviewChange);
 	},
-	TMCadded: function(data) {
-		if (!(data.tmc.toString() in this.state.selectedTMCs)) {
-			this.state.selectedTMCs[data.tmc.toString()] = data.tmc;
+	TMCadded: function(tmc) {
+		if (!(tmc.toString() in this.state.selectedTMCs)) {
+			this.state.selectedTMCs[tmc.toString()] = tmc;
 			var TMCs = [];
 			for (var k in this.state.selectedTMCs) {
 				TMCs.push(this.state.selectedTMCs[k]);
@@ -55,7 +55,7 @@ var LineGraph = React.createClass({
 			this.state.labeller.tmcs(TMCs)();
 
 			if (!currentTMC) {
-				currentTMC = data.tmc;
+				currentTMC = tmc;
 				this.updateGraph();
 			}
 		}

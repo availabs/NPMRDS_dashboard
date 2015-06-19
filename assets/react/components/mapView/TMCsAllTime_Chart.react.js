@@ -65,10 +65,10 @@ var TMCChart = React.createClass({
 		TMCDataStore.removeChangeListener(Events.DISPLAY_TMC_DATA, this.TMCadded);
 		TMCDataStore.removeChangeListener(Events.REMOVE_TMC_DATA, this.TMCremoved);
 	},
-	TMCadded: function(data) {
-		if (!(data.tmc.toString() in this.state.selectedTMCs)) {
-			this.state.selectedTMCs[data.tmc.toString()] = data.tmc;
-			this.addTMCtoChart(data.tmc);
+	TMCadded: function(tmc) {
+		if (!(tmc.toString() in this.state.selectedTMCs)) {
+			this.state.selectedTMCs[tmc.toString()] = tmc;
+			this.addTMCtoChart(tmc);
 		}
 	},
 	TMCremoved: function(tmc) {
