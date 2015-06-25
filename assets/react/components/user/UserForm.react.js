@@ -54,12 +54,12 @@ var UserForm = React.createClass({
             setTimeout(function(){
                 var errors = document.getElementsByClassName('parsley-errors-list filled');
                 
-                /*
-                /50ms timout to let parsley parse
-                /I don't love this solution
-                /but it still seems better than forcing
-                /jquery and parsley through commonjs
-                */
+                /**
+                /* 50ms timout to let parsley parse
+                /* I don't love this solution
+                /* but it still seems better than forcing
+                /* jquery and parsley through commonjs
+                **/
                 
                 console.log(errors.length,errors[0],errors);
                 

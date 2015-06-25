@@ -14,7 +14,7 @@ var App = React.createClass({
                 <Logo />
                 <div className="wrap">
                     <Header />
-                      <RouteHandler />
+                    <RouteHandler />
                 </div>
                
             </div>

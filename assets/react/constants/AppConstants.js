@@ -11,6 +11,7 @@ module.exports = {
     //-------------------------------------------------------
     SELECT_USER: null,
     CREATE_USER:null,
+    GET_PREFERENCES: null,
 
     //-------------------------------------------------------
     //Server actions 

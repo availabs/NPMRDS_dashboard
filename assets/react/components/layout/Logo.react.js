@@ -5,7 +5,7 @@ var Logo = React.createClass({
   render: function() {
     return (
     	<div className="logo">
-        	<h3><a href="/">NPMRDS Map</a></h3>
+        	<h3><a href="/#/landing">NPMRDS</a></h3>
     	</div>
     );
   }

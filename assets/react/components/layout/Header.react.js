@@ -39,38 +39,49 @@ var Header = React.createClass({
         //         <span className="name">User Admin</span>
         //     </Link>
         // </li>
+        var padding = {"margin-right": "10px"}
         return (
             <header className="page-header">
                 <div className="navbar">
                     <ul className="nav navbar-nav navbar-right pull-right">
+                        <li className="hidden-xs dropdown">
+                            <a href="#" className="dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                                <span className="glyphicon glyphicon-th-list" />
+                            </a>
+                            <ul id="npmrds-pages" className="dropdown-menu account" role="menu">
+                                <li role="presentation">
+                                    <a href="/#/mapView">
+                                        <span style={padding} className="glyphicon glyphicon-picture" />
+                                        NPMRDS Map
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
                         
                         <li className="hidden-xs dropdown">
                             <a href="#" title="Account" id="account" className="dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
-                                <i className="fa fa-user"></i>
+                                <i className="glyphicon glyphicon-user"></i>
                             </a>
                             <ul id="account-menu" className="dropdown-menu account" role="menu">
                                 <li role="presentation" className="account-picture">
-                                    
                                     {this.state.sessionUser.name}
                                 </li>
                                 <li role="presentation">
-                                    <a href="form_account.html" className="link">
-                                        <a href="">
-                                            <i className="fa fa-cog"></i>
-                                            Settings
-                                        </a>
+                                    <a href="/#/user/settings">
+                                        <i style={padding} className="glyphicon glyphicon-cog"></i>
+                                        Settings
                                     </a>
                                 </li>
                                 {adminLinks}
                                
                             </ul>
                         </li>
-                        <li className="visible-xs">
-                            <a href="#" className="btn-navbar" data-toggle="collapse" data-target=".sidebar" title="">
-                                <i className="fa fa-bars"></i>
+                        
+                        <li className="hidden-xs">
+                            <a href="/logout">
+                                <i className="glyphicon glyphicon-log-out" />
                             </a>
                         </li>
-                        <li className="hidden-xs"><a href="/logout"><i className="fa fa-sign-out"></i></a></li>
                     </ul>
                 </div>
             </header>

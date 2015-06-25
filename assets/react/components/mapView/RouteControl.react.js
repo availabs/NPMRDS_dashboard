@@ -26,7 +26,7 @@ var RoutePanel = React.createClass({
         RouteStore.addChangeListener(Events.ROUTE_SAVED, this.routeSaved);
         RouteStore.addChangeListener(Events.RECEIVED_SAVED_ROUTES, this.displaySavedRoutes);
 
-        var owner = UserStore.getSessionUser().username;
+        var owner = UserStore.getSessionUser().id;
         SailsWebApi.getSavedRoutes(owner);
     },
     componentWillUnmount: function() {
@@ -69,7 +69,7 @@ var RoutePanel = React.createClass({
 console.log("RouteControl, saving route:",name);
 
         var data = {
-            owner: UserStore.getSessionUser().username,
+            owner: UserStore.getSessionUser().id,
             name: name,
             points:  RouteStore.getRouteData().points
         }
@@ -77,7 +77,7 @@ console.log("RouteControl, saving route:",name);
 	},
     routeSaved: function() {
 console.log("route saved!!!");
-        var owner = UserStore.getSessionUser().username;
+        var owner = UserStore.getSessionUser().id;
         SailsWebApi.getSavedRoutes(owner);
     },
     loadRoute: function(data) {
@@ -90,7 +90,7 @@ console.log("route saved!!!");
         }
 
         var data = {
-            owner: UserStore.getSessionUser().username,
+            owner: UserStore.getSessionUser().id,
             name: name
         }
         SailsWebApi.loadRoute(data);
@@ -111,13 +111,13 @@ console.log("route saved!!!");
                 </header>
 	            <div className="body">
                     <div className="form-group">
-                        <label for="search-input">Route Name</label>
+                        <label htmlFor="search-input">Route Name</label>
                         <div className="input-group">
                             <input id="routeName" className='form-control' type="texy" color="#000"/>
                         </div>
                     </div>
                     <div className="form-group">
-                        <label for="search-input">Saved Routes</label>
+                        <label htmlFor="search-input">Saved Routes</label>
                         <select id="savedRoutes" className="form-control" onChange={this.loadRoute}>
                             {options}
                         </select>

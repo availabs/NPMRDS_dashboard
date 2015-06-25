@@ -50,5 +50,11 @@ module.exports.routes = {
   */
   '/routes/save/:owner/:name/:points': 'routedata.saveRoute',
   '/routes/load/:owner/:name': 'routedata.loadRoute',
-  '/routes/getsaved/:owner': 'routedata.getSavedRoutes'
+  '/routes/getsaved/:owner': 'routedata.getSavedRoutes',
+
+  /**
+  * user preferences saving and loading
+  */
+  '/preferences/save/:id/:type/:mpo': 'userpreferences.savePreferences',
+  '/preferences/get/:id': 'userpreferences.getPreferences',
 };

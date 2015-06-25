@@ -15,8 +15,8 @@ module.exports = {
 		links: {
 			type: 'text'
 		},
-		owner: {
-			type: 'string',
+		owner: {					// user account id
+			type: 'integer',
         	required: true
 		},
 		name: {

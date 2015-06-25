@@ -163,6 +163,7 @@ console.log("UsageDataStore.processUsageData", usageData);
 		}
 	})
 
+console.time("geoShifting took:")
 	for (var fips in loadedRoadsByCounty) {
 		var features = loadedRoadsByCounty[fips],
 			newFeatures = [];
@@ -199,6 +200,7 @@ console.log("UsageDataStore.processUsageData", usageData);
 
 		shiftedRoadsByCounty[fips] = newFeatures;
 	}
+console.timeEnd("geoShifting took:")
 
 	GeoStore.setShiftedRoads(shiftedRoadsByCounty);
 

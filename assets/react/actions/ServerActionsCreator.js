@@ -24,6 +24,12 @@ module.exports = {
       user:data
     })
   },
+  receivePreferences: function(prefs) {
+    AppDispatcher.handleServerAction({
+      type: ActionTypes.GET_PREFERENCES,
+      prefs: prefs
+    })
+  },
   
   //------------------------------------
   // CRUD Handlers

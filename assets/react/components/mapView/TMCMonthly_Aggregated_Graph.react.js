@@ -50,7 +50,7 @@ var LineGraph = React.createClass({
 			var tmc = tmcData[0].tmc.toString();
 			// newTMCmodel.add(tmc, tmcData);
 			TMCmodel.add(tmc, tmcData);
-			TMCmap.set(tmc, {distance: tmcData[0].distance, road_name: tmcData[0].road_name});
+			// TMCmap.set(tmc, {distance: tmcData[0].distance, road_name: tmcData[0].road_name});
 		})
 
 		// var TMCs = TMCmap.keys();

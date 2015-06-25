@@ -15,7 +15,8 @@ var AppDispatcher = require('../dispatcher/AppDispatcher'),
 
 var _editUserID = null,
     _users = {},
-    _sessionUser= {};
+    _sessionUser= {},
+    _userPreferences = { user_type: "unloaded" };
 
 function _addUsers(rawData) {
   //console.log('stores/UserStore/_addUsers',rawData);
@@ -67,6 +68,9 @@ var UserStore = assign({}, EventEmitter.prototype, {
   },
   getSessionUser:function(){
     return _sessionUser;
+  },
+  getPreferences: function() {
+    return _userPreferences;
   }
 
 });
@@ -75,6 +79,12 @@ UserStore.dispatchToken = AppDispatcher.register(function(payload) {
   var action = payload.action;
 
   switch(action.type) {
+
+    case ActionTypes.GET_PREFERENCES:
+      _userPreferences = action.prefs;
+      console.log("<UserStore> GET_PREFERENCES", _userPreferences);
+      UserStore.emitChange();
+    break;
 
     case ActionTypes.SET_SESSION_USER:
       _sessionUser = action.user;

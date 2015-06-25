@@ -16,20 +16,25 @@ var React = require('react'),
 
 //  --- Pages
     MapView = require('./pages/mapView.react'),
-    UserAdmin = require('./pages/UserAdmin.react')
+    UserAdmin = require('./pages/UserAdmin.react'),
+    LandingPage = require('./pages/LandingPage.react'),
+    UserSettings = require('./pages/UserSettings.react'),
 
 // --- Server API
     sailsWebApi = require('./utils/api/SailsWebApi.js');
 
 // --- Initialize the API with the session User  
-    sailsWebApi.initAdmin(window.User);
+sailsWebApi.initAdmin(window.User);
+delete window.User;
 
 //  --- Routes 
 var routes = (
   <Route name="app" path="/" handler={App}>
-    <Route name="mapVieiw" handler={MapView}/>
+    <Route name="LandingPage" path="landing" handler={LandingPage} />
+    <Route name="mapVieiw" path="mapView" handler={MapView}/>
     <Route name="userAdmin" path="admin/users"  handler={UserAdmin} />
-    <DefaultRoute handler={MapView}/>
+    <Route name="settings" path="user/settings" handler={UserSettings} />
+    <DefaultRoute handler={LandingPage}/>
   </Route>
 );
 

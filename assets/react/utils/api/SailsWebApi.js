@@ -41,9 +41,25 @@ var SailsWebApi = assign({}, EventEmitter.prototype, {
 
     ServerActionCreators.setAppSection('admin');
     ServerActionCreators.setSessionUser(user);
+
+    this.getPreferences(user.id);
     this.getCounties();
 
     this.read('user');
+  },
+  getPreferences: function(id) {
+    SailsWebApi.checkLoading(true);
+    d3.json("/preferences/get/"+id, function(error, result) {
+        SailsWebApi.checkLoading(false);
+        ServerActionCreators.receivePreferences(result);
+    })
+  },
+  savePreferences: function(id, type, mpo) {
+    d3.xhr("/preferences/save/"+id+"/"+type+"/"+mpo)
+        .response(function(request) { return JSON.parse(request.responseText); })
+        .post(function(err, result) {
+            ServerActionCreators.receivePreferences(result);
+        });
   },
   initCmpgn: function(user,campaign){
 
@@ -91,14 +107,14 @@ console.log("SailsWebApi.getTMCdata: getting data for", unloadedTMCs);
     var requests = [],
         i = 0,
         responses = 0,
-        data = { rows: [], numRows: 0 };
+        data = { rows: [], numRows: 0 },
+        maxSize = 4;
 
     while (i < unloadedTMCs.length) {
-        requests.push(unloadedTMCs.slice(i, i+2));
-        i += 2;
+        var size = (unloadedTMCs.length-i > maxSize) ? Math.min(maxSize, Math.ceil((unloadedTMCs.length-i)/2)) : maxSize;
+        requests.push(unloadedTMCs.slice(i, i+size));
+        i += size;
     }
-
-    requests = [unloadedTMCs];
 
     requests.forEach(function(request) {
         SailsWebApi.checkLoading(true);

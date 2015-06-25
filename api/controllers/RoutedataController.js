@@ -5,7 +5,10 @@ module.exports = {
 			points = req.param("points");
 
 		Routedata.find({ owner: owner, name: name }).exec(function(error, result) {
-			if (!result.length) {
+			if (error) {
+				res.serverError(error);
+			}
+			else if (!result.length) {
 				Routedata.create({ owner: owner, name: name, points: points })
 		        	.exec(function(error, result) {
 			            if (error) {
