@@ -1,21 +1,19 @@
-/**
-* Geography.js
-*
-* @description :: TODO: You might write a short summary of how this model works and what it represents here.
-* @docs        :: http://sailsjs.org/#!documentation/models
+/*
+This model is used as a cache for roads requested for a county or MPO area.
 */
 
 module.exports = {
 	attributes: {
-		id: {
+		id: {						// county FIPS code or MPO area that the links are contained within
   			type: 'string',
   			unique: true,
   			primaryKey: true
 		},
-		links: {
-        	type: 'text'
+		links: {					// the collection of links contained within this area,
+									// stored as a JSON.stringified topojson object
+        	type: 'string'
 		},
-		requests: {
+		requests: {					// the number of times this collection of links has been requested
 			type: 'integer'
 		}
   	},

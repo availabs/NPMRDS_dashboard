@@ -28,27 +28,16 @@ var Header = React.createClass({
         this.setState(getSessionUserfromStore());
     },
     render: function() {
-        var adminLinks = '';
-        // if(this.state.sessionUser.admin){
-        //     adminLinks = <li role="presentation"><a href="/admin/" className="link"><i className="fa fa-empire"></i>Admin Panel</a></li>
-            
-        // }
-        // <li role="presentation">
-        //     <Link to="userAdmin">
-        //         <i className="fa fa-users"></i>
-        //         <span className="name">User Admin</span>
-        //     </Link>
-        // </li>
-        var padding = {"margin-right": "10px"}
+        var padding = {"marginRight": "10px"}
         return (
             <header className="page-header">
                 <div className="navbar">
                     <ul className="nav navbar-nav navbar-right pull-right">
                         <li className="hidden-xs dropdown">
-                            <a href="#" className="dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                            <a href="#" title="Links" id="npmrds-links" className="dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
                                 <span className="glyphicon glyphicon-th-list" />
                             </a>
-                            <ul id="npmrds-pages" className="dropdown-menu account" role="menu">
+                            <ul className="dropdown-menu account" role="menu">
                                 <li role="presentation">
                                     <a href="/#/mapView">
                                         <span style={padding} className="glyphicon glyphicon-picture" />
@@ -72,13 +61,11 @@ var Header = React.createClass({
                                         Settings
                                     </a>
                                 </li>
-                                {adminLinks}
-                               
                             </ul>
                         </li>
-                        
+
                         <li className="hidden-xs">
-                            <a href="/logout">
+                            <a href="/logout" title="Logout">
                                 <i className="glyphicon glyphicon-log-out" />
                             </a>
                         </li>

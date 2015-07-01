@@ -38,7 +38,9 @@ module.exports = {
 
     ROUTE_SAVED: null,
     ROUTE_LOADED: null,
-    RECEIVED_SAVED_ROUTES: null
+    RECEIVED_SAVED_ROUTES: null,
+
+    RECEIVE_MPO_NAMES: null
   }),
 
   EventTypes: keyMirror({

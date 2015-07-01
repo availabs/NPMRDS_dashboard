@@ -179,6 +179,7 @@ var WEEKDAYS = {
 }
 
 function checkParams(params) {
+console.log("checkParams",params)
 	if (params.weekdays.length != 5) {
 		return true;
 	}

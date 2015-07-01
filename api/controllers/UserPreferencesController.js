@@ -1,12 +1,10 @@
 module.exports = {
 	savePreferences: function(req, res) {
 		var user_type = req.param("type"),
-			mpo_id = req.param("mpo"),
+			mpo_name = req.param("mpo"),
 			owner = req.param("id");
-
-console.log("savePrefs", owner, user_type, mpo_id);
 		
-		UserPreferences.create({ user_type: user_type, mpo_id: mpo_id, owner: owner })
+		UserPreferences.create({ user_type: user_type, mpo_name: mpo_name, owner: owner })
 			.exec(function(error, result) {
 				if (error) {
 					res.serverError(error);
@@ -17,9 +15,9 @@ console.log("savePrefs", owner, user_type, mpo_id);
 			})
 	},
 	getPreferences: function(req, res) {
-		var userID = req.param("id");
+		var owner = req.param("id");
 
-		UserPreferences.findOneByOwner(userID)
+		UserPreferences.findOneByOwner(owner)
 			.exec(function(error, result) {
 				if (error) {
 					res.serverError(error);

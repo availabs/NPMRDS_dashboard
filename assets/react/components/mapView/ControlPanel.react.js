@@ -22,6 +22,8 @@ var ControlPanel = React.createClass({
     componentDidMount: function() {
         SailsWebApi.addChangeListener(Events.SAILS_WEB_API_LOADING_START, this._onDataLoadingStart);
         SailsWebApi.addChangeListener(Events.SAILS_WEB_API_LOADING_STOP, this._onDataLoadingStop);
+
+        this.getParams();
     },
     componentWillUnmount: function() {
         SailsWebApi.removeChangeListener(Events.SAILS_WEB_API_LOADING_START, this._onDataLoadingStart);

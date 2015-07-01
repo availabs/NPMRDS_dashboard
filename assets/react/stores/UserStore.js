@@ -16,6 +16,7 @@ var AppDispatcher = require('../dispatcher/AppDispatcher'),
 var _editUserID = null,
     _users = {},
     _sessionUser= {},
+    _MPONames = [],
     _userPreferences = { user_type: "unloaded" };
 
 function _addUsers(rawData) {
@@ -71,8 +72,10 @@ var UserStore = assign({}, EventEmitter.prototype, {
   },
   getPreferences: function() {
     return _userPreferences;
+  },
+  getMPONames: function() {
+    return _MPONames;
   }
-
 });
 
 UserStore.dispatchToken = AppDispatcher.register(function(payload) {
@@ -83,6 +86,12 @@ UserStore.dispatchToken = AppDispatcher.register(function(payload) {
     case ActionTypes.GET_PREFERENCES:
       _userPreferences = action.prefs;
       console.log("<UserStore> GET_PREFERENCES", _userPreferences);
+      UserStore.emitChange();
+    break;
+
+    case ActionTypes.RECEIVE_MPO_NAMES:
+      _MPONames = action.names;
+      console.log("<UserStore> RECEIVE_MPO_NAMES", _MPONames);
       UserStore.emitChange();
     break;
 

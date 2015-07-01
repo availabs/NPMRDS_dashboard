@@ -3,7 +3,7 @@ var BIGquery = require("../../custom_modules/BigQuery")(),
 
 module.exports = {
 	getTMCData: function(req, res) {
-		var TMCs = JSON.parse(req.param("id"));
+		var TMCs = JSON.parse(req.param("tmc"));
 
 		if (!TMCs) {
 			res.badRequest("Missing required parameter: TMC code");
@@ -21,17 +21,16 @@ console.log("TMC data requested for", TMCs);
 			}
 			else {
 console.log("Sending TMC data for", TMCs);
-				res.send(result);
+				res.ok(result);
 			}
 		})
 	},
 
 	TMClookup: function(req, res) {
-		var links = req.param("links");
+		var links = JSON.parse(req.param("links"));
 
-		if (!links || !Array.isArray(links)) {
-			res.badRequest("Must include an array of linkIDs");
-			return;
+		if (!Array.isArray(links)) {
+			links = [links];
 		}
 
 		var sql = "SELECT lut.tmc AS tmc, lut.dir AS linkDir, attr.direction AS travelDir "+
@@ -50,7 +49,7 @@ console.log("Sending TMC data for", TMCs);
 					response[row.f[0].v] = { linkDir: row.f[1].v, travelDir: row.f[2].v };
 				});
 
-				res.send(response);
+				res.ok(response);
 			}
 		});
 	},
@@ -75,9 +74,10 @@ function TMCDataBuilder() {
 		BIGquery(sql, function(error, result) {
 			if (error) {
 				cb(error);
-				return;
 			}
-			cb(error, BIGquery.parseResult(result));
+			else {
+				cb(error, BIGquery.parseResult(result));
+			}
 		});
 	}
 

@@ -30,6 +30,13 @@ module.exports = {
       prefs: prefs
     })
   },
+
+  receiveMPONames: function(data) {
+    AppDispatcher.handleServerAction({
+      type: ActionTypes.RECEIVE_MPO_NAMES,
+      names: data
+    })
+  },
   
   //------------------------------------
   // CRUD Handlers

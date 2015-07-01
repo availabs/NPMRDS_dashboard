@@ -43,6 +43,8 @@ var SailsWebApi = assign({}, EventEmitter.prototype, {
     ServerActionCreators.setSessionUser(user);
 
     this.getPreferences(user.id);
+    this.getMPONames();
+    
     this.getCounties();
 
     this.read('user');
@@ -52,6 +54,16 @@ var SailsWebApi = assign({}, EventEmitter.prototype, {
     d3.json("/preferences/get/"+id, function(error, result) {
         SailsWebApi.checkLoading(false);
         ServerActionCreators.receivePreferences(result);
+    })
+  },
+  getMPONames: function() {
+    d3.json("/mpo/getallnames", function(error, result) {
+      if (error) {
+        console.log(error);
+      }
+      else {
+        ServerActionCreators.receiveMPONames(result);
+      }
     })
   },
   savePreferences: function(id, type, mpo) {
@@ -121,7 +133,7 @@ console.log("SailsWebApi.getTMCdata: getting data for", unloadedTMCs);
 
 console.log("SailsWebApi.getTMCdata: requesting data for", request);
 
-        d3.json("/tmcdata/"+JSON.stringify(request), function(err, tmcData) {
+        d3.json("/tmc/data/"+JSON.stringify(request), function(err, tmcData) {
             SailsWebApi.checkLoading(false);
             data.rows = data.rows.concat(tmcData.rows);
             data.numRows += tmcData.numRows;
@@ -148,7 +160,7 @@ console.log("SailsWebApi.getTMCdata: recieved data for", unloadedTMCs);
 
   getCountyRoads: function(fips) {
     SailsWebApi.checkLoading(true);
-    d3.json("/geo/getcounty/"+fips, function(err, topo) {
+    d3.json("/roads/geo/county/"+fips, function(err, topo) {
       ServerActionCreators.receiveCountyRoads(topo);
         SailsWebApi.checkLoading(false);
     })
@@ -156,7 +168,7 @@ console.log("SailsWebApi.getTMCdata: recieved data for", unloadedTMCs);
 
   getCountyUsageData: function(fips, params) {
     SailsWebApi.checkLoading(true);
-    d3.xhr("/usage/getcounty/"+fips)
+    d3.xhr("/roads/usage/county/"+fips)
       .response(function(request) { return JSON.parse(request.responseText); })
       .post(JSON.stringify(params), function(err, data) {
         ServerActionCreators.receiveCountyData(fips, params, data);
@@ -166,9 +178,8 @@ console.log("SailsWebApi.getTMCdata: recieved data for", unloadedTMCs);
 
   getTMClookup: function(links) {
     SailsWebApi.checkLoading(true);
-    d3.xhr("/tmclookup")
-      .response(function(request) { return JSON.parse(request.responseText); })
-      .post(JSON.stringify({links:links}), function(err, data) {
+    var links = JSON.stringify(links);
+    d3.json("/tmc/lookup/"+links, function(err, data) {
         ServerActionCreators.receiveTMClookup(data);
         SailsWebApi.checkLoading(false);
       })

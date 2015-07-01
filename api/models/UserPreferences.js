@@ -9,11 +9,11 @@ module.exports = {
 			type: "string",
 			required: true
 		},
-		mpo_id: {						// -1 if userType == state_user
-			type: "integer",
-			defaultsTo: -1
+		mpo_name: {							// ignored if userType == state_user
+			type: "string",
+			defaultsTo: "state_user"
 		},
-		owner: {						// username
+		owner: {							// corresponds to the User model unique user ID
 			type: 'integer',
         	required: true
 		}

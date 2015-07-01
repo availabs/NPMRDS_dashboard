@@ -1,3 +1,8 @@
+/*
+This object is used by the GeodataController for creating the topojson objects
+for a collection of links.
+*/
+
 var topojson = require("topojson");
 
 function TopologyBuilder() {

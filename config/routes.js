@@ -30,20 +30,20 @@ module.exports.routes = {
   /**
   * road topology, by fips codes
   */
-  '/geo/getcounty/:id?': 'geodata.getCountyTopology',
-  '/geo/getstate/:id': 'geodata.getStateTopology',
+  '/roads/geo/county/:id': 'geodata.getCountyRoads',
+  '/roads/geo/state/:id': 'geodata.getStateRoads',
 
   /**
   * road usage data, by linkID
   */
-  '/usage/getstate/:id': 'usagedata.getStateData',
-  '/usage/getcounty/:id': 'usagedata.getCountyData',
+  '/roads/usage/state/:id': 'usagedata.getStateData',
+  '/roads/usage/county/:id': 'usagedata.getCountyData',
 
   /**
-  * tmc statistical data, by tmc code
+  * tmc usage data, by tmc code
   */
-  '/tmcdata/:id': 'tmcdata.getTMCData',
-  '/tmclookup': 'tmcdata.TMClookup',
+  '/tmc/data/:tmc': 'tmcdata.getTMCData',
+  '/tmc/lookup/:links': 'tmcdata.TMClookup',
 
   /**
   * route saving and loading
@@ -57,4 +57,9 @@ module.exports.routes = {
   */
   '/preferences/save/:id/:type/:mpo': 'userpreferences.savePreferences',
   '/preferences/get/:id': 'userpreferences.getPreferences',
+
+  /**
+  * MPOData model controls
+  */
+  '/mpo/getallnames': 'mpodata.getAllNames'
 };
