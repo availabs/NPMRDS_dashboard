@@ -5,9 +5,11 @@ function BigQueryTest() {
 	var jwt = new googleapis.auth.JWT(
 	        '748884541822-qirdunlbhosdte2h8tbjq59otnr4k1cu@developer.gserviceaccount.com',
 	        'npmrds.pem',
-	        'f1550f94abf21829e6a631503c78f80a825bb9ff',
+	        null,
 	        ['https://www.googleapis.com/auth/bigquery']);
-	jwt.authorize();
+	jwt.authorize(function(error, result) {
+		console.log(error, result);
+	});
 
 	function BigQuery() {
 		var projectId = 'npmrds';
@@ -22,17 +24,17 @@ function BigQueryTest() {
 			    	auth: jwt },
 			    function(error, result) {
 			    	if (error) {
-			    		cb({status:500, error:error});
+			    		cb(error);
 			    		return;
 			    	}
 
 			    	if (!result["jobComplete"]) {
-			    		setTimeout(wait, 2000, result, cb);
+			    		setTimeout(wait, 500, result, cb);
 			    		return;
 			    	}
 
 					if (!result.rows) {
-						cb({error:"empty response from BigQuery", status:500});
+						cb("empty response from BigQuery");
 						return;
 					}
 
@@ -101,13 +103,12 @@ console.log("<BigQuery> Job still running:", result["jobReference"]["jobId"]);
 			}
 			bigQuery.jobs.getQueryResults(params, function(error, result) {
 				if(error) {
-					console.log(error);
-					cb({status: 500, error:error});
+					cb(error);
 					return;
 				}
 
 				if (!result.rows) {
-					cb({error:"empty response from BigQuery", status:500});
+					cb("empty response from BigQuery");
 					return;
 				}
 
@@ -130,8 +131,7 @@ console.log("<BigQuery> Job still running:", result["jobReference"]["jobId"]);
 console.log("<BigQuery> Getting more rows:", params.jobId);
 			bigQuery.jobs.getQueryResults(params, function(error, data) {
 				if(error) {
-					console.log(error);
-					cb({status: 500, error:error});
+					cb(error);
 					return;
 				}
 console.log("<BigQuery> Received additional rows:", params.jobId);

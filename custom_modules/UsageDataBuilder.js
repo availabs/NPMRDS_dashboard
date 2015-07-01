@@ -1,3 +1,7 @@
+/*
+This object is used by the UsagedataController for retrieving usage data for a requested array of linkIDs.
+*/
+
 var BIGquery = require("./BigQuery")();
 
 function UsageDataBuilder() {
