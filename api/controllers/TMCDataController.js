@@ -1,19 +1,29 @@
+/*
+This controller is used for retrieving data for TMC codes.
+*/
+
 var BIGquery = require("../../custom_modules/BigQuery")(),
 	dataBuilder = TMCDataBuilder();
 
 module.exports = {
 	getTMCData: function(req, res) {
-		var TMCs = JSON.parse(req.param("tmc"));
+	/*
+	This route is used to receive TMC data for a single TMC or an array of TMCs.
 
-		if (!TMCs) {
-			res.badRequest("Missing required parameter: TMC code");
-			return;
-		}
-console.log("TMC data requested for", TMCs);
+	tmc: this parameter is either a single string for a single TMC or an array of
+		TMC strings. If an array is sent it should be sent as a JSON string, e.g. 
+		using JSON.stringify(array).
+
+	return: the returned object is a simplified BigQuery object created by
+		the BigQuery module.
+	*/
+		var TMCs = JSON.parse(req.param("tmc"));
 
 		if (!Array.isArray(TMCs)) {
 			TMCs = [TMCs];
 		}
+
+console.log("TMC data requested for", TMCs);
 
 		dataBuilder(TMCs, function(error, result) {
 			if (error) {
