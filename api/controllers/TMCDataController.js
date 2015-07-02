@@ -15,7 +15,8 @@ module.exports = {
 		using JSON.stringify(array).
 
 	return: the returned object is a simplified BigQuery object created by
-		the BigQuery module.
+		the BigQuery module. A detailed explanation of what this response
+		looks like can be found there in the BigQuery module.
 	*/
 		var TMCs = JSON.parse(req.param("tmc"));
 
@@ -37,29 +38,34 @@ console.log("Sending TMC data for", TMCs);
 	},
 
 	TMClookup: function(req, res) {
+	/*
+	This route is used to retrieve a list of all TMC codes attached to the
+		requested link or links.
+
+	links: a single linkID or an array of linkIDs. An array should be sent
+		as a JSON string, e.g. using JSON.stringify(array).
+
+	return: an object indexed by TMC codes associated with
+		the requested linkIDs. Each TMC index is an object containing
+		directional data for the specific link and tmc.
+	*/
 		var links = JSON.parse(req.param("links"));
 
 		if (!Array.isArray(links)) {
 			links = [links];
 		}
 
-		var sql = "SELECT lut.tmc AS tmc, lut.dir AS linkDir, attr.direction AS travelDir "+
+		var sql = "SELECT lut.tmc AS tmc, lut.dir AS linkDir "+
 		            "FROM [NPMRDS_LUT.NPMRDS_LUT] AS lut "+
-		            "JOIN EACH [NPMRDS_LUT.TMC_ATTRIBUTES] AS attr ON lut.tmc = attr.tmc "+
 		            "WHERE lut.link_id IN ("+ links.join() +") "+
-		            "GROUP BY tmc, linkDir, travelDir;",
-		    response = {};
+		            "GROUP BY tmc, linkDir;";
 
 		BIGquery(sql, function(error, result) {
 			if (error) {
 				res.serverError(error);
 			}
 			else {
-				result.rows.forEach(function(row) {
-					response[row.f[0].v] = { linkDir: row.f[1].v, travelDir: row.f[2].v };
-				});
-
-				res.ok(response);
+				res.ok(BIGquery.parseResult(result));
 			}
 		});
 	},
@@ -68,7 +74,20 @@ console.log("Sending TMC data for", TMCs);
 };
 
 function TMCDataBuilder() {
+/*
+Tihs module is used to create TMC data requests.
+*/
 	function builder(tmc, cb) {
+	/*
+	This function generates a BigQuery query for TMC data.
+
+	tmc: an array of 1 or more TMC codes to receive data for.
+	cb: callback function executed upon query completion. The callback
+		function should accept (error, result) as parameters.
+
+	result: The data for all of the queried TMCs are combined into a
+		single, simplified BigQuery object.
+	*/
 		var sql = "SELECT travel_time_all, travel_time_truck, date, epoch, distance, weekday, road_name, here.tmc AS tmc "+
 			"FROM [HERE_traffic_data.HERE_NY] AS here "+
 			"JOIN EACH [NPMRDS_LUT.TMC_ATTRIBUTES] AS lut ON here.tmc = lut.tmc "+

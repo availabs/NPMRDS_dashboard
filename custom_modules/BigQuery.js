@@ -141,6 +141,13 @@ console.log("<BigQuery> Job still running:", QBresponse["jobReference"]["jobId"]
 	}
 
 	function getResults(status, cb) {
+	/*
+	This private function is used internally after waiting for an unfinished query job.
+
+	status: the status object for a completed job returned by Google.
+	cb: callback function executed upon completion. The callback 
+		function should accept (error, result) as parameters.
+	*/
 		var params = {
 			jobId: status.jobReference.jobId,
 			projectId: projectId,
@@ -167,9 +174,20 @@ console.log("<BigQuery> Job still running:", QBresponse["jobReference"]["jobId"]
 		})
 	}
 
-	function getMoreRows(result, pageToken, cb) {
+	function getMoreRows(response, pageToken, cb) {
+	/*
+	This private function is used internally to receive additional 
+		pages of results if a query response has more than 100,000 rows.
+
+	response: a query response returned by Google. Additional data is
+		added into this object's rows.
+	pageToken: the pageToken identifying the last page of read received.
+		Google uses this to receive the next page of data.
+	cb: callback function executed upon completion. The callback 
+		function should accept (error, result) as parameters.
+	*/
 		var params = {
-			jobId: result.jobReference.jobId,
+			jobId: response.jobReference.jobId,
 			projectId: projectId,
 			auth: jwt,
 			pageToken: pageToken
@@ -180,21 +198,21 @@ console.log("<BigQuery> Getting more rows:", params.jobId);
 				cb(error);
 				return;
 			}
-console.log("<BigQuery> Received additional rows:", params.jobId);
 
-			if (data.rows.length) {
-				// data.rows.forEach(function(row) {
-				// 	result.rows.push(row);
-				// })
-				result.rows = result.rows.concat(data.rows);
-console.log("<BigQuery> Combined rows:", params.jobId);
+			if (!response.rows) {
+				cb("empty response from BigQuery");
+				return;
 			}
 
-	    	if (result.totalRows > result.rows.length) {
-	    		getMoreRows(result, data.pageToken,  cb);
+			if (data.rows.length) {
+				response.rows = response.rows.concat(data.rows);
+			}
+
+	    	if (response.totalRows > response.rows.length) {
+	    		getMoreRows(response, data.pageToken,  cb);
 	    	}
 	    	else {
-	    		cb(error, result);
+	    		cb(error, response);
 	    	}
 		})
 	}
