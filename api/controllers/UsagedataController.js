@@ -33,20 +33,27 @@ console.log("sending data for ", request.fips);
 	getCountyData: function(req, res) {
 	/*
 	This route is used to get TMC data for the requested array of linkIDs.
-	The required route parameter: id is the state FIPS code used to query
-	the correct table.
+
+	id: is the state FIPS code used to query the correct table.
+	links: the array of linkIDs to retrieve data for.
+	dateBounds: optional parameter. Should be an a rray of 1 or 2 dates
+		in the form: yyyymmdd
+	timeBounds: optional parameter. Should be an array of 1 or 2 integer
+		representing minutes since 12:00 am.
+	resolution: optional parameter. Specifies query grouping.
+	weekdays: optional parameter. Specifies weekdays to receive data from.
 	*/
 		var request = {
 			type: "county",
 			fips: req.param("id"),
+			links: req.param("links"),
 			dateBounds: req.param("dateBounds"),
 			timeBounds: req.param("timeBounds"),
 			resolution: req.param("resolution"),
-			links: req.param("links"),
 			weekdays: req.param("weekdays")
 		};
 		
-console.log("data requested for:", request.fips);
+console.log("TMC usage data requested for:", request.fips);
 
 		Builder(request, function(error, result) {
 			if (error) {
