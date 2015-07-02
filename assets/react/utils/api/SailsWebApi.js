@@ -6,7 +6,8 @@ var io = require('./sails.io.js')(),
     ServerActionCreators = require('../../actions/ServerActionsCreator'),
     EventEmitter = require('events').EventEmitter,
     Constants = require('../../constants/AppConstants'),
-    Events = Constants.EventTypes;
+    Events = Constants.EventTypes,
+    AppDispatcher = require("../../dispatcher/AppDispatcher.js");
 
 var LOADING = 0;
 
@@ -24,17 +25,41 @@ var SailsWebApi = assign({}, EventEmitter.prototype, {
         if (loading) {
             if (!LOADING) {
                 this.emitEvent(Events.SAILS_WEB_API_LOADING_START);
-                console.log("SAILS_WEB_API_LOADING_START");
+console.log("SAILS_WEB_API_LOADING_START");
             }
             ++LOADING;
         }
         else if (!loading) {
-            --LOADING;
+            LOADING = Math.max(LOADING-1, 0);
             if (!LOADING) {
                 this.emitEvent(Events.SAILS_WEB_API_LOADING_STOP);
-                console.log("SAILS_WEB_API_LOADING_STOP");
+console.log("SAILS_WEB_API_LOADING_STOP");
             }
         }
+    },
+
+    get: function(url, payload, setLoading) {
+        if (setLoading) SailsWebApi.checkLoading(true);
+        d3.json(this.makeURL(url), function(error, result) {
+            if (setLoading) SailsWebApi.checkLoading(false);
+            payload.data = result;
+            AppDispatcher.handleServerAction(payload);
+        })
+    },
+    post: function(url, data, payload, setLoading) {
+        if (setLoading) SailsWebApi.checkLoading(true);
+        d3.json(this.makeURL(url)).post(JSON.stringify(data), function(error, result) {
+            if (setLoading) SailsWebApi.checkLoading(false);
+            payload.data = result;
+            AppDispatcher.handleServerAction(payload);
+        })
+    },
+    makeURL: function(url) {
+        if (typeof url === "string") return url;
+        return url.reduce(function(a,c) {
+            if (typeof c === "string") return a+c+"/";
+            return a+JSON.stringify(c)+"/";
+        }, "");
     },
 
   initAdmin: function(user){
@@ -176,14 +201,14 @@ console.log("SailsWebApi.getTMCdata: recieved data for", unloadedTMCs);
       })
   },
 
-  getTMClookup: function(links) {
-    SailsWebApi.checkLoading(true);
-    var links = JSON.stringify(links);
-    d3.json("/tmc/lookup/"+links, function(err, data) {
-        ServerActionCreators.receiveTMClookup(data);
-        SailsWebApi.checkLoading(false);
-      })
-  },
+  // getTMClookup: function(links) {
+  //   SailsWebApi.checkLoading(true);
+  //   var links = JSON.stringify(links);
+  //   d3.json("/tmc/lookup/"+links, function(err, data) {
+  //       ServerActionCreators.receiveTMClookup(data);
+  //       SailsWebApi.checkLoading(false);
+  //     })
+  // },
 
   //---------------------------------------------------
   // Sails Rest Route

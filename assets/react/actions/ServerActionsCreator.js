@@ -119,12 +119,12 @@ console.log("ServerActionsCreator.routeLoaded",err, res);
     });
   },
   
-  receiveTMClookup: function(data) {
-    AppDispatcher.handleServerAction({
-      type: ActionTypes.RECEIVE_TMC_LOOKUP,
-      data: data
-    });
-  },
+  // receiveTMClookup: function(data) {
+  //   AppDispatcher.handleServerAction({
+  //     type: ActionTypes.RECEIVE_TMC_LOOKUP,
+  //     data: data
+  //   });
+  // },
   
   deleteData:function(id){
     AppDispatcher.handleServerAction({

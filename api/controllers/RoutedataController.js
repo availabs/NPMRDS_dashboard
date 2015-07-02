@@ -16,7 +16,7 @@ module.exports = {
 			            	res.serverError(error);
 			            }
 			            else {
-			            	res.send({ error: error, result: result });
+			            	res.ok(result);
 			            }
 			    	});
 		    }
@@ -28,7 +28,7 @@ module.exports = {
 			            	res.serverError(error);
 			            }
 			            else {
-			            	res.send(result);
+			            	res.ok(result);
 			            }
 			    	});
 		    }
@@ -47,7 +47,7 @@ module.exports = {
 				res.badRequest("no route named: "+name);
 			}
 			else {
-				res.send(result.pop());
+				res.ok(result.pop());
 			}
 		})
 	},
@@ -60,10 +60,10 @@ module.exports = {
 			    res.serverError(error);
             }
 			else if (!result.length) {
-				res.send([]);
+				res.ok([]);
 			}
 			else {
-				res.send(result);
+				res.ok(result);
 			}
 		})
 

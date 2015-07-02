@@ -80,7 +80,7 @@ console.log("RouteStore.calcRoute, points:", points);
 	    });
 
   		if (linkIDs.length) {
-  			SailsWebApi.getTMClookup(linkIDs);
+            SailsWebApi.get(["/tmc/lookup/",linkIDs], { type: ActionTypes.RECEIVE_TMC_LOOKUP }, true);
   		}
 
   		RouteStore.emitEvent(Events.INTERSECTS_CREATED, intersects);
@@ -92,7 +92,6 @@ RouteStore.dispatchToken = AppDispatcher.register(function(payload) {
 
     switch(action.type) {
         case ActionTypes.RECEIVE_TMC_LOOKUP:
-console.log("RouteStore.RECEIVE_TMC_LOOKUP", action.data);
             TMCDataStore.addTMC(action.data.rows.map(function(row) { return row[0]; }));
             break;
 
@@ -113,7 +112,7 @@ console.log("RouteStore.RECEIVE_SAVED_ROUTES", action.result);
             break;
 
         default:
-    		    break;
+    		break;
     }
 });
 
