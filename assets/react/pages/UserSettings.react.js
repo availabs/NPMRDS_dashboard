@@ -19,7 +19,6 @@ var PleaseWait = React.createClass({
 
 var UserSettings = React.createClass({
     getInitialState: function() {
-console.log("<UserSettings.getInitialState> preferences", UserStore.getPreferences() || "unloaded")
     	return {
     		sessionUser: UserStore.getSessionUser(),
             preferences: UserStore.getPreferences()
@@ -27,7 +26,6 @@ console.log("<UserSettings.getInitialState> preferences", UserStore.getPreferenc
     },
 
     componentDidMount: function() {
-    	console.log("<UserSettings.componentDidMount> sessionUser", this.state.sessionUser);
 
         UserStore.addChangeListener(this._getPreferences);
     },
@@ -36,7 +34,7 @@ console.log("<UserSettings.getInitialState> preferences", UserStore.getPreferenc
     },
 
     _getPreferences: function() {
-console.log("<UserSettings._getPreferences>")
+console.log("<UserSettings> _getPreferences>")
         var state = this.state;
 
         state.preferences = UserStore.getPreferences();
@@ -50,15 +48,11 @@ console.log("<UserSettings._getPreferences>")
                 <div className="row">
                     <div className="col-lg-12">
                         <div className="widget">
-    		    			<h4>{"Welcome, "+this.state.sessionUser.name}</h4>
+    		    			<h4>{"Hello "+this.state.sessionUser.name+". Need to change your settings?"}</h4>
                         </div>
 		    		</div>
 		    	</div>
-		    	<div className="row">
-                    <div className="col-lg-12">
-		    		    <UserPreferences />
-                    </div>
-		    	</div>
+		    	<UserPreferences user={this.state.sessionUser}/>
 		    </div>
     	)
     }

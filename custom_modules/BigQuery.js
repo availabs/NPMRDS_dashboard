@@ -45,7 +45,6 @@ function BigQuery() {
 		    		cb(error);
 		    		return;
 		    	}
->>>>>>> 235515e56273753ff63de7a9ce71b8d1c0c01826
 
 		    	if (!result["jobComplete"]) {
 		    		setTimeout(wait, 500, result, cb);

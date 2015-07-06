@@ -2,13 +2,9 @@
 
 var React = require('react'),
 
-    SailsWebApi = require("../utils/api/SailsWebApi"),
-
 	MPO_LandingPage = require("../components/layout/MPO_LandingPage.react"),
     State_LandingPage = require("../components/layout/State_LandingPage.react"),
     UserPreferences = require("../components/layout/UserPreferences.react"),
-
-    Events = require('../constants/AppConstants').EventTypes,
 
     UserStore = require("../stores/UserStore");
 
@@ -22,7 +18,6 @@ var PleaseWait = React.createClass({
 var LandingPage = React.createClass({
   
     getInitialState: function() {
-console.log("<LandingPage.getInitialState> preferences", UserStore.getPreferences() || "unloaded")
     	return {
     		sessionUser: UserStore.getSessionUser(),
             preferences: UserStore.getPreferences()
@@ -30,8 +25,6 @@ console.log("<LandingPage.getInitialState> preferences", UserStore.getPreference
     },
 
     componentDidMount: function() {
-    	console.log("<LandingPage.componentDidMount> sessionUser", this.state.sessionUser);
-
         UserStore.addChangeListener(this._getPreferences);
     },
     componentWillUnmount: function() {
@@ -39,12 +32,24 @@ console.log("<LandingPage.getInitialState> preferences", UserStore.getPreference
     },
 
     _getPreferences: function() {
-console.log("<LandingPage._getPreferences>")
         var state = this.state;
 
         state.preferences = UserStore.getPreferences();
 
         this.setState(state);
+    },
+
+    getPageState: function(prefs) {
+        switch (prefs.user_type) {
+            case "not_set":
+                return <UserPreferences user={this.state.sessionUser} />;
+            case "state_user":
+                return <State_LandingPage user={this.state.sessionUser} prefs={this.state.preferences} />;
+            case "mpo_user":
+                return <MPO_LandingPage user={this.state.sessionUser} prefs={this.state.preferences} />;
+            default:
+                return <PleaseWait />;
+        }
     },
 
     render: function() {
@@ -53,32 +58,14 @@ console.log("<LandingPage._getPreferences>")
                 <div className="row">
                     <div className="col-lg-12">
                         <div className="widget">
-    		    			<h4>{"Welcome, "+this.state.sessionUser.name}</h4>
+    		    			<h4>{"Welcome back, " + this.state.sessionUser.name + "."}</h4>
                         </div>
 		    		</div>
 		    	</div>
-		    	<div className="row">
-                    <div className="col-lg-12">
-		    		    { getPageState(this.state.preferences) }
-                    </div>
-		    	</div>
+		    	{ this.getPageState(this.state.preferences) }
 		    </div>
     	)
     }
 })
 
 module.exports = LandingPage;
-
-function getPageState(prefs) {
-console.log("<LandingPage.getPageState> preferences",prefs)
-    switch (prefs.user_type) {
-        case "not_set":
-            return <UserPreferences />;
-        case "state_user":
-            return <State_LandingPage />;
-        case "mpo_user":
-            return <MPO_LandingPage />;
-        default:
-            return <PleaseWait />;
-    }
-}

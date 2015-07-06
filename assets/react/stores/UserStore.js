@@ -85,7 +85,7 @@ UserStore.dispatchToken = AppDispatcher.register(function(payload) {
 
     case ActionTypes.GET_PREFERENCES:
       _userPreferences = action.prefs;
-      console.log("<UserStore> GET_PREFERENCES", _userPreferences);
+      console.log("<UserStore> GET_PREFERENCES", _userPreferences, action.prefs.user_type);
       UserStore.emitChange();
     break;
 

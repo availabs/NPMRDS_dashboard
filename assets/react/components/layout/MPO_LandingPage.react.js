@@ -2,17 +2,13 @@
 
 var React = require('react'),
 
-    Events = require('../../constants/AppConstants').EventTypes,
-
-    UserStore = require("../../stores/UserStore");
+    Events = require('../../constants/AppConstants').EventTypes;
 
 
 var MPO_LandingPage = React.createClass({
   
     getInitialState: function() {
-    	return {
-    		sessionUser: UserStore.getSessionUser()
-    	};
+        return {};
     },
 
     componentDidMount: function() {
@@ -22,11 +18,16 @@ var MPO_LandingPage = React.createClass({
 
     render: function() {
     	return (
-            <div className="widget">
+            <div className="row">
+                <div className="col-lg-12">
+                    <div className="widget">
 
-                <p>You are a MPO user!!!</p>
+                        <p>You are a MPO user!!!</p>
+                        <p>Your designated MPO is: {this.props.prefs.mpo_name}.</p>
 
-    		</div>
+            		</div>
+                </div>
+            </div>
     	)
     }
 })

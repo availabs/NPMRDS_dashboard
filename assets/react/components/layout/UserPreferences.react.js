@@ -16,7 +16,6 @@ var USER_TYPES = [null, "mpo_user", "state_user"],
 var UserPreferences = React.createClass({
     getInitialState: function() {
     	return {
-    		sessionUser: UserStore.getSessionUser(),
             MPONames: []
     	};
     },
@@ -48,9 +47,9 @@ console.log("<UserPreferences.getMPONames>", names);
             mpoNameValue = d3.select("#mpo-name").property("value"),
             mpoName = userType == "state_user" ? "state_user" : this.state.MPONames[mpoNameValue];
 
-        if (userTypeValue && ((userType=="mpo_user" && mpoName != "state_user") || userType=="state_user")) {
+        if (userTypeValue && ((userType=="mpo_user" && mpoNameValue > 0) || userType=="state_user")) {
 console.log("<UserPreferences> saving user preferences", userType, mpoName);
-            SailsWebApi.savePreferences(this.state.sessionUser.id, userType, mpoName);
+            SailsWebApi.savePreferences(this.props.user.id, userType, mpoName);
         }
         else {
 console.log("<UserPreferences> oops!!!")
@@ -67,34 +66,38 @@ console.log("<UserPreferences> oops!!!")
             style = { width: "15%" };
 
     	return (
-            <div className="widget">
-                
-                <div>
-                    <h4>User Preferences</h4>
-                    <p>Set your preferences</p>
+            <div className="row">
+                <div className="col-lg-12">
+                    <div className="widget">
+                        
+                        <div>
+                            <h4>User Preferences</h4>
+                            <p>Set your preferences</p>
+                        </div>
+
+                        <div style={ style }>
+
+                            <div className="form-group">
+                                <label htmlFor="user-type">User Type</label>
+                                <select id="user-type" name="user-type" onChange={selectChange}>
+                                    { userOptions }
+                                </select>
+                            </div>
+
+                            <div className="form-group" id ="mpo-preferences-div">
+                                <label htmlFor="mpo-name">MPO Name</label>
+                                <select id="mpo-name" name="mpo-name">
+                                    { mpoNames }
+                                </select>
+                            </div>
+
+                            <button className="btn btn-info" onClick={this.handleSubmit}>Submit</button>
+
+                        </div>
+
+            		</div>
                 </div>
-
-                <div style={ style }>
-
-                    <div className="form-group">
-                        <label htmlFor="user-type">User Type</label>
-                        <select id="user-type" name="user-type" onChange={selectChange}>
-                            { userOptions }
-                        </select>
-                    </div>
-
-                    <div className="form-group" id ="mpo-preferences-div">
-                        <label htmlFor="mpo-name">MPO Name</label>
-                        <select id="mpo-name" name="mpo-name">
-                            { mpoNames }
-                        </select>
-                    </div>
-
-                    <button className="btn btn-info" onClick={this.handleSubmit}>Submit</button>
-
-                </div>
-
-    		</div>
+            </div>
     	)
     }
 })

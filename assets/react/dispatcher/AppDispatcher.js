@@ -1,11 +1,9 @@
-var Dispatcher = require('flux').Dispatcher;
+var Dispatcher = require('flux').Dispatcher,
+    assign = require('object-assign');
 
-var copyProperties = require('react/lib/copyProperties');
-
-var AppDispatcher = copyProperties(new Dispatcher(), {
-
+var AppDispatcher = assign(new Dispatcher(), {
   /**
-   * @param {object} action The details of the action, including the action's
+   * @param {object} action: The details of the action, including the action's
    * type and additional data coming from the server.
    */
   handleServerAction: function(action) {
@@ -17,7 +15,7 @@ var AppDispatcher = copyProperties(new Dispatcher(), {
   },
 
   /**
-   * @param {object} action The details of the action, including the action's
+   * @param {object} action: The details of the action, including the action's
    * type and additional data coming from the view.
    */
   handleViewAction: function(action) {
@@ -27,7 +25,6 @@ var AppDispatcher = copyProperties(new Dispatcher(), {
     };
     this.dispatch(payload);
   }
-
 });
 
 module.exports = AppDispatcher;
