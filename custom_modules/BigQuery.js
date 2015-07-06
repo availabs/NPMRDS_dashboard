@@ -5,9 +5,11 @@ function BigQueryTest() {
 	var jwt = new googleapis.auth.JWT(
 	        '748884541822-qirdunlbhosdte2h8tbjq59otnr4k1cu@developer.gserviceaccount.com',
 	        'npmrds.pem',
-	        'f1550f94abf21829e6a631503c78f80a825bb9ff',
+	        null,
 	        ['https://www.googleapis.com/auth/bigquery']);
-	jwt.authorize();
+	jwt.authorize(function(error, result) {
+		console.log(error, result);
+	});
 
 	function BigQuery() {
 		var projectId = 'npmrds';

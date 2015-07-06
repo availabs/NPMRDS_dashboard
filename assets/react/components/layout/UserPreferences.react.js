@@ -44,14 +44,16 @@ console.log("<UserPreferences.getMPONames>", names);
     handleSubmit: function() {
         var userTypeValue = d3.select("#user-type").property("value"),
             userType = USER_TYPES[userTypeValue],
-            mpoName = userType == "mpo_user" ? d3.select("#mpo-name").property("value") : "state_user";
+
+            mpoNameValue = d3.select("#mpo-name").property("value"),
+            mpoName = userType == "state_user" ? "state_user" : this.state.MPONames[mpoNameValue];
 
         if (userTypeValue && ((userType=="mpo_user" && mpoName != "state_user") || userType=="state_user")) {
-            console.log("saving user preferences", userType, mpoName);
+console.log("<UserPreferences> saving user preferences", userType, mpoName);
             SailsWebApi.savePreferences(this.state.sessionUser.id, userType, mpoName);
         }
         else {
-            console.log("oops!!!")
+console.log("<UserPreferences> oops!!!")
         }
     },
 
@@ -60,7 +62,7 @@ console.log("<UserPreferences.getMPONames>", names);
                 return (<option key={i} value={i}>{type}</option>);
             }),
             mpoNames = this.state.MPONames.map(function(name, i) {
-                return (<option key={i} value={name}>{name}</option>);
+                return (<option key={i} value={i}>{name}</option>);
             }),
             style = { width: "15%" };
 
