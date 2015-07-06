@@ -79,11 +79,11 @@ console.log("RouteStore.calcRoute, points:", points);
 	        }
 	    });
 
-		if (linkIDs.length) {
-			SailsWebApi.getTMClookup(linkIDs);
-		}
+  		if (linkIDs.length) {
+            SailsWebApi.get(["/tmc/lookup/",linkIDs], { type: ActionTypes.RECEIVE_TMC_LOOKUP }, true);
+  		}
 
-		RouteStore.emitEvent(Events.INTERSECTS_CREATED, intersects);
+  		RouteStore.emitEvent(Events.INTERSECTS_CREATED, intersects);
   	}
 })
 
@@ -92,12 +92,7 @@ RouteStore.dispatchToken = AppDispatcher.register(function(payload) {
 
     switch(action.type) {
         case ActionTypes.RECEIVE_TMC_LOOKUP:
-console.log("RouteStore.RECEIVE_TMC_LOOKUP", action.data);
-      			var tmcs = [];
-      			for (var tmc in action.data) {
-      				tmcs.push(tmc);
-      			}
-      			TMCDataStore.addTMC(tmcs);
+            TMCDataStore.addTMC(action.data.rows.map(function(row) { return row[0]; }));
             break;
 
         case ActionTypes.ROUTE_SAVED:
@@ -117,7 +112,7 @@ console.log("RouteStore.RECEIVE_SAVED_ROUTES", action.result);
             break;
 
         default:
-    		    break;
+    		break;
     }
 });
 

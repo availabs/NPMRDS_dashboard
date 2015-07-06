@@ -1,19 +1,26 @@
+/*
+This object is used by the UsagedataController for retrieving usage data for a requested array of linkIDs.
+*/
+
 var BIGquery = require("./BigQuery")();
 
 function UsageDataBuilder() {
 	var DEFUALT_WEEKDAYS = ["monday", "tuesday", "wednesday", "thursday", "friday"];
 
 	function builder(request, cb) {
+	/*
+	request: object holding all parameters for requested data.
+	cb: callback function executed upon build completion.
+	*/
 		request.weekdays = request.weekdays || DEFUALT_WEEKDAYS;
 		var sql;
 		if (request.type == "state") {
-			sql = makeStateSQL(request, cb);
+			sql = makeStateSQL(request);
 		}
 		else {
-			sql = makeCountySQL(request, cb);
+			sql = makeCountySQL(request);
 		}
-//console.log(sql.replace(/\([\w,]*\)/, "(...)"))
-//console.log(sql)
+
         BIGquery(sql, function(error, result) {
         	if (error) {
         		cb(error);
@@ -27,6 +34,45 @@ function UsageDataBuilder() {
 	return builder;
 
 	function processResult(request, result) {
+	/*
+	This helper function receives the BigQuery result and parses it into a
+	more user friendly format.
+
+	request: object holding all parameters for requested data.
+	result: the result form BigQuery.
+
+	return: an array of data points. Each point represents a time grouping
+		as specified by the request resolution. Each point consists of an
+		object with keys point and links: {point: value, links: {}}. The point key
+		contains the specific data point and the links key contains an object
+		of link IDs as keys. Each of these linkIDs is itself an object that
+		contains a key for each TMC code associated with the linkID. Each TMC
+		object contains the aggegated data for the specified data point.
+
+	example output:
+	response = [
+		{
+			point: resolutionPoint1,							<-- the specific resolution point
+			links: {
+				123456: {										<-- linkID
+					120P123456: {travel_time_all: 120, ...}		<-- TMC code with data
+				},
+				987654: {										<-- likID
+					120P654321: {travel_time_all: 50, ...}		<-- TMC code with data
+					120N654321: {travel_time_all: 220, ...}		<-- TMC code with data
+				},
+				...
+			}
+		},
+		{
+			point: resolutionPoint2,
+			links: {
+				...
+			}
+		},
+		...
+	]
+	*/
 		var response = [],
 			schemaMap = {},
 			resolution = request.resolution || "all";
@@ -72,9 +118,13 @@ function UsageDataBuilder() {
 		return response;
 	}
 
-	function makeCountySQL(request, cb) {
-		request.weekdays = request.weekdays.map(function(d) { return "'"+d+"'"; });
+	function makeCountySQL(request) {
+	/*
+	This helper function receives the request object and dynamically
+	generates an SQL call from it.
 
+	request: object holding all parameters for requested data.
+	*/
         var sql = "SELECT lut.link_id AS link_id, here.tmc AS tmc, avg(here.travel_time_all) AS travel_time, "+
         			"atts.distance AS length, atts.direction AS travel_direction, lut.dir AS link_direction, "+
         			" min(here.travel_time_all) AS freeflow "+
@@ -83,7 +133,7 @@ function UsageDataBuilder() {
                         "JOIN EACH [NPMRDS_LUT.NPMRDS_LUT] AS lut ON here.TMC = lut.tmc "+
                         "JOIN EACH [NPMRDS_LUT.TMC_ATTRIBUTES] AS atts ON here.TMC = atts.tmc "+
                     "WHERE lut.link_id IN ("+ request.links.join() +") "+
-                    "AND weekday IN ("+request.weekdays.join()+")"+
+                    "AND weekday IN ("+request.weekdays.map(function(d) { return "'"+d+"'"; }).join()+")"+
                     "_DATE_BOUNDS_ "+
                     "_TIME_BOUNDS_ "+
                     "GROUP BY _GROUP_BY_;";
@@ -149,7 +199,7 @@ function UsageDataBuilder() {
         		.replace("_GROUP_BY_", _GROUP_BY_);
 	}
 
-	function makeStateSQL(request, cb) {
+	function makeStateSQL(request) {
         var sql = "SELECT lut.link_id AS link_id, here.tmc AS tmc, avg(here.travel_time_all) AS travel_time, "+
         			"atts.distance AS length, atts.direction AS travel_direction, lut.dir AS link_direction "+
         			"_RESOLUTION_ "+

@@ -5,9 +5,11 @@
   "description": "Sails React Boilerplate",
   "keywords": [],
   "dependencies": {
+    "bcrypt": "^0.8.3",
     "bcryptjs": "~2.1.0",
     "bower": "^1.3.12",
     "colorbrewer": "0.0.2",
+    "crossfilter": "^1.3.11",
     "d3": "^3.5.5",
     "ejs": "~0.8.4",
     "events": "~1.0.2",

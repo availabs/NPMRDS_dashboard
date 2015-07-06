@@ -5,21 +5,18 @@ module.exports = {
 			primaryKey: true,
 			autoIncrement: true
 		},
-		points: {
-        	type: 'text',
+		points: {					// an array of [lat, lng] points, converted to string with JSON.stringify.
+        	type: 'string',
         	required: true
 		},
-		tmc_codes: {
-			type: 'text'
+		tmc_codes: {				// an array of TMC codes, converted to string with JSON.stringify.
+			type: 'string'
 		},
-		links: {
-			type: 'text'
-		},
-		owner: {					// user account id
+		owner: {					// owner account id
 			type: 'integer',
         	required: true
 		},
-		name: {
+		name: {						// name of the route defined by the owner.
 			type: 'string',
         	required: true
 		}
