@@ -12,8 +12,8 @@ module.exports = {
 		tmc_codes: {				// an array of TMC codes, converted to string with JSON.stringify.
 			type: 'string'
 		},
-		owner: {					// owner account id
-			type: 'integer',
+		owner: {					// owner account id or MPO short name
+			type: 'text',
         	required: true
 		},
 		name: {						// name of the route defined by the owner.

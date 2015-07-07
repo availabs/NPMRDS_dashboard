@@ -55,9 +55,18 @@ console.log("SAILS_WEB_API_LOADING_STOP");
         })
     },
     makeURL: function(url) {
+console.log(url);
+        var regex = /\w+\//;
         if (typeof url === "string") return url;
         return url.reduce(function(a,c) {
-            if (typeof c === "string") return a+c+"/";
+            if (typeof c === "string") {
+                if (!regex.test(c)) {
+                    return a+c+"/";
+                }
+                else {
+                    return a+c;
+                }
+            }
             return a+JSON.stringify(c)+"/";
         }, "");
     },

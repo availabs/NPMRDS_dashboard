@@ -9,6 +9,7 @@ var fs = require("fs"),
 
 module.exports.bootstrap = function(cb) {
     loadMPOgeo();
+    loadTestRoute();
 
   // It's very important to trigger this callack method when you are finished
   // with the bootstrap!  (otherwise your server will never lift, since it's waiting on the bootstrap)
@@ -52,6 +53,27 @@ function loadMPOgeo() {
             })
         })
     })
+}
+
+function loadTestRoute(){
+
+    Routedata.create([
+    {
+      "points": "[[42.75432327356435,-74.05938506126404],[42.66678560336089,-73.79156112670898]]",
+      "tmc_codes":"['120N12009', '120N07906', '120N12010', '120N07908', '120N07907', '120N12012', '120N07905', '120N12150', '120N07909', '120N12011', '120N24663', '120N05893', '120N05837', '120N07904', '120N12008', '120N25391', '120N24624', '120N12151']",
+      "owner": 1,
+      "name": "western N",
+    },
+    {
+      "points": "[[42.75432327356435,-74.05938506126404],[42.66678560336089,-73.79156112670898]]",
+      "tmc_codes":"['120P07903', '120P07904', '120P07906', '120P07905', '120P12012', '120P12152', '120P12151', '120P07907', '120P07908', '120P12011', '120P07909', '120P12010']",
+      "owner": 1,
+      "name": "western P",
+    },
+  ]).exec(function(err, res) {
+      console.log(err || (res.length+" routes added."));
+  })
+
 }
 function convert(collection) {
     return topojson.simplify(topojson.topology({geo: collection},

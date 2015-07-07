@@ -103,6 +103,7 @@ console.log("route saved!!!");
         var options = this.state.savedRoutes.map(function(route, i) {
             return (<option key={i} >{route}</option>);
         });
+        var routeType = ["choose a route type", "personal", "MPO route"];
     	return (
           	<section className="widget">
                 <header>
@@ -111,13 +112,19 @@ console.log("route saved!!!");
                 </header>
 	            <div className="body">
                     <div className="form-group">
-                        <label htmlFor="search-input">Route Name</label>
+                        <label htmlFor="routeName">Route Name</label>
                         <div className="input-group">
-                            <input id="routeName" className='form-control' type="texy" color="#000"/>
+                            <input id="routeName" className='form-control' type="text" color="#000"/>
                         </div>
                     </div>
                     <div className="form-group">
-                        <label htmlFor="search-input">Saved Routes</label>
+                        <label htmlFor="routeType">Route Name</label>
+                        <select id="routeType" className="form-control" onChange={}>
+                            {routeTypes}
+                        </select>
+                    </div>
+                    <div className="form-group">
+                        <label htmlFor="savedRoutes">Saved Routes</label>
                         <select id="savedRoutes" className="form-control" onChange={this.loadRoute}>
                             {options}
                         </select>
