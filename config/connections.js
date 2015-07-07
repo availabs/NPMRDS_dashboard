@@ -66,7 +66,7 @@ module.exports.connections = {
   //
   postgresql: {
     adapter: 'sails-postgresql',
-    host: '169.226.142.154',//lor.availabs.org',
+    host: 'lor.availabs.org',//169.226.142.154'
     user: 'postgres',
     password: 'transit',
     database: 'NHS_NPMRDS'

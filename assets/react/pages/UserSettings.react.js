@@ -4,7 +4,7 @@ var React = require('react'),
 
     SailsWebApi = require("../utils/api/SailsWebApi"),
 
-    UserPreferences = require("../components/layout/UserPreferences.react"),
+    UserPreferences = require("../components/landing/UserPreferences.react"),
 
     Events = require('../constants/AppConstants').EventTypes,
 

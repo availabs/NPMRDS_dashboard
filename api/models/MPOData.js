@@ -15,6 +15,9 @@ module.exports = {
 		},
 		fullName: {						// MPO's full name
 			type: "string"
+		},
+		stateFIPS: {					// the state FIPS code where the MPO is located
+			type: "integer"
 		}
   	},
   	migrate: 'drop'

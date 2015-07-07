@@ -2,9 +2,9 @@
 
 var React = require('react'),
 
-	MPO_LandingPage = require("../components/layout/MPO_LandingPage.react"),
-    State_LandingPage = require("../components/layout/State_LandingPage.react"),
-    UserPreferences = require("../components/layout/UserPreferences.react"),
+	MPO_LandingPage = require("../components/landing/MPO_LandingPage.react"),
+    State_LandingPage = require("../components/landing/State_LandingPage.react"),
+    UserPreferences = require("../components/landing/UserPreferences.react"),
 
     UserStore = require("../stores/UserStore");
 
@@ -16,7 +16,7 @@ var PleaseWait = React.createClass({
 
 
 var LandingPage = React.createClass({
-  
+
     getInitialState: function() {
     	return {
     		sessionUser: UserStore.getSessionUser(),

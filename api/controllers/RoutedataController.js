@@ -52,9 +52,18 @@ module.exports = {
 		})
 	},
 	getSavedRoutes: function(req, res) {
-		var owner = req.param("owner");
+		var owner = req.param("owner"),
+			mpo_array = req.param("mpo_array");
 
-		Routedata.find({ owner: owner }).exec(function(error, result) {
+		try {
+			mpo_array = JSON.parse(mpo_array);
+		}
+		catch(e) {
+			res.badRequest("You must send an array of MPO names as a JSON string.")
+		}
+		mpo_array.push(owner);
+
+		Routedata.find({ owner: mpo_array }).exec(function(error, result) {
             if (error) {
             	console.log(error);
 			    res.serverError(error);
@@ -66,6 +75,30 @@ module.exports = {
 				res.ok(result);
 			}
 		})
+	},
+	loadSavedRoutes: function(req, res) {
+		var owner = req.param("owner"),
+			mpo_array = req.param("mpo_array");
 
+		try {
+			mpo_array = JSON.parse(mpo_array);
+		}
+		catch(e) {
+			res.badRequest("You must send an array of MPO names as a JSON string.")
+		}
+		mpo_array.push(owner);
+
+		Routedata.find({ owner: mpo_array }).exec(function(error, result) {
+            if (error) {
+            	console.log(error);
+			    res.serverError(error);
+            }
+			else if (!result.length) {
+				res.ok([]);
+			}
+			else {
+				res.ok(result);
+			}
+		})
 	}
 }

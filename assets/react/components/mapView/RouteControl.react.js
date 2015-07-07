@@ -10,7 +10,8 @@ var React = require('react'),
     SailsWebApi = require("../../utils/api/SailsWebApi"),
 
     Constants = require('../../constants/AppConstants'),
-    Events = Constants.EventTypes;
+    Events = Constants.EventTypes,
+    ActionTypes = Constants.ActionTypes;
 
 var RoutePanel = React.createClass({
     getInitialState: function() {
@@ -26,16 +27,30 @@ var RoutePanel = React.createClass({
         RouteStore.addChangeListener(Events.ROUTE_SAVED, this.routeSaved);
         RouteStore.addChangeListener(Events.RECEIVED_SAVED_ROUTES, this.displaySavedRoutes);
 
-        var owner = UserStore.getSessionUser().id;
-        SailsWebApi.getSavedRoutes(owner);
+        UserStore.addChangeListener(this.getSavedRoutes);
+
+        var owner = UserStore.getSessionUser().id,
+            mpo = UserStore.getPreferences().mpo_name || "not_set";
+        SailsWebApi.get(["/routes/getsaved/",owner,[mpo]], {type: ActionTypes.RECEIVE_SAVED_ROUTES});
     },
     componentWillUnmount: function() {
         SailsWebApi.removeChangeListener(Events.SAILS_WEB_API_LOADING_START, this._onDataLoadingStart);
         SailsWebApi.removeChangeListener(Events.SAILS_WEB_API_LOADING_STOP, this._onDataLoadingStop);
-        
+
         RouteStore.removeChangeListener(Events.ROUTE_SAVED, this.routeSaved);
         RouteStore.removeChangeListener(Events.RECEIVED_SAVED_ROUTES, this.displaySavedRoutes);
+
+        UserStore.removeChangeListener(this.getSavedRoutes);
     },
+
+    getSavedRoutes: function(event) {
+        if (event == Events.GET_PREFERENCES) {
+            var owner = UserStore.getSessionUser().id,
+                mpo = UserStore.getPreferences().mpo_name || "not_set";
+            SailsWebApi.get(["/routes/getsaved/",owner,[mpo]], {type: ActionTypes.RECEIVE_SAVED_ROUTES});
+        }
+    },
+
     _onDataLoadingStart: function() {
         this.state.loading = true;
         d3.select("#NPMRDS-RP-submit").classed("NPMRDS-button-disabled", true);
@@ -77,8 +92,9 @@ console.log("RouteControl, saving route:",name);
 	},
     routeSaved: function() {
 console.log("route saved!!!");
-        var owner = UserStore.getSessionUser().id;
-        SailsWebApi.getSavedRoutes(owner);
+        var owner = UserStore.getSessionUser().id,
+            mpo = UserStore.getPreferences().mpo_name || "not_set";
+        SailsWebApi.get(["/routes/getsaved/",owner,[mpo]], {type: ActionTypes.RECEIVE_SAVED_ROUTES});
     },
     loadRoute: function(data) {
         var name = d3.select("#savedRoutes").property("value").trim(),
@@ -103,7 +119,9 @@ console.log("route saved!!!");
         var options = this.state.savedRoutes.map(function(route, i) {
             return (<option key={i} >{route}</option>);
         });
-        var routeType = ["choose a route type", "personal", "MPO route"];
+        var routeTypes = ["choose a route type", "personal", "MPO route"].map(function(type, i) {
+            return (<option key={i} >{type}</option>);
+        });
     	return (
           	<section className="widget">
                 <header>
@@ -118,15 +136,9 @@ console.log("route saved!!!");
                         </div>
                     </div>
                     <div className="form-group">
-                        <label htmlFor="routeType">Route Name</label>
-                        <select id="routeType" className="form-control" onChange={}>
+                        <label htmlFor="routeType">Route Type</label>
+                        <select id="routeType" className="form-control" >
                             {routeTypes}
-                        </select>
-                    </div>
-                    <div className="form-group">
-                        <label htmlFor="savedRoutes">Saved Routes</label>
-                        <select id="savedRoutes" className="form-control" onChange={this.loadRoute}>
-                            {options}
                         </select>
                     </div>
 	                <div className="form-group">
@@ -134,6 +146,12 @@ console.log("route saved!!!");
 	                        <div className="NPMRDS-submit NPMRDS-label" onClick={this.saveRoute}>Save Route</div>
 	                    </div>
 	                </div>
+                    <div className="form-group">
+                        <label htmlFor="savedRoutes">Saved Routes</label>
+                        <select id="savedRoutes" className="form-control" onChange={this.loadRoute}>
+                            {options}
+                        </select>
+                    </div>
 	                <div className="form-group">
 	                    <div className="form-group">
 	                        <div id="NPMRDS-RP-submit" className="NPMRDS-submit NPMRDS-label" onClick={getIntersects}>Load Data</div>

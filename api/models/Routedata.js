@@ -13,7 +13,7 @@ module.exports = {
 			type: 'string'
 		},
 		owner: {					// owner account id or MPO short name
-			type: 'text',
+			type: 'string',
         	required: true
 		},
 		name: {						// name of the route defined by the owner.

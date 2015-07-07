@@ -37,11 +37,11 @@ module.exports = {
       names: data
     })
   },
-  
+
   //------------------------------------
   // CRUD Handlers
   //------------------------------------
-  
+
   routeSaved: function(err, res) {
     AppDispatcher.handleServerAction({
       type: ActionTypes.ROUTE_SAVED,
@@ -53,13 +53,6 @@ module.exports = {
 console.log("ServerActionsCreator.routeLoaded",err, res);
     AppDispatcher.handleServerAction({
       type: ActionTypes.ROUTE_LOADED,
-      error: err,
-      result: res
-    });
-  },
-  receiveSavedRoutes: function(err, res) {
-    AppDispatcher.handleServerAction({
-      type: ActionTypes.RECEIVE_SAVED_ROUTES,
       error: err,
       result: res
     });
@@ -118,19 +111,19 @@ console.log("ServerActionsCreator.routeLoaded",err, res);
       params: params
     });
   },
-  
+
   // receiveTMClookup: function(data) {
   //   AppDispatcher.handleServerAction({
   //     type: ActionTypes.RECEIVE_TMC_LOOKUP,
   //     data: data
   //   });
   // },
-  
+
   deleteData:function(id){
     AppDispatcher.handleServerAction({
       type: ActionTypes.DELETE_USER,
       Id: id
     });
   }
-  
+
 };

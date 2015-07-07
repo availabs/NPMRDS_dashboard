@@ -106,9 +106,14 @@ console.log("RouteStore.ROUTE_LOADED", points);
             RouteStore.emitEvent(Events.ROUTE_LOADED, points);
             break;
 
+        case ActionTypes.RECEIVED_LOADED_ROUTES:
+console.log("RouteStore.RECEIVED_LOADED_ROUTES", action);
+            RouteStore.emitEvent(Events.RECEIVED_LOADED_ROUTES, action.data);
+            break;
+
         case ActionTypes.RECEIVE_SAVED_ROUTES:
-console.log("RouteStore.RECEIVE_SAVED_ROUTES", action.result);
-            RouteStore.emitEvent(Events.RECEIVED_SAVED_ROUTES, action.result);
+console.log("RouteStore.RECEIVE_SAVED_ROUTES", action.data);
+            RouteStore.emitEvent(Events.RECEIVED_SAVED_ROUTES, action.data);
             break;
 
         default:

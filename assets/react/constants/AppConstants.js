@@ -5,19 +5,19 @@ var keyMirror = require('keymirror');
 module.exports = {
 
   ActionTypes: keyMirror({
-    
+
     //-------------------------------------------------------
-    //View actions 
+    //View actions
     //-------------------------------------------------------
     SELECT_USER: null,
     CREATE_USER:null,
     GET_PREFERENCES: null,
 
     //-------------------------------------------------------
-    //Server actions 
+    //Server actions
     //-------------------------------------------------------
     SET_APP_SECTION:null,
-    
+
     //-------User--------------------------------------------
     RECEIVE_USERS: null,
     SET_SESSION_USER:null,
@@ -39,11 +39,14 @@ module.exports = {
     ROUTE_SAVED: null,
     ROUTE_LOADED: null,
     RECEIVED_SAVED_ROUTES: null,
+    RECEIVED_LOADED_ROUTES: null,
 
     RECEIVE_MPO_NAMES: null
   }),
 
   EventTypes: keyMirror({
+    GET_PREFERENCES: null,
+
     COUNTY_CHANGE: null,
     STATE_CHANGE: null,
     CHANGE_EVENT: null,
@@ -65,10 +68,11 @@ module.exports = {
 
     ROUTE_CREATED: null,
     INTERSECTS_CREATED: null,
-    
+
     ROUTE_SAVED: null,
     ROUTE_LOADED: null,
-    RECEIVE_SAVED_ROUTES: null
+    RECEIVE_SAVED_ROUTES: null,
+    RECEIVED_LOADED_ROUTES: null,
   }),
 
   PayloadSources: keyMirror({

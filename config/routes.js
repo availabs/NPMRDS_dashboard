@@ -10,19 +10,19 @@
 module.exports.routes = {
 
   //-------------------------------
-  // User controller 
+  // User controller
   //-------------------------------
 
   '/landing': 'LandingController.index', //Landing View
   '/': 'LandingController.flux', //Main Flux App
 
   //-------------------------------
-  // User controller 
+  // User controller
   //-------------------------------
 
   //Views
   '/login':'UserController.login',
-  
+
   //Auth
   '/logout':'UserController.logout',
   '/login/auth':'UserController.auth',
@@ -50,7 +50,8 @@ module.exports.routes = {
   */
   '/routes/save/:owner/:name/:points': 'routedata.saveRoute',
   '/routes/load/:owner/:name': 'routedata.loadRoute',
-  '/routes/getsaved/:owner': 'routedata.getSavedRoutes',
+  '/routes/getsaved/:owner/:mpo_array': 'routedata.getSavedRoutes',            // this route returns a list of route names
+  '/routes/getloaded/:owner/:mpo_array': 'routedata.loadSavedRoutes',     // this route returns routes with their data
 
   /**
   * user preferences saving and loading

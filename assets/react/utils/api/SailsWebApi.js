@@ -42,6 +42,7 @@ console.log("SAILS_WEB_API_LOADING_STOP");
         if (setLoading) SailsWebApi.checkLoading(true);
         d3.json(this.makeURL(url), function(error, result) {
             if (setLoading) SailsWebApi.checkLoading(false);
+console.log("<SailsWebApi> data", result);
             payload.data = result;
             AppDispatcher.handleServerAction(payload);
         })
@@ -78,7 +79,7 @@ console.log(url);
 
     this.getPreferences(user.id);
     this.getMPONames();
-    
+
     this.getCounties();
 
     this.read('user');
@@ -112,10 +113,10 @@ console.log(url);
     ServerActionCreators.setAppSection('cmpgn');
     ServerActionCreators.setSessionUser(user);
     ServerActionCreators.setSessionCampaign(campaign);
-    
+
     this.read('user');
     this.recieveVoters(campaign.id)
-  
+
   },
 
   saveRoute: function(routeData) {
@@ -132,14 +133,6 @@ console.log(url);
         .response(function(request) { return JSON.parse(request.responseText); })
         .get(function(err, res) {
             ServerActionCreators.routeLoaded(err, res);
-        });
-  },
-  getSavedRoutes: function(owner) {
-    var url = "/routes/getsaved/"+owner;
-    d3.xhr(url)
-        .response(function(request) { return JSON.parse(request.responseText); })
-        .get(function(err, res) {
-            ServerActionCreators.receiveSavedRoutes(err, res);
         });
   },
 
@@ -181,7 +174,7 @@ console.log("SailsWebApi.getTMCdata: recieved data for", unloadedTMCs);
             }
         });
     })
-    
+
   },
 
   getCounties: function() {
@@ -227,13 +220,13 @@ console.log("SailsWebApi.getTMCdata: recieved data for", unloadedTMCs);
       //ToDo Check for Errors and Throw Error Case
       //console.log('utils/sailsWebApi/createUser',resData);
 
-      //add new user back to store through 
+      //add new user back to store through
       ServerActionCreators.receiveData(type,[resData]);
     });
   },
-  
+
   read: function(type) {
-    io.socket.get('/'+type,function(data){     
+    io.socket.get('/'+type,function(data){
       //console.log('utils/sailsWebApi/getUsers',data);
       ServerActionCreators.receiveData(type,data);
     });
@@ -245,7 +238,7 @@ console.log("SailsWebApi.getTMCdata: recieved data for", unloadedTMCs);
       //ToDo Check for Errors and Throw Error Case
       //console.log('utils/sailsWebApi/updateData',resData);
 
-      //add new user back to store through 
+      //add new user back to store through
       ServerActionCreators.receiveData(type,[resData]);
     });
   },
@@ -255,7 +248,7 @@ console.log("SailsWebApi.getTMCdata: recieved data for", unloadedTMCs);
       //ToDo Check for Errors and Throw Error Case
       console.log('utils/sailsWebApi/delete',resData,id);
 
-      //Delete 
+      //Delete
       ServerActionCreators.deleteData(type,id);
     });
   },

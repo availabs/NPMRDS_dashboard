@@ -11,6 +11,7 @@ var AppDispatcher = require('../dispatcher/AppDispatcher'),
     assign = require('object-assign'),
 
     ActionTypes = Constants.ActionTypes,
+    EventTypes = Constants.EventTypes,
     CHANGE_EVENT = 'change';
 
 var _editUserID = null,
@@ -22,9 +23,9 @@ var _editUserID = null,
 function _addUsers(rawData) {
   //console.log('stores/UserStore/_addUsers',rawData);
   rawData.forEach(function(user) {
-    
+
       _users[user.id] = user;
-    
+
   });
 };
 
@@ -40,10 +41,10 @@ function _setEditUserID(id){
 
 var UserStore = assign({}, EventEmitter.prototype, {
 
-  emitChange: function() {
-    this.emit(CHANGE_EVENT);
+  emitChange: function(event) {
+    this.emit(CHANGE_EVENT, event);
   },
-  
+
   /**
    * @param {function} callback
    */
@@ -51,7 +52,7 @@ var UserStore = assign({}, EventEmitter.prototype, {
   addChangeListener: function(callback) {
     this.on(CHANGE_EVENT, callback);
   },
-  
+
   removeChangeListener: function(callback) {
     this.removeListener(CHANGE_EVENT, callback);
   },
@@ -85,13 +86,11 @@ UserStore.dispatchToken = AppDispatcher.register(function(payload) {
 
     case ActionTypes.GET_PREFERENCES:
       _userPreferences = action.prefs;
-      console.log("<UserStore> GET_PREFERENCES", _userPreferences, action.prefs.user_type);
-      UserStore.emitChange();
+      UserStore.emitChange(EventTypes.GET_PREFERENCES);
     break;
 
     case ActionTypes.RECEIVE_MPO_NAMES:
       _MPONames = action.names;
-      console.log("<UserStore> RECEIVE_MPO_NAMES", _MPONames);
       UserStore.emitChange();
     break;
 
