@@ -12,10 +12,12 @@ var AppDispatcher = require('../dispatcher/AppDispatcher'),
 
     TMCDataStore = require("./TMCDataStore"),
     GeoStore = require("./GeoStore"),
+    UserStore = require("./UserStore"),
 
     routeCreator = require("../components/utils/RouteCreator")();
 
-var routePoints = {};
+var routePoints = {},
+    SAVED_ROUTES = [];
 
 var RouteStore = assign({}, EventEmitter.prototype, {
 	emitEvent: function(Event, data) {
@@ -80,40 +82,54 @@ console.log("RouteStore.calcRoute, points:", points);
 	    });
 
   		if (linkIDs.length) {
-            SailsWebApi.get(["/tmc/lookup/",linkIDs], { type: ActionTypes.RECEIVE_TMC_LOOKUP }, true);
+            SailsWebApi.get(["/tmc/lookup/",linkIDs], { type: ActionTypes.RECEIVED_TMC_LOOKUP }, true);
   		}
 
   		RouteStore.emitEvent(Events.INTERSECTS_CREATED, intersects);
-  	}
+      },
+      getSavedRoutes: function() {
+          return SAVED_ROUTES;
+      }
 })
 
 RouteStore.dispatchToken = AppDispatcher.register(function(payload) {
     var action = payload.action;
 
     switch(action.type) {
-        case ActionTypes.RECEIVE_TMC_LOOKUP:
+        case ActionTypes.RECEIVED_USER_PREFERENCES:
+// console.log("<RouteStore::RECEIVED_USER_PREFERENCES");
+            var prefs = action.prefs,
+                userId = UserStore.getSessionUser().id;
+            SailsWebApi.getSavedRoutes(userId, prefs.mpo_name);
+            break;
+
+        case ActionTypes.RECEIVED_TMC_LOOKUP:
             TMCDataStore.addTMC(action.data.rows.map(function(row) { return row[0]; }));
             break;
 
         case ActionTypes.ROUTE_SAVED:
-console.log("RouteStore.ROUTE_SAVED");
+// console.log("RouteStore.ROUTE_SAVED");
             RouteStore.emitEvent(Events.ROUTE_SAVED);
+            var prefs = action.prefs,
+                userId = UserStore.getSessionUser().id;
+            SailsWebApi.getSavedRoutes(userId, prefs.mpo_name);
             break;
 
         case ActionTypes.ROUTE_LOADED:
             var points = JSON.parse(action.result.points);
-console.log("RouteStore.ROUTE_LOADED", points);
+// console.log("RouteStore.ROUTE_LOADED", points);
             RouteStore.emitEvent(Events.ROUTE_LOADED, points);
             break;
 
-        case ActionTypes.RECEIVED_LOADED_ROUTES:
-console.log("RouteStore.RECEIVED_LOADED_ROUTES", action);
-            RouteStore.emitEvent(Events.RECEIVED_LOADED_ROUTES, action.data);
-            break;
+//         case ActionTypes.RECEIVED_LOADED_ROUTES:
+// console.log("RouteStore.RECEIVED_LOADED_ROUTES", action);
+//             RouteStore.emitEvent(Events.RECEIVED_LOADED_ROUTES, action.data);
+//             break;
 
-        case ActionTypes.RECEIVE_SAVED_ROUTES:
-console.log("RouteStore.RECEIVE_SAVED_ROUTES", action.data);
+        case ActionTypes.RECEIVED_SAVED_ROUTES:
+// console.log("RouteStore.RECEIVE_SAVED_ROUTES", action.data);
             RouteStore.emitEvent(Events.RECEIVED_SAVED_ROUTES, action.data);
+            SAVED_ROUTES = action.data;
             break;
 
         default:

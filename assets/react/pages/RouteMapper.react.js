@@ -1,39 +1,34 @@
 'use strict';
 
 var React = require('react'),
+    Router = require("react-router"),
 
-    SailsWebApi = require("../utils/api/SailsWebApi"),
-
+	MPO_LandingPage = require("../components/landing/MPO_LandingPage.react"),
+    State_LandingPage = require("../components/landing/State_LandingPage.react"),
     UserPreferences = require("../components/landing/UserPreferences.react"),
 
-    Events = require('../constants/AppConstants').EventTypes,
+    UserStore = require("../stores/UserStore"),
+    RouteStore = require("../stores/RouteStore"),
 
-    UserStore = require("../stores/UserStore");
+    RouteMap = require("../components/landing/RouteMap.react");
 
-var PleaseWait = React.createClass({
-    render: function() {
-        return (<div className="col-lg-12">Please Wait...</div>);
-    }
-})
+var RouteMapper = React.createClass({
+    mixins: [ Router.State ],
 
-
-var UserSettings = React.createClass({
     getInitialState: function() {
     	return {
-    		sessionUser: UserStore.getSessionUser(),
-            preferences: UserStore.getPreferences()
-    	};
+            sessionUser: UserStore.getSessionUser()
+        };
     },
 
     componentDidMount: function() {
-
         UserStore.addChangeListener(this._getPreferences);
     },
     componentWillUnmount: function() {
         UserStore.removeChangeListener(this._getPreferences);
     },
 
-    _getPreferences: function() {
+    _getPreferences: function(event) {
         var state = this.state;
 
         state.preferences = UserStore.getPreferences();
@@ -47,14 +42,14 @@ var UserSettings = React.createClass({
                 <div className="row">
                     <div className="col-lg-12">
                         <div className="widget">
-    		    			<h4>{"Hello "+this.state.sessionUser.name+". Need to change your settings?"}</h4>
+    		    			<h4>{"Hey there, " + this.state.sessionUser.name + ". Let's take a look at your route."}</h4>
                         </div>
 		    		</div>
 		    	</div>
-		    	<UserPreferences user={this.state.sessionUser}/>
+                <RouteMap routeId={ this.getParams().id }/>
 		    </div>
     	)
     }
 })
 
-module.exports = UserSettings;
+module.exports = RouteMapper;

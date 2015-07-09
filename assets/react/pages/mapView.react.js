@@ -1,16 +1,16 @@
 'use strict';
 var React = require('react'),
-    
+
     //-utils
     d3 = require("d3"),
-    
+
     //--Flux
     SailsWebApi = require("../utils/api/SailsWebApi"),
     Events = require('../constants/AppConstants').EventTypes,
 
     //--Components
     LeafletMap = require("../components/utils/LeafletMap.react"),
-    
+
 
     ControlPanel = require("../components/mapView/ControlPanel.react"),
     RouteControl = require("../components/mapView/RouteControl.react"),
@@ -21,7 +21,7 @@ var React = require('react'),
 
     // NPMRDSTabPanel = require("../components/mapView/NPMRDSTabPanel.react"),
     // NPMRDSTabSelector = require("../components/mapView/NPMRDSTabSelector.react"),
-    
+
     // stores
     GeoStore = require("../stores/GeoStore"),
     UsageDataStore = require("../stores/UsageDataStore"),
@@ -44,12 +44,10 @@ var React = require('react'),
     Input = require("../utils/Input");
 
 var linkShader = UsageDataStore.linkShader(),
-    roadPaths = null;
-
-var UNIQUE_MARKER_IDs = 0;
+    roadPaths = null,
+    UNIQUE_MARKER_IDs = 0;
 
 var MapView = React.createClass({
-  
     getInitialState: function(){
         var mapView = this;
         return {
@@ -73,7 +71,7 @@ var MapView = React.createClass({
                             }
                         },
                         onEachFeature: function (feature, layer) {
-                            
+
                             layer.on({
                                 click: function(e){
                                     if (mapView.state.input.keyDown("ctrl")) {
@@ -94,10 +92,10 @@ var MapView = React.createClass({
                                         weight:1,
                                         color:'#004'
                                     });
-                                   
+
                                 }
                             });
-                            
+
                         }
                     }
                 },
@@ -114,7 +112,7 @@ var MapView = React.createClass({
                             }
                         },
                          onEachFeature: function (feature, layer) {
-                            
+
                             layer.on({
 
                                 click: function(e){
@@ -129,7 +127,7 @@ var MapView = React.createClass({
                                     mapView.state.popup.display(false);
                                 }
                             });
-                            
+
                         }
                     }
                 },
@@ -166,7 +164,7 @@ var MapView = React.createClass({
         GeoStore.addChangeListener(Events.STATE_CHANGE, this._onStateChange);
 
         UsageDataStore.addChangeListener(Events.DATA_POINT_SLIDER_UPDATE, this._onDataPointSliderUpdate);
-              
+
         TMCDataStore.addChangeListener(Events.DISPLAY_TMC_DATA, this._onDisplayTMCdata);
         TMCDataStore.addChangeListener(Events.REMOVE_TMC_DATA, this._onRemoveTMCdata);
 
@@ -188,9 +186,9 @@ var MapView = React.createClass({
     componentWillUnmount: function() {
         GeoStore.removeChangeListener(Events.COUNTY_CHANGE, this._onCountyChange);
         GeoStore.removeChangeListener(Events.STATE_CHANGE, this._onStateChange);
-          
-        UsageDataStore.removeChangeListener(Events.DATA_POINT_SLIDER_UPDATE, this._onDataPointSliderUpdate);  
-         
+
+        UsageDataStore.removeChangeListener(Events.DATA_POINT_SLIDER_UPDATE, this._onDataPointSliderUpdate);
+
         TMCDataStore.removeChangeListener(Events.DISPLAY_TMC_DATA, this._onDisplayTMCdata);
         TMCDataStore.removeChangeListener(Events.REMOVE_TMC_DATA, this._onRemoveTMCdata);
 
@@ -247,7 +245,7 @@ console.log("DATA_POINT_SLIDER_UPDATE");
             newState.layers.roads.options.zoomOnLoad = false;
 
             this.setState(newState);
-              
+
             roadPaths = d3.selectAll(".roads")
                 .datum(function() {
                     var path = d3.select(this),
@@ -379,7 +377,7 @@ console.log("_onDataPointSliderUpdate completed");
                         </section>
                     </div>
                     <div className="col-lg-10" id="NPMRDS-map-div">
-                        <LeafletMap height="615px" layers={this.state.layers} markers={this.state.markers} />
+                        <LeafletMap height="85%" layers={this.state.layers} markers={this.state.markers} />
                         <DataView />
                         <NPMRDSLegend />
                     </div>

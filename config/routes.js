@@ -48,10 +48,9 @@ module.exports.routes = {
   /**
   * route saving and loading
   */
-  '/routes/save/:owner/:name/:points': 'routedata.saveRoute',
+  '/routes/save/:owner/:name': 'routedata.saveRoute',
   '/routes/load/:owner/:name': 'routedata.loadRoute',
   '/routes/getsaved/:owner/:mpo_array': 'routedata.getSavedRoutes',            // this route returns a list of route names
-  '/routes/getloaded/:owner/:mpo_array': 'routedata.loadSavedRoutes',     // this route returns routes with their data
 
   /**
   * user preferences saving and loading

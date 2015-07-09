@@ -58,7 +58,7 @@ var UsageDataStore = assign({}, EventEmitter.prototype, {
 	addChangeListener: function(Event, callback) {
 	    this.on(Event, callback);
 	},
-  
+
   	removeChangeListener: function(Event, callback) {
     	this.removeListener(Event, callback);
   	},
@@ -100,8 +100,8 @@ UsageDataStore.dispatchToken = AppDispatcher.register(function(payload) {
 	var action = payload.action;
 
   	switch(action.type) {
-  		case ActionTypes.RECEIVE_COUNTY_DATA:
-console.log("RECEIVE_COUNTY_DATA::usageData", action.usageData);
+  		case ActionTypes.RECEIVED_COUNTY_ROADS_DATA:
+console.log("RECEIVED_COUNTY_ROADS_DATA::usageData", action.usageData);
   			processUsageData(action.usageData, action.params);
 			UsageDataStore.emitEvent(Events.USAGE_DATA_PROCESSED);
 			// UsageDataStore.emitChange();
@@ -110,8 +110,8 @@ console.log("RECEIVE_COUNTY_DATA::usageData", action.usageData);
 		case ActionTypes.CONTROL_PANEL_PARAMS_LOADED:
 			UsageDataStore.loadData(action.params);
   			break;
-  		
-  		case ActionTypes.DATA_VIEW_CHANGE:
+
+  		case ActionTypes.DATA_VIEW_CHANGED:
   			dataView = action.view;
   			switchDataView();
   			UsageDataStore.emitEvent(Events.TMC_DATAVIEW_CHANGE, dataView);
@@ -128,7 +128,7 @@ function processUsageData(usageData, params) {
 		regex = /\d{3}([nNpP])\d{5}/;
 
 	dataPointSlider.resolution(params.resolution);
-	
+
 console.log("UsageDataStore.processUsageData", usageData);
 
 	usageData.forEach(function(point) {
@@ -580,7 +580,7 @@ function DataPointSlider() {
 			pos = scale(index);
 	    	value = index;
 	    	point = dataPoints[value].point();
-		    	
+
 		    brush.extent([pos, pos]);
 		    dataPointIndex = index;
 		}
@@ -791,7 +791,7 @@ function LinkShader() {
 			.range(colors);
 
 	function shader(feature) {
-		var congestion = data[feature.properties.linkID] ? 
+		var congestion = data[feature.properties.linkID] ?
 				data[feature.properties.linkID][feature.properties.tmc] || -1 : -1;
 		return (congestion > 0 ? scale(congestion) : "#000");
 	}

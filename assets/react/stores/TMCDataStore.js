@@ -124,7 +124,7 @@ TMCDataStore.dispatchToken = AppDispatcher.register(function(payload) {
     var action = payload.action;
 
     switch(action.type) {
-    	case ActionTypes.RECEIVE_TMC_DATA:
+    	case ActionTypes.RECEIVED_TMC_DATA:
     		TMCDataStore.receiveTMCdata(action.tmcs, action.data);
     		break;
 		case ActionTypes.CONTROL_PANEL_PARAMS_LOADED:

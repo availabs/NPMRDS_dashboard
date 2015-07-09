@@ -10,6 +10,8 @@ var AppDispatcher = require('../dispatcher/AppDispatcher'),
     EventEmitter = require('events').EventEmitter,
     assign = require('object-assign'),
 
+    SailsWebApi = require("../utils/api/SailsWebApi"),
+
     ActionTypes = Constants.ActionTypes,
     EventTypes = Constants.EventTypes,
     CHANGE_EVENT = 'change';
@@ -18,7 +20,7 @@ var _editUserID = null,
     _users = {},
     _sessionUser= {},
     _MPONames = [],
-    _userPreferences = { user_type: "unloaded" };
+    _userPreferences = { user_type: undefined };
 
 function _addUsers(rawData) {
   //console.log('stores/UserStore/_addUsers',rawData);
@@ -71,6 +73,9 @@ var UserStore = assign({}, EventEmitter.prototype, {
   getSessionUser:function(){
     return _sessionUser;
   },
+  savePreferences: function(userType, mpoName) {
+      SailsWebApi.savePreferences(_sessionUser.id, userType, mpoName);
+  },
   getPreferences: function() {
     return _userPreferences;
   },
@@ -84,12 +89,12 @@ UserStore.dispatchToken = AppDispatcher.register(function(payload) {
 
   switch(action.type) {
 
-    case ActionTypes.GET_PREFERENCES:
+    case ActionTypes.RECEIVED_USER_PREFERENCES:
       _userPreferences = action.prefs;
-      UserStore.emitChange(EventTypes.GET_PREFERENCES);
+      UserStore.emitChange(EventTypes.RECEIVED_USER_PREFERENCES);
     break;
 
-    case ActionTypes.RECEIVE_MPO_NAMES:
+    case ActionTypes.RECEIVED_MPO_NAMES:
       _MPONames = action.names;
       UserStore.emitChange();
     break;

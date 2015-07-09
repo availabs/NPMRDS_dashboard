@@ -11,7 +11,7 @@ module.exports = {
     //-------------------------------------------------------
     SELECT_USER: null,
     CREATE_USER:null,
-    GET_PREFERENCES: null,
+    RECEIVED_USER_PREFERENCES: null,
 
     //-------------------------------------------------------
     //Server actions
@@ -22,30 +22,31 @@ module.exports = {
     RECEIVE_USERS: null,
     SET_SESSION_USER:null,
 
-    RECEIVE_COUNTIES: null,
-    RECEIVE_COUNTY_ROADS: null,
 
-    RECEIVE_COUNTY_DATA: null,
-    RECEIVE_SHIFTED_COUNTY_ROADS:null,
 
-    DATA_VIEW_CHANGE: null,
+    RECEIVED_COUNTIES: null,
+    RECEIVED_COUNTY_ROADS: null,
 
-    RECEIVE_TMC_DATA: null,
+    RECEIVED_COUNTY_ROADS_DATA: null,
+    RECEIVED_SHIFTED_COUNTY_ROADS:null,
 
-    RECEIVE_TMC_LOOKUP: null,
+    DATA_VIEW_CHANGED: null,
+
+    RECEIVED_TMC_DATA: null,
+
+    RECEIVED_TMC_LOOKUP: null,
 
     CONTROL_PANEL_PARAMS_LOADED: null,
 
     ROUTE_SAVED: null,
     ROUTE_LOADED: null,
     RECEIVED_SAVED_ROUTES: null,
-    RECEIVED_LOADED_ROUTES: null,
 
-    RECEIVE_MPO_NAMES: null
+    RECEIVED_MPO_NAMES: null
   }),
 
   EventTypes: keyMirror({
-    GET_PREFERENCES: null,
+    RECEIVED_USER_PREFERENCES: null,
 
     COUNTY_CHANGE: null,
     STATE_CHANGE: null,

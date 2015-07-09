@@ -116,7 +116,7 @@ var GeoStore = assign({}, EventEmitter.prototype, {
   },
 
   setShiftedRoads: function(roads) {
-  //console.log("GeoStore.RECEIVE_SHIFTED_COUNTY_ROADS")
+  //console.log("GeoStore.RECEIVED_SHIFTED_COUNTY_ROADS")
     _shiftedRoadsFeatures = [];
     _shiftedRoads = roads;
 
@@ -131,12 +131,12 @@ GeoStore.dispatchToken = AppDispatcher.register(function(payload) {
 
     switch(action.type) {
 
-        case ActionTypes.RECEIVE_COUNTIES:
+        case ActionTypes.RECEIVED_COUNTIES:
             _counties = topojson.feature(action.topology, action.topology.objects.counties);
             GeoStore.emitEvent(Events.STATE_CHANGE);
             break;
-        case ActionTypes.RECEIVE_COUNTY_ROADS:
-            //console.log("GeoStore.RECEIVE_COUNTY_ROADS")
+        case ActionTypes.RECEIVED_COUNTY_ROADS:
+            //console.log("GeoStore.RECEIVED_COUNTY_ROADS")
             action.topology.forEach(function(topology) {
                 var id = topology.objects.geo.id,
                     geo = topojson.feature(topology, topology.objects.geo);
@@ -149,8 +149,8 @@ GeoStore.dispatchToken = AppDispatcher.register(function(payload) {
             GeoStore.emitEvent(Events.COUNTY_CHANGE);
             _shiftedRoadsFeatures = [];
             break;
-        case ActionTypes.RECEIVE_SHIFTED_COUNTY_ROADS:
-//console.log("GeoStore.RECEIVE_SHIFTED_COUNTY_ROADS")
+        case ActionTypes.RECEIVED_SHIFTED_COUNTY_ROADS:
+//console.log("GeoStore.RECEIVED_SHIFTED_COUNTY_ROADS")
             _shiftedRoadsFeatures = [];
             _shiftedRoads = actions.roads;
 

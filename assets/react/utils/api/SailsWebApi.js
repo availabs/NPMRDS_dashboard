@@ -42,7 +42,6 @@ console.log("SAILS_WEB_API_LOADING_STOP");
         if (setLoading) SailsWebApi.checkLoading(true);
         d3.json(this.makeURL(url), function(error, result) {
             if (setLoading) SailsWebApi.checkLoading(false);
-console.log("<SailsWebApi> data", result);
             payload.data = result;
             AppDispatcher.handleServerAction(payload);
         })
@@ -56,7 +55,6 @@ console.log("<SailsWebApi> data", result);
         })
     },
     makeURL: function(url) {
-console.log(url);
         var regex = /\w+\//;
         if (typeof url === "string") return url;
         return url.reduce(function(a,c) {
@@ -73,7 +71,6 @@ console.log(url);
     },
 
   initAdmin: function(user){
-
     ServerActionCreators.setAppSection('admin');
     ServerActionCreators.setSessionUser(user);
 
@@ -120,20 +117,31 @@ console.log(url);
   },
 
   saveRoute: function(routeData) {
-    var url = "/routes/save/" + routeData.owner + "/" + routeData.name + "/" + JSON.stringify(routeData.points);
-    d3.xhr(url)
-        .response(function(request) { return JSON.parse(request.responseText); })
-        .get(function(err, res) {
+    var url = "/routes/save/" + routeData.owner + "/" + routeData.name;
+    d3.json(url).post(JSON.stringify(routeData), function(err, res) {
             ServerActionCreators.routeSaved(err, res);
         });
   },
   loadRoute: function(routeData) {
     var url = "/routes/load/" + routeData.owner + "/" + routeData.name;
-    d3.xhr(url)
-        .response(function(request) { return JSON.parse(request.responseText); })
-        .get(function(err, res) {
+    d3.json(url, function(err, res) {
             ServerActionCreators.routeLoaded(err, res);
         });
+  },
+  getSavedRoutes: function(userId, mpo_name) {
+// console.log("<SailsWebApi::getSavedRoutes>")
+      if (!Array.isArray(mpo_name)) {
+          mpo_name = [mpo_name];
+      }
+      mpo_name = JSON.stringify(mpo_name);
+      d3.json("/routes/getsaved/"+userId+"/"+mpo_name, function(err, res) {
+          if (err) {
+              console.log("Could not retrieve saved routes", err);
+          }
+          else {
+              ServerActionCreators.receiveSavedRoutes(res);
+          }
+      })
   },
 
   getTMCdata: function(requestedTMCs, unloadedTMCs) {
@@ -141,7 +149,6 @@ console.log(url);
     if (!Array.isArray(unloadedTMCs)) {
       unloadedTMCs = [unloadedTMCs];
     }
-console.log("SailsWebApi.getTMCdata: getting data for", unloadedTMCs);
 
     var requests = [],
         i = 0,

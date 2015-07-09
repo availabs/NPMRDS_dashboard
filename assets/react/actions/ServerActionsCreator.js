@@ -26,17 +26,25 @@ module.exports = {
   },
   receivePreferences: function(prefs) {
     AppDispatcher.handleServerAction({
-      type: ActionTypes.GET_PREFERENCES,
+      type: ActionTypes.RECEIVED_USER_PREFERENCES,
       prefs: prefs
     })
   },
 
   receiveMPONames: function(data) {
     AppDispatcher.handleServerAction({
-      type: ActionTypes.RECEIVE_MPO_NAMES,
+      type: ActionTypes.RECEIVED_MPO_NAMES,
       names: data
     })
   },
+
+  receiveSavedRoutes: function(data) {
+// console.log("<ServerActionCreators::receiveSavedRoutes>", data)
+    AppDispatcher.handleServerAction({
+      type: ActionTypes.RECEIVED_SAVED_ROUTES,
+      data: data
+    })
+},
 
   //------------------------------------
   // CRUD Handlers
@@ -50,7 +58,7 @@ module.exports = {
     });
   },
   routeLoaded: function(err, res) {
-console.log("ServerActionsCreator.routeLoaded",err, res);
+// console.log("ServerActionsCreator.routeLoaded",err, res);
     AppDispatcher.handleServerAction({
       type: ActionTypes.ROUTE_LOADED,
       error: err,
@@ -60,7 +68,7 @@ console.log("ServerActionsCreator.routeLoaded",err, res);
 
   changeDataView: function(view) {
     AppDispatcher.handleServerAction({
-      type: ActionTypes.DATA_VIEW_CHANGE,
+      type: ActionTypes.DATA_VIEW_CHANGED,
       view: view
     });
   },
@@ -76,28 +84,28 @@ console.log("ServerActionsCreator.routeLoaded",err, res);
 
   receiveCounties: function(topo) {
     AppDispatcher.handleServerAction({
-      type: ActionTypes.RECEIVE_COUNTIES,
+      type: ActionTypes.RECEIVED_COUNTIES,
       topology: topo
     });
   },
 
   receiveCountyRoads: function(topo) {
     AppDispatcher.handleServerAction({
-      type: ActionTypes.RECEIVE_COUNTY_ROADS,
+      type: ActionTypes.RECEIVED_COUNTY_ROADS,
       topology: topo
     });
   },
 
   receiveShiftedCountyRoads: function(roads) {
     AppDispatcher.handleServerAction({
-      type: ActionTypes.RECEIVE_SHIFTED_COUNTY_ROADS,
+      type: ActionTypes.RECEIVED_SHIFTED_COUNTY_ROADS,
       roads: roads
     });
   },
 
   receiveTMCdata: function(requestedTMCs, data) {
     AppDispatcher.handleServerAction({
-      type: ActionTypes.RECEIVE_TMC_DATA,
+      type: ActionTypes.RECEIVED_TMC_DATA,
       tmcs: requestedTMCs,
       data: data
     });
@@ -105,7 +113,7 @@ console.log("ServerActionsCreator.routeLoaded",err, res);
 
   receiveCountyData: function(fips, params, data) {
     AppDispatcher.handleServerAction({
-      type: ActionTypes.RECEIVE_COUNTY_DATA,
+      type: ActionTypes.RECEIVED_COUNTY_ROADS_DATA,
       usageData: data,
       fips: fips,
       params: params
@@ -114,7 +122,7 @@ console.log("ServerActionsCreator.routeLoaded",err, res);
 
   // receiveTMClookup: function(data) {
   //   AppDispatcher.handleServerAction({
-  //     type: ActionTypes.RECEIVE_TMC_LOOKUP,
+  //     type: ActionTypes.RECEIVED_TMC_LOOKUP,
   //     data: data
   //   });
   // },

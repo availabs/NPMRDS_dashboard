@@ -24,7 +24,6 @@ var RoutePanel = React.createClass({
         SailsWebApi.addChangeListener(Events.SAILS_WEB_API_LOADING_START, this._onDataLoadingStart);
         SailsWebApi.addChangeListener(Events.SAILS_WEB_API_LOADING_STOP, this._onDataLoadingStop);
 
-        RouteStore.addChangeListener(Events.ROUTE_SAVED, this.routeSaved);
         RouteStore.addChangeListener(Events.RECEIVED_SAVED_ROUTES, this.displaySavedRoutes);
 
         UserStore.addChangeListener(this.getSavedRoutes);
@@ -37,14 +36,13 @@ var RoutePanel = React.createClass({
         SailsWebApi.removeChangeListener(Events.SAILS_WEB_API_LOADING_START, this._onDataLoadingStart);
         SailsWebApi.removeChangeListener(Events.SAILS_WEB_API_LOADING_STOP, this._onDataLoadingStop);
 
-        RouteStore.removeChangeListener(Events.ROUTE_SAVED, this.routeSaved);
         RouteStore.removeChangeListener(Events.RECEIVED_SAVED_ROUTES, this.displaySavedRoutes);
 
         UserStore.removeChangeListener(this.getSavedRoutes);
     },
 
     getSavedRoutes: function(event) {
-        if (event == Events.GET_PREFERENCES) {
+        if (event == Events.RECEIVED_USER_PREFERENCES) {
             var owner = UserStore.getSessionUser().id,
                 mpo = UserStore.getPreferences().mpo_name || "not_set";
             SailsWebApi.get(["/routes/getsaved/",owner,[mpo]], {type: ActionTypes.RECEIVE_SAVED_ROUTES});
@@ -90,12 +88,6 @@ console.log("RouteControl, saving route:",name);
         }
         SailsWebApi.saveRoute(data);
 	},
-    routeSaved: function() {
-console.log("route saved!!!");
-        var owner = UserStore.getSessionUser().id,
-            mpo = UserStore.getPreferences().mpo_name || "not_set";
-        SailsWebApi.get(["/routes/getsaved/",owner,[mpo]], {type: ActionTypes.RECEIVE_SAVED_ROUTES});
-    },
     loadRoute: function(data) {
         var name = d3.select("#savedRoutes").property("value").trim(),
             currentRouteName = d3.select("#routeName").property("value").trim();

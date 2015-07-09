@@ -23,19 +23,14 @@ var MPO_LandingPage = React.createClass({
     componentDidMount: function() {
         RouteStore.addChangeListener(Events.RECEIVED_SAVED_ROUTES, this.displaySavedRoutes);
 
-        var owner = this.props.user.id,
-            mpo = this.props.prefs.mpo_name;
-console.log("<MPO_LandingPage> componentDidMount", owner, mpo);
-        SailsWebApi.get(["/routes/getsaved/",owner,[mpo]], { type: Actions.RECEIVE_SAVED_ROUTES });
+        this.displaySavedRoutes();
     },
     componentWillUnmount: function() {
         RouteStore.removeChangeListener(Events.RECEIVED_SAVED_ROUTES, this.displaySavedRoutes);
     },
 
-    displaySavedRoutes: function(routeData) {
-console.log("<MPO_LandingPage> savedRoutes", routeData);
-
-        this.setState({ routes: routeData });
+    displaySavedRoutes: function(routes) {
+        this.setState({ routes: routes || RouteStore.getSavedRoutes() });
     },
 
     render: function() {

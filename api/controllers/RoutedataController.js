@@ -2,8 +2,8 @@ module.exports = {
 	saveRoute: function(req, res) {
 		var owner = req.param("owner"),
 			name = req.param("name"),
-			points = req.param("points");
-
+			points = JSON.stringify(req.param("points"));
+			
 		Routedata.find({ owner: owner, name: name }).exec(function(error, result) {
 			if (error) {
 				res.serverError(error);
@@ -47,7 +47,10 @@ module.exports = {
 				res.badRequest("no route named: "+name);
 			}
 			else {
-				res.ok(result.pop());
+				var data = result.pop();
+				data.points = JSON.parse(data.points);
+				data.tmc_codes = JSON.parse(data.tmc_codes);
+				res.ok(data);
 			}
 		})
 	},
@@ -72,31 +75,10 @@ module.exports = {
 				res.ok([]);
 			}
 			else {
-				res.ok(result);
-			}
-		})
-	},
-	loadSavedRoutes: function(req, res) {
-		var owner = req.param("owner"),
-			mpo_array = req.param("mpo_array");
-
-		try {
-			mpo_array = JSON.parse(mpo_array);
-		}
-		catch(e) {
-			res.badRequest("You must send an array of MPO names as a JSON string.")
-		}
-		mpo_array.push(owner);
-
-		Routedata.find({ owner: mpo_array }).exec(function(error, result) {
-            if (error) {
-            	console.log(error);
-			    res.serverError(error);
-            }
-			else if (!result.length) {
-				res.ok([]);
-			}
-			else {
+				result.forEach(function(data) {
+					data.points = JSON.parse(data.points);
+					data.tmc_codes = JSON.parse(data.tmc_codes);
+				})
 				res.ok(result);
 			}
 		})

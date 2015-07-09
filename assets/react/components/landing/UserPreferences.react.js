@@ -10,6 +10,7 @@ var React = require('react'),
 
     UserStore = require("../../stores/UserStore");
 
+// user type selection values
 var USER_TYPES = [null, "mpo_user", "state_user"],
     USER_TYPES_STRINGS = ["choose your user type", "mpo user", "state user"];
 
@@ -31,7 +32,6 @@ var UserPreferences = React.createClass({
 
     getMPONames: function() {
         var names = ["choose a MPO name"].concat(UserStore.getMPONames().map(function(d) { return d.shortName; }));
-console.log("<UserPreferences.getMPONames>", names);
 
         if (names.length != this.state.MPONames.length) {
             var state = this.state
@@ -48,8 +48,7 @@ console.log("<UserPreferences.getMPONames>", names);
             mpoName = userType == "state_user" ? "state_user" : this.state.MPONames[mpoNameValue];
 
         if (userTypeValue && ((userType=="mpo_user" && mpoNameValue > 0) || userType=="state_user")) {
-console.log("<UserPreferences> saving user preferences", userType, mpoName);
-            SailsWebApi.savePreferences(this.props.user.id, userType, mpoName);
+            UserStore.savePreferences(userType, mpoName);
         }
         else {
 console.log("<UserPreferences> oops!!!")
@@ -69,7 +68,7 @@ console.log("<UserPreferences> oops!!!")
             <div className="row">
                 <div className="col-lg-12">
                     <div className="widget">
-                        
+
                         <div>
                             <h4>User Preferences</h4>
                             <p>Set your preferences</p>
