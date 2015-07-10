@@ -5,11 +5,17 @@
  */
 
 var fs = require("fs"),
-  topojson = require("topojson");
+  topojson = require("topojson"),
+  BQconfig = require("../BQconfig.json");
 
 module.exports.bootstrap = function(cb) {
     loadMPOgeo();
     loadTestRoute();
+
+//     process.env.BQ_EMAIL = BQconfig.email;
+//     process.env.BQ_PEM = BQconfig.pem;
+// console.log(process.env.BQ_EMAIL, process.env.BQ_PEM)
+    //require("../custom_modules/BigQuery")().auth();
 
   // It"s very important to trigger this callack method when you are finished
   // with the bootstrap!  (otherwise your server will never lift, since it"s waiting on the bootstrap)
@@ -58,7 +64,7 @@ function loadMPOgeo() {
 
 function loadTestRoute(){
 
-    Routedata.create([
+    Route.create([
     {
       "points": '[[42.75432327356435,-74.05938506126404],[42.66678560336089,-73.79156112670898]]',
       "tmc_codes":'["120N12009", "120N07906", "120N12010", "120N07908", "120N07907", "120N12012", "120N07905", "120N12150", "120N07909", "120N12011"]',

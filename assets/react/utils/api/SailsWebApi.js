@@ -11,7 +11,7 @@ var io = require('./sails.io.js')(),
 
 var LOADING = 0;
 
-var SailsWebApi = assign(EventEmitter.prototype, {
+var SailsWebApi = assign({}, EventEmitter.prototype, {
     emitEvent: function(Event, data) {
         this.emit(Event, data);
     },

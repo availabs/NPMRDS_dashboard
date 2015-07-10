@@ -5,23 +5,8 @@ This convenience module is used to query Google's BigQuery service.
 var googleapis = require('googleapis'),
 	bigQuery = googleapis.bigquery('v2');
 
-/*
-#############
-TODO
-#############
-Implement a more convient means of linking Google account information.
-#############
-*/
-
-var jwt = new googleapis.auth.JWT(
-        '748884541822-qirdunlbhosdte2h8tbjq59otnr4k1cu@developer.gserviceaccount.com',
-        					// ^ this is the google service account email ^
-        'npmrds.pem',		// point this to the path of required .pem file
-        null,
-        ['https://www.googleapis.com/auth/bigquery']);
-jwt.authorize(function(error, result) {
-	console.log(error, result);
-});
+var AUTH = false,
+	JWT = null;
 
 function BigQuery() {
 	var projectId = 'npmrds';
@@ -33,13 +18,17 @@ function BigQuery() {
 	sql: The SQL statement to be executed.
 	cb: callback function executed upon query completion. The callback
 		function should accept (error, result) as parameters.
-	*/	
+	*/
+		if (!AUTH) {
+			console.error("You must first authorize BigQuery: require('/path/to/BigQuery')().auth();")
+			cb("BigQuery services were not authorized")
+		}
 		bigQuery.jobs.query({
 		    	kind: "bigquery#queryRequest",
 		    	projectId: projectId,
 		    	timeoutMs: '10000',
 		    	resource: { query: sql, projectId: 'npmrds' },
-		    	auth: jwt },
+		    	auth: JWT },
 		    function(error, result) {
 		    	if (error) {
 		    		cb(error);
@@ -65,6 +54,24 @@ function BigQuery() {
 		    })
 	}
 
+	query.auth = function(cb) {
+		if (AUTH) return;
+
+		JWT = new googleapis.auth.JWT(
+		        process.env.BQ_EMAIL,//'748884541822-qirdunlbhosdte2h8tbjq59otnr4k1cu@developer.gserviceaccount.com',
+		        					// ^ this is the google service account email ^
+
+		        process.env.BQ_PEM,//'npmrds.pem',		// < point this to the path of required .pem file
+		        null,
+		        ['https://www.googleapis.com/auth/bigquery']);
+		JWT.authorize(function(error, result) {
+			cb(error, result);
+			console.log("BigQuery auth result: %s, %s", error ? "failure" : "success", error || result);
+		});
+
+		AUTH = true;
+	}
+
 	query.checkJob = function(jobId, cb) {
 	/*
 	This function is used to check the status of a job to determine if
@@ -73,17 +80,17 @@ function BigQuery() {
 	jobId: the google service jobId returned by google from the initial request.
 		If a job runs for too long on Google's servers, a status update is returned.
 		This request should be repeated until the job completes.
-	cb: callback function executed upon completion. The callback 
+	cb: callback function executed upon completion. The callback
 		function should accept (error, result) as parameters.
 
 	result: The result is an updated object containing updated
 		information about the job status.
 	*/
-		bigQuery.jobs.get({ projectId: projectId, jobId: jobId, auth: jwt }, cb);
+		bigQuery.jobs.get({ projectId: projectId, jobId: jobId, auth: JWT }, cb);
 	}
 	query.parseResult = function(BQresult) {
 	/*
-	This convenience methos is used to parse a default BigQuery result into 
+	This convenience methos is used to parse a default BigQuery result into
 		a nicer format.
 
 	BQresult: this parameter is an unmodified BigQuery query response.
@@ -119,10 +126,12 @@ function BigQuery() {
 
 	return query;
 
+// PRIVATE FUNCTIONS FOLLOW
+
 	function wait(QBresponse, cb) {
 	/*
 	This private function is used internally when a query job returns unfinished.
-	
+
 	QBresult: the response from Google containing information on the unfinished job.
 	cb: this is a callback function that is passed on to the function that retrieves
 		query results after the job completes.
@@ -145,14 +154,14 @@ console.log("<BigQuery> Job still running:", QBresponse["jobReference"]["jobId"]
 	This private function is used internally after waiting for an unfinished query job.
 
 	status: the status object for a completed job returned by Google.
-	cb: callback function executed upon completion. The callback 
+	cb: callback function executed upon completion. The callback
 		function should accept (error, result) as parameters.
 	*/
 		var params = {
 			jobId: status.jobReference.jobId,
 			projectId: projectId,
 			startLine: 0,
-			auth: jwt
+			auth: JWT
 		}
 		bigQuery.jobs.getQueryResults(params, function(error, result) {
 			if(error) {
@@ -176,20 +185,20 @@ console.log("<BigQuery> Job still running:", QBresponse["jobReference"]["jobId"]
 
 	function getMoreRows(response, pageToken, cb) {
 	/*
-	This private function is used internally to receive additional 
+	This private function is used internally to receive additional
 		pages of results if a query response has more than 100,000 rows.
 
 	response: a query response returned by Google. Additional data is
 		added into this object's rows.
 	pageToken: the pageToken identifying the last page of read received.
 		Google uses this to receive the next page of data.
-	cb: callback function executed upon completion. The callback 
+	cb: callback function executed upon completion. The callback
 		function should accept (error, result) as parameters.
 	*/
 		var params = {
 			jobId: response.jobReference.jobId,
 			projectId: projectId,
-			auth: jwt,
+			auth: JWT,
 			pageToken: pageToken
 		}
 console.log("<BigQuery> Getting more rows:", params.jobId);

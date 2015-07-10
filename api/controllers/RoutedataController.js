@@ -1,86 +1,66 @@
+var BIGquery = require("../../custom_modules/BigQuery")(),
+    fs = require("fs");
+
 module.exports = {
-	saveRoute: function(req, res) {
-		var owner = req.param("owner"),
-			name = req.param("name"),
-			points = JSON.stringify(req.param("points"));
-			
-		Routedata.find({ owner: owner, name: name }).exec(function(error, result) {
-			if (error) {
-				res.serverError(error);
-			}
-			else if (!result.length) {
-				Routedata.create({ owner: owner, name: name, points: points })
-		        	.exec(function(error, result) {
-			            if (error) {
-			            	console.log(error);
-			            	res.serverError(error);
-			            }
-			            else {
-			            	res.ok(result);
-			            }
-			    	});
-		    }
-		    else {
-				Routedata.update({ owner: owner, name: name }, { points: points })
-		        	.exec(function(error, result) {
-			            if (error) {
-			            	console.log(error);
-			            	res.serverError(error);
-			            }
-			            else {
-			            	res.ok(result);
-			            }
-			    	});
-		    }
-		})
-	},
-	loadRoute: function(req, res) {
-		var owner = req.param("owner"),
-			name = req.param("name");
+    getData: function(req, res) {
+        var date = +req.param("date"),
+            tmc_array = req.param("tmc_array");
 
-		Routedata.find({ owner: owner, name: name }).exec(function(error, result) {
-            if (error) {
-            	console.log(error);
-			    res.serverError(error);
+        if (!Array.isArray(tmc_array)) {
+            try {
+                tmc_array = JSON.parse(tmc_array);
             }
-			else if (!result.length) {
-				res.badRequest("no route named: "+name);
-			}
-			else {
-				var data = result.pop();
-				data.points = JSON.parse(data.points);
-				data.tmc_codes = JSON.parse(data.tmc_codes);
-				res.ok(data);
-			}
-		})
-	},
-	getSavedRoutes: function(req, res) {
-		var owner = req.param("owner"),
-			mpo_array = req.param("mpo_array");
-
-		try {
-			mpo_array = JSON.parse(mpo_array);
-		}
-		catch(e) {
-			res.badRequest("You must send an array of MPO names as a JSON string.")
-		}
-		mpo_array.push(owner);
-
-		Routedata.find({ owner: mpo_array }).exec(function(error, result) {
-            if (error) {
-            	console.log(error);
-			    res.serverError(error);
+            catch(e) {
+                res.badRequest("You must send an array of TMC codes.");
             }
-			else if (!result.length) {
-				res.ok([]);
-			}
-			else {
-				result.forEach(function(data) {
-					data.points = JSON.parse(data.points);
-					data.tmc_codes = JSON.parse(data.tmc_codes);
-				})
-				res.ok(result);
-			}
-		})
-	}
+        }
+        var sql = makeSQL(date, tmc_array);
+        BIGquery(sql, function(err, rslt) {
+            if (err) {
+                res.serverError(err);
+            }
+            else {
+                rslt = BIGquery.parseResult(rslt);
+
+                var buf = new Buffer(JSON.stringify(rslt), "utf-8");
+
+                stream = new ReadStream(buf, {encoding: "utf-8"});
+
+                stream.pipe(res);
+
+                //res.ok(rslt);
+            }
+        })
+    }
+}
+
+var Readable = require('stream').Readable;
+
+function ReadStream(buf, opts) {
+    if (!(this instanceof ReadStream)) return new ReadStream(buf, opts);
+
+    Readable.call(this, opts);
+
+    this.maxPush = 4096;
+    this.data = buf;
+    this.pos = 0;
+}
+ReadStream.prototype = Object.create(Readable.prototype);
+ReadStream.prototype.constructor = ReadStream;
+
+ReadStream.prototype._read = function() {
+    this.push(this.data.slice(this.pos, this.pos+this.maxPush));
+    this.pos += this.maxPush;
+    if (this.pos >= this.data.length) {
+        this.push(null);
+    }
+}
+
+function makeSQL(date, tmc_array) {
+    return "SELECT integer(date/100) AS month, sum(travel_time_all) AS total, count(*) AS num "+
+        "FROM [HERE_traffic_data.HERE_NY] "+
+        "WHERE date >= " +(date-10000)+ " "+
+        "AND weekday NOT IN ('saturday', 'sunday') "+
+        "AND tmc IN ("+tmc_array.map(function(d) { return "'"+d+"'"; })+") "+
+        "GROUP BY month, travel_time_all;";
 }

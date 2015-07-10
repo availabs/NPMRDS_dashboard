@@ -48,9 +48,14 @@ module.exports.routes = {
   /**
   * route saving and loading
   */
-  '/routes/save/:owner/:name': 'routedata.saveRoute',
-  '/routes/load/:owner/:name': 'routedata.loadRoute',
-  '/routes/getsaved/:owner/:mpo_array': 'routedata.getSavedRoutes',            // this route returns a list of route names
+  '/routes/save/:owner/:name': 'route.saveRoute',
+  '/routes/load/:owner/:name': 'route.loadRoute',
+  '/routes/getsaved/:owner/:mpo_array': 'route.getSavedRoutes',            // this route returns a list of route names
+
+  /**
+  * route data retrieval
+  */
+  '/routes/getdata/:date/:tmc_array': 'routedata.getData',
 
   /**
   * user preferences saving and loading

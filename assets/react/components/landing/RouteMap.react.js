@@ -164,6 +164,13 @@ console.log("<RouteMap::componentDidMount>", routes);
         var route = routes.filter(function(route) { return route.id == routeId; }).pop();
 
         this._onRouteLoaded(route.points);
+
+        var today = new Date(),
+            num = today.getFullYear()*10000+(today.getMonth()+1)*100+today.getDay();
+
+        d3.json("/routes/getdata/"+num+"/"+JSON.stringify(route.tmc_codes), function(err, res) {
+            console.log(err || res);
+        });
     },
 
     _onRouteLoaded: function(points) {
@@ -252,9 +259,14 @@ console.log("<RouteMap::componentDidMount>", routes);
                 <div className="row">
                     <LoadingIndicator />
 
-                    <div className="col-lg-12" id="route-map-div">
+                    <div className="col-lg-9" id="route-map-div">
                         <LeafletMap height="75%" layers={this.state.layers} markers={this.state.markers} />
                     </div>
+                    <div className="col-lg-3">
+                        <div className="widget">
+
+                        </div>
+		    		</div>
                 </div>
             </div>
         );
