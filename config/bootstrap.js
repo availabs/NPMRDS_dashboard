@@ -5,15 +5,26 @@
  */
 
 var fs = require("fs"),
-  topojson = require("topojson"),
-  BQconfig = require("../BQconfig.json");
+  topojson = require("topojson");
 
 module.exports.bootstrap = function(cb) {
     loadMPOgeo();
     loadTestRoute();
 
-    process.env.BQ_EMAIL = BQconfig.email;
-    process.env.BQ_PEM = BQconfig.pem;
+    try {
+      var BQconfig = require("../BQconfig.json");
+      process.env.BQ_EMAIL = BQconfig.email;
+      process.env.BQ_PEM = BQconfig.pem;
+    }
+    catch(e) {
+      console.error(e);
+      console.error("You must create a BQconfig.json file to authorize BigQuery.");
+      console.error("BigQuery services will be unavailable.")
+      console.error("The file should be a proper JSON object with the following keys:");
+      console.error('{"email":"you_service_email@developer.gserviceaccount.com",')
+      console.error(' "pem":"path to your .pem file}"');
+      console.error("A relative .pem file path should be relative to the project root.");
+    }
 
     require("../custom_modules/BigQuery")().auth();
 
