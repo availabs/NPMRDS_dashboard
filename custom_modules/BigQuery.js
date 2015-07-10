@@ -65,7 +65,9 @@ function BigQuery() {
 		        null,
 		        ['https://www.googleapis.com/auth/bigquery']);
 		JWT.authorize(function(error, result) {
-			cb(error, result);
+			if (typeof cb == "function") {
+				cb(error, result);
+			}
 			console.log("BigQuery auth result: %s, %s", error ? "failure" : "success", error || result);
 		});
 

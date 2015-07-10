@@ -12,10 +12,10 @@ module.exports.bootstrap = function(cb) {
     loadMPOgeo();
     loadTestRoute();
 
-//     process.env.BQ_EMAIL = BQconfig.email;
-//     process.env.BQ_PEM = BQconfig.pem;
-// console.log(process.env.BQ_EMAIL, process.env.BQ_PEM)
-    //require("../custom_modules/BigQuery")().auth();
+    process.env.BQ_EMAIL = BQconfig.email;
+    process.env.BQ_PEM = BQconfig.pem;
+
+    require("../custom_modules/BigQuery")().auth();
 
   // It"s very important to trigger this callack method when you are finished
   // with the bootstrap!  (otherwise your server will never lift, since it"s waiting on the bootstrap)
@@ -66,29 +66,29 @@ function loadTestRoute(){
 
     Route.create([
     {
-      "points": '[[42.75432327356435,-74.05938506126404],[42.66678560336089,-73.79156112670898]]',
-      "tmc_codes":'["120N12009", "120N07906", "120N12010", "120N07908", "120N07907", "120N12012", "120N07905", "120N12150", "120N07909", "120N12011"]',
+      "points": '[[42.7508,-74.049],[42.696,-73.875]]',
+      "tmc_codes":'["120N07904", "120N07905", "120N12012", "120N07906", "120N07907", "120N07908", "120N12011"]',
       "owner": "1",
-      "name": "western N",
+      "name": "Western ave"
     },
     {
-      "points": "[[42.75432327356435,-74.05938506126404],[42.66678560336089,-73.79156112670898]]",
-      "tmc_codes":'["120N12009", "120N07906", "120N12010", "120N07908", "120N07907", "120N12012", "120N07905"]',
+      "points": '[[42.76744642566998,-73.96295428276062],[42.66428868639134,-73.727918677032]]',
+      "tmc_codes":'["120N05855", "120N05854", "120N05853", "120N05852", "120N05851", "120N05850","120N05849","120N05848","120N05847","120N05846","120N05845","120N05844"]',
       "owner": "nymtc",
-      "name": "western N2",
+      "name": "I90 Eastbound"
     },
     {
-      "points": "[[42.75432327356435,-74.05938506126404],[42.66678560336089,-73.79156112670898]]",
-      "tmc_codes":'["120P07903", "120P07904", "120P07906", "120P07905", "120P12012", "120P12152", "120P12151", "120P07907", "120P07908", "120P12011", "120P07909", "120P12010"]',
+      "points": '[[42.664418859896095,-73.72785329818726],[42.767438549461595,-73.9623749256134]]',
+      "tmc_codes":'["120N05845", "120N05846", "120N05847", "120N05848", "120N05849", "120N05850","120N05851","120N05852","120N05853","120N05854","120N05855","120N05856"]',
+      "owner": "nymtc",
+      "name": "I90 Westbound"
+  },
+    {
+      "points": '[[42.793,-73.763],[42.674,-73.843],[42.528,-73.787]]',
+      "tmc_codes":'["120N05865", "120N05864", "120N05863", "120N05862", "120N05861", "120N05860","120N05859","120N05837","120N05836","120N05835"]',
       "owner": "1",
-      "name": "western P",
-    },
-    {
-      "points": "[[42.75432327356435,-74.05938506126404],[42.66678560336089,-73.79156112670898]]",
-      "tmc_codes":'["120P07903", "120P07904", "120P07906", "120P07905", "120P12012", "120P12152", "120P12151"]',
-      "owner": "nymtc",
-      "name": "western P2",
-    },
+      "name": "I87 Southbound"
+    }
   ]).exec(function(err, res) {
       console.log(err || (res.length+" routes added."));
   })

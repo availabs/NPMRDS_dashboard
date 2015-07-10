@@ -160,6 +160,8 @@ var MapView = React.createClass({
     },
 
     componentDidMount: function() {
+        RouteStore.clearPoints();
+
         GeoStore.addChangeListener(Events.COUNTY_CHANGE, this._onCountyChange);
         GeoStore.addChangeListener(Events.STATE_CHANGE, this._onStateChange);
 
