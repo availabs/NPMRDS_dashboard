@@ -233,7 +233,8 @@ Loading Spinner
 .spinner-div {
   background-color: #fff;
   position: fixed;
-  right: 30px;
+  right: 1%;
+  margin-right: 15px;
   top: 75px;
   z-index: 20;
   color: #000;

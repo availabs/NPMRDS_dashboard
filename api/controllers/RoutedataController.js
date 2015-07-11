@@ -22,13 +22,12 @@ module.exports = {
             else {
                 rslt = BIGquery.parseResult(rslt);
 
-                var buf = new Buffer(JSON.stringify(rslt), "utf-8");
+                // var buf = new Buffer(JSON.stringify(rslt), "utf-8");
 
-                stream = new ReadStream(buf, {encoding: "utf-8"});
+                // stream = new ReadStream(buf, {encoding: "utf-8"});
 
-                stream.pipe(res);
-
-                //res.ok(rslt);
+                // stream.pipe(res);
+                res.ok(rslt);
             }
         })
     }

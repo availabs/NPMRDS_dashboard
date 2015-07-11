@@ -39,13 +39,6 @@ var RouteMapper = React.createClass({
     render: function() {
     	return (
             <div className="content container">
-                <div className="row">
-                    <div className="col-lg-12">
-                        <div className="widget">
-    		    			<h4>{"Hey there, " + this.state.sessionUser.name + ". Let's take a look at your route."}</h4>
-                        </div>
-		    		</div>
-		    	</div>
                 <RouteMap routeId={ this.getParams().id }/>
 		    </div>
     	)
@@ -53,3 +46,13 @@ var RouteMapper = React.createClass({
 })
 
 module.exports = RouteMapper;
+
+/*
+                <div className="row">
+                    <div className="col-lg-12">
+                        <div className="widget">
+                            <h4>{"Hey there, " + this.state.sessionUser.name + ". Let's take a look at your route."}</h4>
+                        </div>
+                    </div>
+                </div>
+                */

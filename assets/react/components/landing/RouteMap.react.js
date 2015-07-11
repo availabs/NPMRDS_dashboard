@@ -11,7 +11,8 @@ var React = require('react'),
     //--Components
     LeafletMap = require("../../components/utils/LeafletMap.react"),
 
-    RouteControl = require("../mapView/RouteControl.react"),
+    //RouteControl = require("../mapView/RouteControl.react"),
+    RouteMapSidebar = require("./RouteMapSidebar.react"),
 
     GeoStore = require("../../stores/GeoStore"),
     TMCDataStore = require("../../stores/TMCDataStore"),
@@ -39,6 +40,7 @@ var RouteMap = React.createClass({
         return {
             input: Input(),
             markers: [],
+            route: {},
             userPrefs: UserStore.getPreferences(),
             layers:{
                 mpo:{
@@ -127,7 +129,7 @@ var RouteMap = React.createClass({
         RouteStore.addChangeListener(Events.RECEIVED_SAVED_ROUTES, this.receivedSavedRoutes);
 
         var routes = RouteStore.getSavedRoutes();
-console.log("<RouteMap::componentDidMount>", routes);
+console.log("<RouteMap::componentDidMount> routes", routes);
         if (routes.length) {
             this.receivedSavedRoutes(routes);
         }
@@ -159,21 +161,14 @@ console.log("<RouteMap::componentDidMount>", routes);
     },
 
     receivedSavedRoutes: function(routes) {
-        var routeId = this.props.routeId;
+        var routeId = this.props.routeId,
 
-        var route = routes.filter(function(route) { return route.id == routeId; }).pop();
+            route = routes.filter(function(route) { return route.id == routeId; }).pop();
 
-        this._onRouteLoaded(route.points);
-
-        var today = new Date(),
-            num = today.getFullYear()*10000+(today.getMonth()+1)*100+today.getDay();
-
-        d3.json("/routes/getdata/"+num+"/"+JSON.stringify(route.tmc_codes), function(err, res) {
-            console.log(err || res);
-        });
+        this._onRouteLoaded(route.points, route);
     },
 
-    _onRouteLoaded: function(points) {
+    _onRouteLoaded: function(points, route) {
         var mapView = this,
             state = this.state;
 
@@ -201,6 +196,9 @@ console.log("<RouteMap::componentDidMount>", routes);
                     // }
                 };
             });
+        markerData = markerData.slice(0,1);
+
+        state.route = route;
 
         state.markers = markerData;
         RouteStore.calcRoute();
@@ -254,20 +252,19 @@ console.log("<RouteMap::componentDidMount>", routes);
     },
 
     render: function() {
+        console.log("<RouteMap::render>", this.state.route);
         return (
-            <div className="content container">
-                <div className="row">
-                    <LoadingIndicator />
+            <div className="row">
+                <LoadingIndicator />
 
-                    <div className="col-lg-9" id="route-map-div">
-                        <LeafletMap height="75%" layers={this.state.layers} markers={this.state.markers} />
-                    </div>
-                    <div className="col-lg-3">
-                        <div className="widget">
-
-                        </div>
-		    		</div>
+                <div className="col-lg-8" id="route-map-div">
+                    <LeafletMap height="85%" layers={this.state.layers} markers={this.state.markers} />
                 </div>
+                <div className="col-lg-4">
+                    <div className="widget">
+                        <RouteMapSidebar TMCcodes={ this.state.route.tmc_codes || [] } />
+                    </div>
+	    		</div>
             </div>
         );
     }
