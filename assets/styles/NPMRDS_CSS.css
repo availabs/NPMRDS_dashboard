@@ -213,6 +213,33 @@ svg .axis text {
   cursor: crosshair;
 }
 
+/* RouteMap BarGraphs */
+.react-bar-graph svg {
+    background-color: rgba(225, 225, 225, 0.5);
+}
+.react-bar-graph svg path,
+.react-bar-graph svg line,
+.react-bar-graph svg .axis line,
+.react-bar-graph svg .axis path {
+    stroke-width: 1px;
+    stroke: #000;
+    stroke-opacity: 1;
+}
+.react-bar-graph svg text {
+    fill: #000;
+    fill-opacity: 1;
+}
+.react-bar-graph rect.react-rect {
+    fill-opacity: 0.8;
+}
+.react-bar-graph rect.react-rect:hover {
+    fill-opacity: 1.0;
+}
+.graph-popup {
+    background-color: #ddd;
+    color: #000;
+}
+
 /* application.css changes */
 .nav-tabs > li > a {
   color: #fff;

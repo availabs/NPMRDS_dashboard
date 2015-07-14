@@ -3,6 +3,8 @@
 var React = require('react'),
     Router = require("react-router"),
 
+    Events = require('../constants/AppConstants').EventTypes,
+
 	MPO_LandingPage = require("../components/landing/MPO_LandingPage.react"),
     State_LandingPage = require("../components/landing/State_LandingPage.react"),
     UserPreferences = require("../components/landing/UserPreferences.react"),
@@ -17,42 +19,81 @@ var RouteMapper = React.createClass({
 
     getInitialState: function() {
     	return {
-            sessionUser: UserStore.getSessionUser()
+            sessionUser: UserStore.getSessionUser(),
+            preferences: UserStore.getPreferences(),
+            savedRoutes: RouteStore.getSavedRoutes(),
+            loadedRoute: {}
         };
     },
 
     componentDidMount: function() {
         UserStore.addChangeListener(this._getPreferences);
+        RouteStore.addChangeListener(Events.RECEIVED_SAVED_ROUTES, this._receiveSavedRoutes);
+        RouteStore.addChangeListener(Events.ROUTE_CREATED, this._onRouteCreated);
+
+        if (this.state.savedRoutes.length) {
+            this.loadRouteCollection(this.state.savedRoutes);
+        }
+    },
+    loadRouteCollection(routes) {
+        routes = routes || RouteStore.getSavedRoutes();
+
+        RouteStore.clearPoints();
+
+        var routeId = this.getParams().id,
+            route = routes.reduce(function(a, c) {
+                return c.id == routeId ? c : a;
+            }, {});
+
+        route.points.forEach(function(d, i) {
+            RouteStore.addPoint(i, d);
+        })
+
+        RouteStore.calcRoute();
     },
     componentWillUnmount: function() {
         UserStore.removeChangeListener(this._getPreferences);
+        RouteStore.removeChangeListener(Events.RECEIVED_SAVED_ROUTES, this._receiveSavedRoutes);
+        RouteStore.removeChangeListener(Events.ROUTE_CREATED, this._onRouteCreated);
+    },
+
+    _receiveSavedRoutes: function() {
+        this.loadRouteCollection();
+        this.setState({
+            sessionUser: this.state.sessionUser,
+            preferences:  this.state.preferences,
+            savedRoutes: RouteStore.getSavedRoutes(),
+            loadedRoute: this.state.loadedRoute
+        })
+    },
+
+    _onRouteCreated: function() {
+        this.setState({
+            sessionUser: this.state.sessionUser,
+            preferences: this.state.preferences,
+            savedRoutes: this.state.savedRoutes,
+            loadedRoute: RouteStore.getRoute()
+        })
     },
 
     _getPreferences: function(event) {
-        var state = this.state;
-
-        state.preferences = UserStore.getPreferences();
-
-        this.setState(state);
+        this.setState({
+            sessionUser: this.state.sessionUser,
+            preferences: UserStore.getPreferences(),
+            savedRoutes: this.state.savedRoutes,
+            loadedRoute: this.state.loadedRoute
+        })
     },
 
     render: function() {
+        var routeId = this.getParams().id,
+            route = this.state.savedRoutes.reduce(function(a, c) { return c.id == routeId ? c : a; }, {});
     	return (
             <div className="content container">
-                <RouteMap routeId={ this.getParams().id }/>
+                <RouteMap route={ route } routeCollection={ this.state.loadedRoute }/>
 		    </div>
     	)
     }
 })
 
 module.exports = RouteMapper;
-
-/*
-                <div className="row">
-                    <div className="col-lg-12">
-                        <div className="widget">
-                            <h4>{"Hey there, " + this.state.sessionUser.name + ". Let's take a look at your route."}</h4>
-                        </div>
-                    </div>
-                </div>
-                */

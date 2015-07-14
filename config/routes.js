@@ -55,7 +55,8 @@ module.exports.routes = {
   /**
   * route data retrieval
   */
-  '/routes/getdata/:date/:tmc_array': 'routedata.getData',
+  '/routes/brief/recent/month/:tmc_array': 'routedata.getBriefRecentMonth',
+  '/routes/brief/year/:tmc_array': 'routedata.getBriefYear',
 
   /**
   * user preferences saving and loading

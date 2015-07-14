@@ -6,6 +6,7 @@ var React = require('react'),
     RouteStore = require("../../stores/RouteStore"),
     GeoStore = require("../../stores/GeoStore"),
     UserStore = require("../../stores/UserStore"),
+    TMCDataStore = require("../../stores/TMCDataStore"),
 
     SailsWebApi = require("../../utils/api/SailsWebApi"),
 
@@ -29,8 +30,11 @@ var RoutePanel = React.createClass({
         UserStore.addChangeListener(this.getSavedRoutes);
 
         var owner = UserStore.getSessionUser().id,
-            mpo = UserStore.getPreferences().mpo_name || "not_set";
-        SailsWebApi.get(["/routes/getsaved/",owner,[mpo]], {type: ActionTypes.RECEIVE_SAVED_ROUTES});
+            mpo = UserStore.getPreferences().mpo_name || null;
+
+        if (mpo) {
+            SailsWebApi.getSavedRoutes(owner, mpo);
+        }
     },
     componentWillUnmount: function() {
         SailsWebApi.removeChangeListener(Events.SAILS_WEB_API_LOADING_START, this._onDataLoadingStart);
@@ -45,7 +49,8 @@ var RoutePanel = React.createClass({
         if (event == Events.RECEIVED_USER_PREFERENCES) {
             var owner = UserStore.getSessionUser().id,
                 mpo = UserStore.getPreferences().mpo_name || "not_set";
-            SailsWebApi.get(["/routes/getsaved/",owner,[mpo]], {type: ActionTypes.RECEIVE_SAVED_ROUTES});
+            // retrieve new list of roads to populate dropdown;
+            SailsWebApi.getSavedRoutes(owner, mpo);
         }
     },
 
@@ -59,8 +64,6 @@ var RoutePanel = React.createClass({
     },
 
     displaySavedRoutes: function(routes) {
-        routes = ["select a route..."].concat(routes.map(function(d) { return d.name; }));
-
         var state = this.state;
         state.savedRoutes = routes;
         this.setState(state);
@@ -79,7 +82,6 @@ var RoutePanel = React.createClass({
 			alert("Please give your route a name of at least 5 characters, starting with a letter or underscore.");
 			return;
 		}
-console.log("RouteControl, saving route:",name);
 
         var data = {
             owner: UserStore.getSessionUser().id,
@@ -89,27 +91,29 @@ console.log("RouteControl, saving route:",name);
         SailsWebApi.saveRoute(data);
 	},
     loadRoute: function(data) {
-        var name = d3.select("#savedRoutes").property("value").trim(),
-            currentRouteName = d3.select("#routeName").property("value").trim();
+        var name = d3.select("#savedRoutes").property("value").trim();
 
-        if (name == this.state.savedRoutes[0]) {// || name == currentRouteName) {
-            // d3.select("#savedRoutes").property("selectedIndex", 0);
-            return;
-        }
-
-        var data = {
-            owner: UserStore.getSessionUser().id,
-            name: name
-        }
-        SailsWebApi.loadRoute(data);
-
+        var route = this.state.savedRoutes.reduce(function(a,c) { return c.name == name ? c : a; }, {});
+console.log(name, route, this.state.savedRoutes);
         d3.select("#routeName").property("value", name);
-        d3.select("#savedRoutes").property("selectedIndex", 0);
+
+        SailsWebApi.loadRoute(route);
+    },
+
+    loadRouteData: function() {
+		var name = d3.select("#routeName").property("value").trim();
+
+		if (!checkRoute()) {
+			alert("You must create a route with at least 2 points.");
+			return;
+		}
+        var tmcs = this.state.savedRoutes.reduce(function(a, c) { return c.name == name ? c.tmc_codes : a; }, []);
+        TMCDataStore.addTMC(tmcs);
     },
 
     render: function() {
         var options = this.state.savedRoutes.map(function(route, i) {
-            return (<option key={i} >{route}</option>);
+            return (<option key={i} >{route.name}</option>);
         });
         var routeTypes = ["choose a route type", "personal", "MPO route"].map(function(type, i) {
             return (<option key={i} >{type}</option>);
@@ -127,12 +131,6 @@ console.log("RouteControl, saving route:",name);
                             <input id="routeName" className='form-control' type="text" color="#000"/>
                         </div>
                     </div>
-                    <div className="form-group">
-                        <label htmlFor="routeType">Route Type</label>
-                        <select id="routeType" className="form-control" >
-                            {routeTypes}
-                        </select>
-                    </div>
 	                <div className="form-group">
 	                    <div className="form-group">
 	                        <div className="NPMRDS-submit NPMRDS-label" onClick={this.saveRoute}>Save Route</div>
@@ -141,12 +139,13 @@ console.log("RouteControl, saving route:",name);
                     <div className="form-group">
                         <label htmlFor="savedRoutes">Saved Routes</label>
                         <select id="savedRoutes" className="form-control" onChange={this.loadRoute}>
+                             <option >{ this.state.savedRoutes.length ? "choose a route..." : "no saved routes" }</option>
                             {options}
                         </select>
                     </div>
 	                <div className="form-group">
 	                    <div className="form-group">
-	                        <div id="NPMRDS-RP-submit" className="NPMRDS-submit NPMRDS-label" onClick={getIntersects}>Load Data</div>
+	                        <div id="NPMRDS-RP-submit" className="NPMRDS-submit NPMRDS-label" onClick={this.loadRouteData}>Load Data</div>
 	                    </div>
 	                </div>
 	            </div>
@@ -166,10 +165,9 @@ function checkRoute() {
 	return true;
 }
 
-function getIntersects() {
-	if (!checkRoute()) {
-		alert("You must create a route with at least 2 points.");
-		return;
-	}
-	RouteStore.getIntersects(GeoStore.getRoads());
-}
+// <div className="form-group">
+//     <label htmlFor="routeType">Route Type</label>
+//     <select id="routeType" className="form-control" >
+//         {routeTypes}
+//     </select>
+// </div>

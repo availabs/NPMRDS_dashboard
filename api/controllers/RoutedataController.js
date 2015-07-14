@@ -2,7 +2,35 @@ var BIGquery = require("../../custom_modules/BigQuery")(),
     fs = require("fs");
 
 module.exports = {
-    getData: function(req, res) {
+    getBriefRecentMonth: function(req, res) {
+        var tmc_array = req.param("tmc_array");
+
+        if (!Array.isArray(tmc_array)) {
+            try {
+                tmc_array = JSON.parse(tmc_array);
+            }
+            catch(e) {
+                res.badRequest("You must send an array of TMC codes in JSON format.");
+            }
+        }
+
+        var sql = "SELECT tmc, date, sum(travel_time_all) AS sum, count(*) AS count "+
+                "FROM [HERE_traffic_data.HERE_NY] "+
+                "WHERE INTEGER(date/100) = (SELECT INTEGER(date/100) AS recent FROM [HERE_traffic_data.HERE_NY] ORDER BY date DESC LIMIT 1) "+
+                "AND tmc IN ("+tmc_array.map(function(d) { return "'"+d+"'"; }).join() + ") "+
+                "AND weekday NOT IN ('saturday', 'sunday') "+
+                "GROUP BY tmc, date, travel_time_all";
+
+        BIGquery(sql, function(err, rslt) {
+            if (err) {
+                res.serverError(err);
+            }
+            else {
+                res.ok(BIGquery.parseResult(rslt));
+            }
+        })
+    },
+    getBriefYear: function(req, res) {
         var date = +req.param("date"),
             tmc_array = req.param("tmc_array");
 
@@ -14,7 +42,12 @@ module.exports = {
                 res.badRequest("You must send an array of TMC codes.");
             }
         }
-        var sql = makeSQL(date, tmc_array);
+        var sql = "SELECT tmc, integer(date/100) AS month, sum(travel_time_all) AS total, count(*) AS num "+
+            "FROM [HERE_traffic_data.HERE_NY] "+
+            "WHERE date >= " +(date-10000)+ " "+
+            "AND weekday NOT IN ('saturday', 'sunday') "+
+            "AND tmc IN ("+tmc_array.map(function(d) { return "'"+d+"'"; })+") "+
+            "GROUP BY tmc, month, travel_time_all;";
         BIGquery(sql, function(err, rslt) {
             if (err) {
                 res.serverError(err);
@@ -53,13 +86,4 @@ ReadStream.prototype._read = function() {
     if (this.pos >= this.data.length) {
         this.push(null);
     }
-}
-
-function makeSQL(date, tmc_array) {
-    return "SELECT integer(date/100) AS month, sum(travel_time_all) AS total, count(*) AS num "+
-        "FROM [HERE_traffic_data.HERE_NY] "+
-        "WHERE date >= " +(date-10000)+ " "+
-        "AND weekday NOT IN ('saturday', 'sunday') "+
-        "AND tmc IN ("+tmc_array.map(function(d) { return "'"+d+"'"; })+") "+
-        "GROUP BY month, travel_time_all;";
 }

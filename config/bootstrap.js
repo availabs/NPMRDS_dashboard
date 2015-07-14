@@ -59,7 +59,7 @@ function loadMPOgeo() {
 
             fs.readFile(path, {encoding:"utf-8"},function(err, data) {
                 var record = {
-                    geography: JSON.stringify(convert(data)),
+                    geography: "{}",//JSON.stringify(convert(data)),
                     shortName: shortName,
                     fullName: "",
                     stateFIPS: 36

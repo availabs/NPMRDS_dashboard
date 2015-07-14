@@ -33,7 +33,7 @@ var RouteStore = assign({}, EventEmitter.prototype, {
         routePoints = {};
     },
   	addPoint: function(id, point) {
-console.log("RouteStore.addPoint:", id, point);
+// console.log("RouteStore.addPoint:", id, point);
         if (point.length < 2) {
             delete routePoints[id];
         }
@@ -47,11 +47,18 @@ console.log("RouteStore.addPoint:", id, point);
             points.push(routePoints[id]);
         }
         points.sort(function(a,b){return a-b;});
-console.log("RouteStore.calcRoute, points:", points);
+// console.log("RouteStore.calcRoute, points:", points);
 
         routeCreator
             .points(points)
-            .call(bufferedRoute);
+            .call(function(err, res) {
+                if (err) {
+                    console.log(err);
+                }
+                else {
+                    RouteStore.emitEvent(Events.ROUTE_CREATED, res);
+                }
+            })
     },
   	getRoute: function() {
   		return routeCreator.route().route;
@@ -64,32 +71,9 @@ console.log("RouteStore.calcRoute, points:", points);
 
         return data;
     },
-  	getBufferedRoute: function() {
-  		return routeCreator.route().buffer;
-  	},
-  	getIntersects: function(roads) {
-	    var intersects = [],
-	    	linkIDs = [];
-
-	    roads.features.forEach(function(feature) {
-	        var buffer = routeCreator.buffer(feature),
-	            intersect = routeCreator.intersect(buffer.features[0]);
-
-	        if (intersect) {
-	            intersects.push(feature);
-	            linkIDs.push(feature.properties.linkID);
-	        }
-	    });
-
-  		if (linkIDs.length) {
-            SailsWebApi.get(["/tmc/lookup/",linkIDs], { type: ActionTypes.RECEIVED_TMC_LOOKUP }, true);
-  		}
-
-  		RouteStore.emitEvent(Events.INTERSECTS_CREATED, intersects);
-      },
-      getSavedRoutes: function() {
-          return SAVED_ROUTES;
-      }
+    getSavedRoutes: function() {
+        return SAVED_ROUTES;
+    }
 })
 
 RouteStore.dispatchToken = AppDispatcher.register(function(payload) {
@@ -112,19 +96,18 @@ RouteStore.dispatchToken = AppDispatcher.register(function(payload) {
             RouteStore.emitEvent(Events.ROUTE_SAVED);
             var prefs = action.prefs,
                 userId = UserStore.getSessionUser().id;
-            SailsWebApi.getSavedRoutes(userId, prefs.mpo_name);
             break;
 
         case ActionTypes.ROUTE_LOADED:
-            var points = JSON.parse(action.result.points);
+            var points = action.result.points;
 // console.log("RouteStore.ROUTE_LOADED", points);
             RouteStore.emitEvent(Events.ROUTE_LOADED, points);
             break;
 
         case ActionTypes.RECEIVED_SAVED_ROUTES:
-// console.log("RouteStore.RECEIVE_SAVED_ROUTES", action.data);
-            RouteStore.emitEvent(Events.RECEIVED_SAVED_ROUTES, action.data);
+// console.log("RouteStore.RECEIVED_SAVED_ROUTES", action.data)
             SAVED_ROUTES = action.data;
+            RouteStore.emitEvent(Events.RECEIVED_SAVED_ROUTES, action.data);
             break;
 
         default:
@@ -133,12 +116,3 @@ RouteStore.dispatchToken = AppDispatcher.register(function(payload) {
 });
 
 module.exports = RouteStore;
-
-function bufferedRoute(error, route) {
-	if (error) {
-		console.log("RouteStore.bufferedRoute: error", error);
-		return;
-	}
-
-	RouteStore.emitEvent(Events.ROUTE_CREATED, route);
-}

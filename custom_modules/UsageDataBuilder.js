@@ -13,12 +13,13 @@ function UsageDataBuilder() {
 	cb: callback function executed upon build completion.
 	*/
 		request.weekdays = request.weekdays || DEFUALT_WEEKDAYS;
-		var sql;
+		request.weekdays = request.weekdays || DEFUALT_WEEKDAYS;
+		
 		if (request.type == "state") {
-			sql = makeStateSQL(request);
+			var sql = makeStateSQL(request);
 		}
 		else {
-			sql = makeCountySQL(request);
+			var sql = makeCountySQL(request);
 		}
 
         BIGquery(sql, function(error, result) {

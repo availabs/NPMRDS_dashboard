@@ -44,6 +44,7 @@ module.exports = {
 			    res.serverError(error);
             }
 			else if (!result.length) {
+console.log("no route named", name);
 				res.badRequest("no route named: "+name);
 			}
 			else {

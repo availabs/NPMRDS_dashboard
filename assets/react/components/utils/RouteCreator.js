@@ -78,7 +78,9 @@ function RouteCreator() {
 				var feature = {
 						type: "Feature",
 						properties: {
-							linkID: link.linkId
+							linkID: link.linkId,
+							length: link.length,
+							speedLimit: link.speedLimit
 						},
 						geometry: {
 							type: "LineString",
