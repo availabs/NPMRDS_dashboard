@@ -30,15 +30,14 @@ function expandData(data, schema) {
 module.exports = React.createClass({
 	getInitialState: function() {
 		return {
-			d3graph: BarGraph.d3().margin({left:35, bottom:5, top:25, right: 5}),
+			d3graph: BarGraph.d3().margin({left:30, bottom:5, top:15, right: 5}),
 			TMCcodes: this.props.TMCcodes
 		};
 	},
 	componentWillReceiveProps: function(newProps) {
 	},
 	componentWillUpdate: function(newProps, newState) {
-		if (this.props.TMCcodes.length) {
-			if (!newProps.collection.features) return;
+		if (newProps.TMCcodes.length && newProps.collection.features) {
 			var collection = newProps.collection,
 				length = 0,
 				num = 0,
@@ -71,11 +70,13 @@ module.exports = React.createClass({
 									}
 							})
 		            		.entries(expandData(res))
-//console.log(nested);stacked(nested);
+
+				var flow = length / speed * 60;
 
 				var data = makeRoute(nested);
 	            	this.state.d3graph
-						.label("Time (minutes) length: "+(Math.round(length*100)/100)+" miles")
+						.flowLine(flow)
+						.label("Time (minutes)")
 						.data(data)();
 	            }
 	        }.bind(this));

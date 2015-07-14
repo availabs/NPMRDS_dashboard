@@ -115,14 +115,13 @@ var RouteMap = React.createClass({
     },
 
     render: function() {
-console.log("ROUTEMAP::render", this.state.layers.route.geo);
         return (
             <div className="row">
                 <div className="col-lg-8" id="route-map-div">
-                    <LeafletMap height="85%" layers={ this.state.layers } markers={ this.state.markers } />
+                    <LeafletMap height="75%" layers={ this.state.layers } markers={ this.state.markers } />
                 </div>
                 <div className="col-lg-4">
-                    <RouteMapSidebar collection={ this.props.routeCollection } TMCcodes={ this.props.route.tmc_codes || [] } />
+                    <RouteMapSidebar data={ this.props.data } collection={ this.props.routeCollection } TMCcodes={ this.props.route.tmc_codes || [] } />
 	    		</div>
             </div>
         );

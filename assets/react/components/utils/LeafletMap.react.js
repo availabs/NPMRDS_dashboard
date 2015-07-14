@@ -33,7 +33,6 @@ var Map = React.createClass({
     },
 
     componentWillReceiveProps: function(nextProps) {
-console.log(nextProps.layers.route.geo)
         var scope = this;
         if(nextProps.layers){
 

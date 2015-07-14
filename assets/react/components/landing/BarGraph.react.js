@@ -27,34 +27,6 @@ exports.react = React.createClass({
 
 exports.d3 = BarGraph;
 
-function Popup() {
-	var div;
-	function popup(d) {
-		if (d && !div) {
-
-			div = d3.select('body').append("div")
-				.attr("class", "graph-popup")
-				.style("display", "none")
-				.style("position", "fixed");
-			d.on("mouseover", popup.show)
-				.on("mousemove", popup)
-				.on("mouseout", popup.hide)
-			return;
-		}
-		var loc = d3.mouse(document.body);
-		div.style("left", (loc[0]-71)+"px")
-			.style("top", (loc[1]-10)+"px")
-			.text(d.key+": "+(Math.round(d.values.y*100)/100));
-	}
-	popup.show = function() {
-		div.style("display", "block");
-	}
-	popup.hide = function() {
-		div.style("display", "none")
-	}
-	return popup;
-}
-
 function BarGraph() {
 	var data = [],
 		svg = null,
@@ -72,14 +44,13 @@ function BarGraph() {
 		yAxis = d3.svg.axis()
 			.tickSize(3, 3)
 			.orient("left")
-			.scale(yScale)
+			.scale(yScale),
 		xAxisGroup = null,
 		yAxisGroup = null,
 		showX = false,
 		showY = true,
-		label = "";
-
-	var popup = Popup();
+		label = "",
+		flow = 0;
 
 	function graph(selection) {
 		if (selection) {
@@ -99,8 +70,8 @@ function BarGraph() {
 		}
 		var wdth = width-margin.left-margin.right,
 			hght = height-margin.top-margin.bottom,
-			barWidth = wdth/(data.length+1);
-
+			barWidth = Math.floor(wdth/(data.length+1));
+console.log("MARGIN.RIGHT",margin.right)
 		group.attr("transform", "translate("+margin.left+", "+margin.top+")");
 		xAxisGroup.attr("transform", "translate(0, "+hght+")");
 		yAxisGroup.attr("transform", "translate(-5, 0)");
@@ -110,7 +81,9 @@ function BarGraph() {
 		yScale.range([hght, 0])
 			.domain([0, d3.max(data, function(d) { return d.values.y; })]);
 
-		colorScale.domain(d3.extent(data, function(d) { return d.values.y; }));
+		var extent = d3.extent(data, function(d) { return d.values.y; });
+		extent[0] = flow ? flow : extent[0];
+		colorScale.domain(extent);
 
 		if (showX) {
 			xAxisGroup.call(xAxis);
@@ -137,23 +110,44 @@ function BarGraph() {
 		l.enter().append("text")
 		l.attr({
 				x: 5,
-				y: 15,
+				y: 10,
 				"font-size": 12,
 				class: "label" })
 			.text(function(d) { return d; });
 
-		var t = svg.append("g").append("text")
+		var t = svg.append("g").append("text"),
+			date = null;
+		bars.on("mouseover", function(d) {
+			date = new Date(Math.round(d.key/10000), Math.round(d.key/100)%100, d.key%100);
+		})
 		bars.on("mousemove", function(d) {
 			t.attr({
 				x: width-5,
-				y: 15,
+				y: 10,
 				"text-anchor": "end",
 				"font-size": 12,
 				class: "label" })
-			.text(function() { return d.key+": "+(Math.round(d.values.y*100)/100)+" min"; });
+			.text(function() { return date.toDateString()+": "+Math.round(d.values.y)+" min"; });
 		})
 
-		//bars.call(popup);
+		var line = group.selectAll(".flow")
+			.data([flow]);
+		line.exit().remove();
+		line.enter().append("line")
+			.attr("class", "flow");
+		line.attr({
+			x1: 0,
+			y1: yScale(flow),
+			x2: wdth,
+			y2: yScale(flow)
+		})
+	}
+	graph.flowLine = function(fl) {
+		if (!arguments.length) {
+			return flow;
+		}
+		flow = fl;
+		return graph;
 	}
 	graph.label = function(l) {
 		if (!arguments.length) {
@@ -182,7 +176,7 @@ function BarGraph() {
 			margin.bottom = b || margin.bottom;
 			margin.right = r || margin.right;
 		}
-		else {
+		else if (typeof t == "object") {
 			for (var k in t) {
 				margin[k] = t[k];
 			}
