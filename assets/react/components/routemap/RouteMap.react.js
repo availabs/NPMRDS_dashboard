@@ -103,11 +103,10 @@ var RouteMap = React.createClass({
 
         if (newProps.route.points) {
             var markerData = [{
-                    id: "route-start",
+                    id: this.props.route.name,
                     latlng: newProps.route.points[0],
                     options: { draggable: false },
                 }]
-
             state.markers = markerData;
         }
 
@@ -116,14 +115,7 @@ var RouteMap = React.createClass({
 
     render: function() {
         return (
-            <div className="row">
-                <div className="col-lg-8" id="route-map-div">
-                    <LeafletMap height="75%" layers={ this.state.layers } markers={ this.state.markers } />
-                </div>
-                <div className="col-lg-4">
-                    <RouteMapSidebar data={ this.props.data } collection={ this.props.routeCollection } TMCcodes={ this.props.route.tmc_codes || [] } />
-	    		</div>
-            </div>
+            <LeafletMap height="75%" layers={ this.state.layers } markers={ this.state.markers } />
         );
     }
 

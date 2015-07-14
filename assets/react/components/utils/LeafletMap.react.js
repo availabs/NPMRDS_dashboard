@@ -31,6 +31,9 @@ var Map = React.createClass({
     componentDidMount: function() {
         this.renderMap();
     },
+    componentWillUnmount: function() {
+        mapMarkers = {};
+    },
 
     componentWillReceiveProps: function(nextProps) {
         var scope = this;

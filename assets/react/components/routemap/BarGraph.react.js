@@ -13,7 +13,7 @@ exports.react = React.createClass({
 	},
 	componentDidMount: function() {
 		d3.select("#"+this.state.id)
-			.style("height", (window.innerHeight*0.2)+"px")
+			.style("height", (window.innerHeight*0.125)+"px")
 			.call(this.props.bargraph);
 	},
 	render: function() {
@@ -50,7 +50,8 @@ function BarGraph() {
 		showX = false,
 		showY = true,
 		label = "",
-		flow = 0;
+		flow = 0,
+		title = "graph";
 
 	function graph(selection) {
 		if (selection) {
@@ -71,7 +72,7 @@ function BarGraph() {
 		var wdth = width-margin.left-margin.right,
 			hght = height-margin.top-margin.bottom,
 			barWidth = Math.floor(wdth/(data.length+1));
-console.log("MARGIN.RIGHT",margin.right)
+
 		group.attr("transform", "translate("+margin.left+", "+margin.top+")");
 		xAxisGroup.attr("transform", "translate(0, "+hght+")");
 		yAxisGroup.attr("transform", "translate(-5, 0)");
@@ -95,7 +96,12 @@ console.log("MARGIN.RIGHT",margin.right)
 		var bars = group.selectAll('rect')
 			.data(data);
 
+		var sum = 0;
 		bars.enter().append("rect")
+			.each(function(d) {
+				sum += d.values.y;
+			})
+		var avg = sum / data.length;
 
 		bars.attr({
 				x: function(d, i) { return xScale(i); },
@@ -104,43 +110,78 @@ console.log("MARGIN.RIGHT",margin.right)
 				height: function(d) { return hght-yScale(d.values.y); },
 				fill: function(d) { return colorScale(d.values.y); },
 				class: "react-rect" });
-		var l = svg.selectAll(".label")
+
+		var ttl = svg.selectAll(".title")
+			.data([title])
+		ttl.exit().remove();
+		ttl.enter().append("text");
+		ttl.attr({
+				x: 200,
+				y: 10,
+				"font-size": 12,
+				class: "title" })
+			.text(function(d) { return d; });
+
+		var lbl = svg.selectAll(".label")
 			.data([label])
-		l.exit().remove();
-		l.enter().append("text")
-		l.attr({
+		lbl.exit().remove();
+		lbl.enter().append("text");
+		lbl.attr({
 				x: 5,
 				y: 10,
 				"font-size": 12,
 				class: "label" })
 			.text(function(d) { return d; });
 
-		var t = svg.append("g").append("text"),
-			date = null;
+		var date = null;
 		bars.on("mouseover", function(d) {
-			date = new Date(Math.round(d.key/10000), Math.round(d.key/100)%100, d.key%100);
+			date = new Date(Math.round(d.key/10000), Math.round(d.key/100)%100-1, d.key%100);
 		})
 		bars.on("mousemove", function(d) {
+			var t = svg.selectAll(".info")
+				.data(["info"])
+			t.exit().remove();
+			t.enter().append("text");
 			t.attr({
 				x: width-5,
 				y: 10,
 				"text-anchor": "end",
 				"font-size": 12,
-				class: "label" })
+				class: "info" })
 			.text(function() { return date.toDateString()+": "+Math.round(d.values.y)+" min"; });
 		})
 
-		var line = group.selectAll(".flow")
+		var avgLine = group.selectAll(".avg-line")
 			.data([flow]);
-		line.exit().remove();
-		line.enter().append("line")
-			.attr("class", "flow");
-		line.attr({
+		avgLine.exit().remove();
+		avgLine.enter().append("line")
+		avgLine.attr({
+			x1: 0,
+			y1: yScale(avg),
+			x2: wdth,
+			y2: yScale(avg),
+			class: "avg-line"
+		})
+
+		var flowLine = group.selectAll(".flow-line")
+			.data([flow]);
+		flowLine.exit().remove();
+		flowLine.enter().append("line")
+		flowLine.attr({
 			x1: 0,
 			y1: yScale(flow),
 			x2: wdth,
-			y2: yScale(flow)
+			y2: yScale(flow),
+			class: "flow-line",
+			"stroke-dasharray": "3 3"
 		})
+	}
+	graph.title = function(t) {
+		if (!arguments.length) {
+			return title;
+		}
+		title = t;
+		return graph;
 	}
 	graph.flowLine = function(fl) {
 		if (!arguments.length) {

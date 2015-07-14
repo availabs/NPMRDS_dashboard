@@ -12,7 +12,8 @@ var React = require('react'),
     UserStore = require("../stores/UserStore"),
     RouteStore = require("../stores/RouteStore"),
 
-    RouteMap = require("../components/landing/RouteMap.react");
+    RouteMap = require("../components/routemap/RouteMap.react"),
+    RouteMapSidebar = require("../components/routemap/RouteMapSidebar.react");
 
 var METER_TO_MILE = 0.000621371;
 
@@ -91,6 +92,7 @@ var RouteMapper = React.createClass({
             length = 0,
             num = 0,
             speed = 0;
+
         collection.features.forEach(function(feature) {
             length += feature.properties.length;
             num += feature.properties.speedLimit ? 1 : 0;
@@ -100,9 +102,11 @@ var RouteMapper = React.createClass({
         length = Math.round(length*10)/10;
         speed /= num;
         speed = Math.round(speed * 3600 * METER_TO_MILE);
+
         var routeData = this.state.routeData;
         routeData.speed = speed;
         routeData.length = length;
+
         this.setState({
             sessionUser: this.state.sessionUser,
             preferences: this.state.preferences,
@@ -132,14 +136,28 @@ var RouteMapper = React.createClass({
     	return (
             <div className="content container">
                 <div className="row">
-                    <div className="col-lg-12">
-                        <div className="widget">
-    		    			<h4>{ data.name }</h4>
-                            { heading }
+
+                    <div className="col-lg-8">
+                        <div className="row">
+                            <div className="col-lg-12">
+                                <div className="widget">
+            		    			<h4>{ data.name }</h4>
+                                    { heading }
+                                </div>
+        		    		</div>
                         </div>
-		    		</div>
+                        <div className="row">
+                            <div className="col-lg-12">
+                                <RouteMap route={ route } data={ data } routeCollection={ this.state.loadedRoute }/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="col-lg-4">
+                        <RouteMapSidebar data={ data } collection={ this.state.loadedRoute } TMCcodes={ route.tmc_codes || [] } />
+                    </div>
+
 		    	</div>
-                <RouteMap route={ route } data={ data } routeCollection={ this.state.loadedRoute }/>
 		    </div>
     	)
     }
@@ -148,10 +166,10 @@ var RouteMapper = React.createClass({
 function makeHeading(data) {
     var heading = [];
     if (data.length) {
-        heading.push(<h4 key="length">Length: { data.length } miles.</h4>);
+        heading.push(<p key="length">Length: { data.length } miles.</p>);
     }
     if (data.speed) {
-        heading.push(<h4 key="speed">Average speed limit: { data.speed } mph.</h4>);
+        heading.push(<p key="speed">Average speed limit: { data.speed } mph.</p>);
     }
     return heading;
 }

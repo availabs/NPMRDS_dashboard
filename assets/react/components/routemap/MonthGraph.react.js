@@ -2,6 +2,8 @@
 
 var React = require('react'),
 
+	MonthGraph = require("./MonthGraph.react"),
+
 	BarGraph = require("./BarGraph.react"),
 	ReactBarGraph = BarGraph.react;
 
@@ -52,7 +54,7 @@ module.exports = React.createClass({
 			speed = speed * 3600 * METER_TO_MILE;
 
 	        var TMCs = JSON.stringify(newProps.TMCcodes);
-	        d3.json('/routes/brief/recent/month/'+TMCs, function(err, res) {
+	        d3.json(this.props.url+TMCs, function(err, res) {
 	            if (err) {
 	            	console.log(err);
 	            }
@@ -75,8 +77,9 @@ module.exports = React.createClass({
 
 				var data = makeRoute(nested);
 	            	this.state.d3graph
+                        .title(this.props.title)
 						.flowLine(flow)
-						.label("Time (minutes)")
+						.label("minutes")
 						.data(data)();
 	            }
 	        }.bind(this));
@@ -84,7 +87,7 @@ module.exports = React.createClass({
 	},
 	render: function() {
 		return (
-			<div className="route-map-sidebar">
+			<div className="react-graph-div">
 				<ReactBarGraph bargraph={ this.state.d3graph }>
 				</ReactBarGraph>
 			</div>
@@ -110,23 +113,23 @@ function makeRoute(nested) {
 	return route;
 }
 
-function stacked(nested) {
-	var data = [];
-	nested.forEach(function(tmc) {
-		var obj = {
-			values: tmc.values.sort(function(a,b){return b.key-a.key})
-						.map(function(d) { return {x:d.values.x,y:d.values.y}; }),
-			tmc: tmc.key
-		}
-		data.push(obj);
-	})
-	console.log("READY TO STACK", data);
-	var stack = d3.layout.stack()
-		.offset("zero")
-		.values(function(d) { return d.values; })
-		.x(function(d) { return d.x; })
-		.y(function(d) { return d.y; })
-		.out(function(d, y, y0) { d.y = y; d.y0 = y0; });
-
-	console.log("??????????",stack(data));
-}
+// function stacked(nested) {
+// 	var data = [];
+// 	nested.forEach(function(tmc) {
+// 		var obj = {
+// 			values: tmc.values.sort(function(a,b){return b.key-a.key})
+// 						.map(function(d) { return {x:d.values.x,y:d.values.y}; }),
+// 			tmc: tmc.key
+// 		}
+// 		data.push(obj);
+// 	})
+// 	console.log("READY TO STACK", data);
+// 	var stack = d3.layout.stack()
+// 		.offset("zero")
+// 		.values(function(d) { return d.values; })
+// 		.x(function(d) { return d.x; })
+// 		.y(function(d) { return d.y; })
+// 		.out(function(d, y, y0) { d.y = y; d.y0 = y0; });
+//
+// 	console.log("??????????",stack(data));
+// }

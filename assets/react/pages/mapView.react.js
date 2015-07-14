@@ -135,6 +135,7 @@ var MapView = React.createClass({
                     id: 0,
                     geo: { type: "FeatureCollection", features: [] },
                     options: {
+                        zoomOnLoad:true,
                         style: function(feature) {
                             return {
                                 stroke:true,

@@ -239,6 +239,9 @@ svg .axis text {
     background-color: #ddd;
     color: #000;
 }
+.react-graph-div {
+    margin-bottom: 5px;
+}
 
 /* application.css changes */
 .nav-tabs > li > a {
