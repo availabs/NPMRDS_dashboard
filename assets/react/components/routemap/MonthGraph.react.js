@@ -2,6 +2,8 @@
 
 var React = require('react'),
 
+	ServerActionsCreator = require("../../actions/ServerActionsCreator"),
+
 	MonthGraph = require("./MonthGraph.react"),
 
 	BarGraph = require("./BarGraph.react"),
@@ -40,17 +42,20 @@ module.exports = React.createClass({
 	},
 	componentWillUpdate: function(newProps, newState) {
 		if (newProps.TMCcodes.length && newProps.collection.features) {
+
 			var collection = newProps.collection,
 				length = 0,
-				num = 0,
+				speedLength = 0,
 				speed = 0;
 			collection.features.forEach(function(feature) {
 				length += feature.properties.length;
-				num += feature.properties.speedLimit ? 1 : 0;
-				speed += feature.properties.speedLimit || 30;
+	            if (feature.properties.speedLimit) {
+	                speedLength += feature.properties.length;
+	                speed += feature.properties.speedLimit*feature.properties.length;
+	            }
 			})
 			length *= METER_TO_MILE;
-			speed /= num;
+			speed /= speedLength;
 			speed = speed * 3600 * METER_TO_MILE;
 
 	        var TMCs = JSON.stringify(newProps.TMCcodes);
@@ -73,17 +78,22 @@ module.exports = React.createClass({
 							})
 		            		.entries(expandData(res))
 
-				var flow = length / speed * 60;
+					var flow = length / speed * 60;
 
-				var data = makeRoute(nested);
+					var data = makeRoute(nested);
+
 	            	this.state.d3graph
-                        .title(this.props.title)
+	                    .title(this.props.title)
+	                    .onClick(this.loadDailyGraphData)
 						.flowLine(flow)
 						.label("minutes")
 						.data(data)();
 	            }
 	        }.bind(this));
 	    }
+	},
+	loadDailyGraphData: function(d) {
+		console.log("LOAD_DAILY_DATA FOR", this, d)
 	},
 	render: function() {
 		return (

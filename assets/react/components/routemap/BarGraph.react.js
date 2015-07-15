@@ -13,7 +13,7 @@ exports.react = React.createClass({
 	},
 	componentDidMount: function() {
 		d3.select("#"+this.state.id)
-			.style("height", (window.innerHeight*0.125)+"px")
+			.style("height", (window.innerHeight*0.15)+"px")
 			.call(this.props.bargraph);
 	},
 	render: function() {
@@ -42,6 +42,7 @@ function BarGraph() {
 			.orient("bottom")
 			.scale(xScale),
 		yAxis = d3.svg.axis()
+			.ticks(5)
 			.tickSize(3, 3)
 			.orient("left")
 			.scale(yScale),
@@ -51,7 +52,8 @@ function BarGraph() {
 		showY = true,
 		label = "",
 		flow = 0,
-		title = "graph";
+		title = "graph",
+		click = null;
 
 	function graph(selection) {
 		if (selection) {
@@ -95,21 +97,27 @@ function BarGraph() {
 
 		var bars = group.selectAll('rect')
 			.data(data);
+		bars.enter().append("rect")
+			.attr({
+				y: hght,
+				height: 0,
+				width: barWidth,
+				class: "react-rect",
+				fill: "#fff"
+			})
+			.on("click", click);
 
 		var sum = 0;
-		bars.enter().append("rect")
-			.each(function(d) {
+		bars.each(function(d) {
 				sum += d.values.y;
 			})
-		var avg = sum / data.length;
-
-		bars.attr({
+			.transition().attr({
 				x: function(d, i) { return xScale(i); },
 				y: function(d) { return yScale(d.values.y); },
-				width: barWidth,
 				height: function(d) { return hght-yScale(d.values.y); },
-				fill: function(d) { return colorScale(d.values.y); },
-				class: "react-rect" });
+				fill: function(d) { return colorScale(d.values.y); }
+			});
+		var avg = sum / data.length;
 
 		var ttl = svg.selectAll(".title")
 			.data([title])
@@ -152,29 +160,47 @@ function BarGraph() {
 		})
 
 		var avgLine = group.selectAll(".avg-line")
-			.data([flow]);
+			.data([avg]);
 		avgLine.exit().remove();
 		avgLine.enter().append("line")
-		avgLine.attr({
+			.attr({
+			x1: 0,
+			y1: hght,
+			x2: wdth,
+			y2: hght,
+			class: "avg-line"
+			})
+		avgLine.transition().attr({
 			x1: 0,
 			y1: yScale(avg),
 			x2: wdth,
-			y2: yScale(avg),
-			class: "avg-line"
+			y2: yScale(avg)
 		})
 
 		var flowLine = group.selectAll(".flow-line")
 			.data([flow]);
 		flowLine.exit().remove();
-		flowLine.enter().append("line")
-		flowLine.attr({
+		flowLine.enter().append("line").attr({
 			x1: 0,
-			y1: yScale(flow),
+			y1: hght,
 			x2: wdth,
-			y2: yScale(flow),
+			y2: hght,
 			class: "flow-line",
 			"stroke-dasharray": "3 3"
 		})
+		flowLine.transition().attr({
+			x1: 0,
+			y1: yScale(flow),
+			x2: wdth,
+			y2: yScale(flow)
+		})
+	}
+	graph.onClick = function(c) {
+		if (!arguments.length) {
+			return click;
+		}
+		click = c;
+		return graph;
 	}
 	graph.title = function(t) {
 		if (!arguments.length) {

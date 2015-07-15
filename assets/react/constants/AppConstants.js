@@ -42,7 +42,9 @@ module.exports = {
     ROUTE_LOADED: null,
     RECEIVED_SAVED_ROUTES: null,
 
-    RECEIVED_MPO_NAMES: null
+    RECEIVED_MPO_NAMES: null,
+
+    LOAD_MONTHLY_GRAPH_DATE: null
   }),
 
   EventTypes: keyMirror({
