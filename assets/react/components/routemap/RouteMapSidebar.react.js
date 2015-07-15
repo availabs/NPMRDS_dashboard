@@ -4,6 +4,8 @@ var React = require('react'),
 
 	MonthGraph = require("./MonthGraph.react");
 
+// AM Peak: HOURS [6-9)
+// PM Peak: HOURS [3-6)
 module.exports = React.createClass({
 	render: function() {
 		return (
