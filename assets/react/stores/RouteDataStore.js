@@ -14,15 +14,43 @@ var AppDispatcher = require('../dispatcher/AppDispatcher'),
     GeoStore = require("./GeoStore"),
     UserStore = require("./UserStore");
 
-var RouteStore = assign({}, EventEmitter.prototype, {
+var ROUTE_DATA_CACHE = {};
 
+var CHANGE_EVENT = "CHANGE_EVENT";
+
+var RouteStore = assign({}, EventEmitter.prototype, {
+    addChangeListener: function(cb) {
+        this.on(CHANGE_EVENT, cb);
+    },
+    removeChangeListener: function(cb) {
+        this.removeListener(CHANGE_EVENT, cb);
+    },
+    emitChange: function() {
+        this.emit(CHANGE_EVENT);
+    },
+
+    getMonthlyData: function(id) {
+        return ROUTE_DATA_CACHE[id] ? ROUTE_DATA_CACHE[id].monthly : null;
+    },
+    getMonthlyAMData: function(id) {
+        return ROUTE_DATA_CACHE[id] ? ROUTE_DATA_CACHE[id].monthlyAM : null;
+    },
+    getMonthlyPMData: function(id) {
+        return ROUTE_DATA_CACHE[id] ? ROUTE_DATA_CACHE[id].monthlyPM : null;
+    }
 })
 
 RouteStore.dispatchToken = AppDispatcher.register(function(payload) {
     var action = payload.action;
 
     switch(action.type) {
-        case default:
+        case ActionTypes.LOAD_MONTHLY_GRAPH_DATA:
+            var dataType = action.Datatype;
+            ROUTE_DATA_CACHE[action.id][action.dataType] = action.data;
+            RouteStore.emitChange();
+            break;
+
+        default:
             break;
     }
 })

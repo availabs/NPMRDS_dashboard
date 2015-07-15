@@ -46,10 +46,6 @@ module.exports = {
     })
 },
 
-  //------------------------------------
-  // CRUD Handlers
-  //------------------------------------
-
   routeSaved: function(err, res) {
     AppDispatcher.handleServerAction({
       type: ActionTypes.ROUTE_SAVED,
@@ -70,15 +66,6 @@ module.exports = {
     AppDispatcher.handleServerAction({
       type: ActionTypes.DATA_VIEW_CHANGED,
       view: view
-    });
-  },
-
-  receiveData: function(type,data) {
-    //handles Create,Read & Update
-    var actiontype = 'RECEIVE_'+type.toUpperCase()+'S';
-    AppDispatcher.handleServerAction({
-      type: ActionTypes[actiontype],
-      data: data
     });
   },
 
@@ -120,6 +107,15 @@ module.exports = {
     });
   },
 
+  loadMonthlyGraphData: function(id, type, data) {
+    AppDispatcher.handleServerAction({
+      type: ActionTypes.LOAD_MONTHLY_GRAPH_DATA,
+      id: id,
+      dataType: type,
+      data: data
+    });
+  },
+
   // receiveTMClookup: function(data) {
   //   AppDispatcher.handleServerAction({
   //     type: ActionTypes.RECEIVED_TMC_LOOKUP,
@@ -127,11 +123,24 @@ module.exports = {
   //   });
   // },
 
+  //------------------------------------
+  // CRUD Handlers
+  //------------------------------------
+
   deleteData:function(id){
     AppDispatcher.handleServerAction({
       type: ActionTypes.DELETE_USER,
       Id: id
     });
-  }
+  },
+
+  receiveData: function(type,data) {
+    //handles Create,Read & Update
+    var actiontype = 'RECEIVE_'+type.toUpperCase()+'S';
+    AppDispatcher.handleServerAction({
+      type: ActionTypes[actiontype],
+      data: data
+    });
+  },
 
 };

@@ -37,30 +37,30 @@ var RouteMap = React.createClass({
                                 stroke:true
                             }
                         },
-                        onEachFeature: function (feature, layer) {
+                        // onEachFeature: function (feature, layer) {
 
-                            layer.on({
-                                // click: function(e){
-                                //     if (mapView.state.input.keyDown("ctrl")) {
-                                //         mapView.addRoutePoint(e.latlng.lat, e.latlng.lng);
-                                //     }
-                                // },
-                                mouseover: function(e){
-                                    this.setStyle({
-                                        weight:3,
-                                        color:'#400'
-                                    });
-                                },
-                                mouseout: function(e){
-                                      this.setStyle({
-                                        weight:1,
-                                        color:'#004'
-                                    });
+                        //     layer.on({
+                        //         click: function(e){
+                        //             if (mapView.state.input.keyDown("ctrl")) {
+                        //                 mapView.addRoutePoint(e.latlng.lat, e.latlng.lng);
+                        //             }
+                        //         },
+                        //         mouseover: function(e){
+                        //             this.setStyle({
+                        //                 weight:3,
+                        //                 color:'#400'
+                        //             });
+                        //         },
+                        //         mouseout: function(e){
+                        //               this.setStyle({
+                        //                 weight:1,
+                        //                 color:'#004'
+                        //             });
 
-                                }
-                            });
+                        //         }
+                        //     });
 
-                        }
+                        // }
                     }
                 },
                 route:{
@@ -75,18 +75,18 @@ var RouteMap = React.createClass({
                                 color: linkShader(feature)
                             }
                         },
-                         onEachFeature: function (feature, layer) {
+                         // onEachFeature: function (feature, layer) {
 
-                            layer.on({
+                         //    layer.on({
 
-                                // click: function(e){
-                                //   if (feature.properties.tmc) {
-                                //     TMCDataStore.addTMC(feature.properties.tmc);
-                                //   }
-                                // }
-                            });
+                         //        click: function(e){
+                         //          if (feature.properties.tmc) {
+                         //            TMCDataStore.addTMC(feature.properties.tmc);
+                         //          }
+                         //        }
+                         //    });
 
-                        }
+                        // }
                     }
                 }
             }
@@ -115,7 +115,7 @@ var RouteMap = React.createClass({
 
     render: function() {
         return (
-            <LeafletMap height="75%" layers={ this.state.layers } markers={ this.state.markers } />
+            <LeafletMap height="70%" layers={ this.state.layers } markers={ this.state.markers } />
         );
     }
 

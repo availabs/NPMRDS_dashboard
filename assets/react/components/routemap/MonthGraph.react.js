@@ -40,17 +40,20 @@ module.exports = React.createClass({
 	},
 	componentWillUpdate: function(newProps, newState) {
 		if (newProps.TMCcodes.length && newProps.collection.features) {
+
 			var collection = newProps.collection,
 				length = 0,
-				num = 0,
+				speedLength = 0,
 				speed = 0;
 			collection.features.forEach(function(feature) {
 				length += feature.properties.length;
-				num += feature.properties.speedLimit ? 1 : 0;
-				speed += feature.properties.speedLimit || 30;
+	            if (feature.properties.speedLimit) {
+	                speedLength += feature.properties.length;
+	                speed += feature.properties.speedLimit*feature.properties.length;
+	            }
 			})
 			length *= METER_TO_MILE;
-			speed /= num;
+			speed /= speedLength;
 			speed = speed * 3600 * METER_TO_MILE;
 
 	        var TMCs = JSON.stringify(newProps.TMCcodes);

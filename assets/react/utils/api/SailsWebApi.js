@@ -61,6 +61,33 @@ console.log("SAILS_WEB_API_LOADING_STOP");
 
   },
 
+        // <MonthGraph url={ '/routes/brief/recent/month/' } 
+        //   title="All Times" TMCcodes={ this.props.TMCcodes } 
+        //   collection={ this.props.collection }/>
+        // <MonthGraph url={ '/routes/brief/recent/month/AM/' } 
+        //   title="AM Peak" TMCcodes={ this.props.TMCcodes } 
+        //   collection={ this.props.collection }/>
+        // <MonthGraph url={ '/routes/brief/recent/month/PM/' } 
+// for loading route map graph data
+  loadMonthlyGraphData: function(id, type, TMCs) {
+    SailsWebApi.checkLoading(true);
+    var URLs = {
+        monthly: '/routes/brief/recent/month/',
+        monthlyAM: '/routes/brief/recent/month/AM/',
+        monthlyPM: '/routes/brief/recent/month/PM/'
+      },
+      url = URLs[type] + JSON.stringify(TMCs);
+    d3.json(url, function(err, res) {
+      SailsWebApi.checkLoading(false);
+      if (err) {
+        console.log("Error loading monthly graph data:", err);
+      }
+      else {
+        ServerActionCreators.loadMonthlyGraphData(id, type, res);
+      }
+    })
+  },
+
 // get user preferences
   getPreferences: function(id) {
     SailsWebApi.checkLoading(true);
