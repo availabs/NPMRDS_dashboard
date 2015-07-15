@@ -2,6 +2,8 @@
 
 var React = require('react'),
 
+	ServerActionsCreator = require("../../actions/ServerActionsCreator"),
+
 	MonthGraph = require("./MonthGraph.react"),
 
 	BarGraph = require("./BarGraph.react"),
@@ -76,17 +78,22 @@ module.exports = React.createClass({
 							})
 		            		.entries(expandData(res))
 
-				var flow = length / speed * 60;
+					var flow = length / speed * 60;
 
-				var data = makeRoute(nested);
+					var data = makeRoute(nested);
+
 	            	this.state.d3graph
-                        .title(this.props.title)
+	                    .title(this.props.title)
+	                    .onClick(this.loadDailyGraphData)
 						.flowLine(flow)
 						.label("minutes")
 						.data(data)();
 	            }
 	        }.bind(this));
 	    }
+	},
+	loadDailyGraphData: function(d) {
+		console.log("LOAD_DAILY_DATA FOR", this, d)
 	},
 	render: function() {
 		return (

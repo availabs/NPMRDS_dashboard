@@ -13,7 +13,7 @@ exports.react = React.createClass({
 	},
 	componentDidMount: function() {
 		d3.select("#"+this.state.id)
-			.style("height", (window.innerHeight*0.125)+"px")
+			.style("height", (window.innerHeight*0.15)+"px")
 			.call(this.props.bargraph);
 	},
 	render: function() {
@@ -42,6 +42,7 @@ function BarGraph() {
 			.orient("bottom")
 			.scale(xScale),
 		yAxis = d3.svg.axis()
+			.ticks(5)
 			.tickSize(3, 3)
 			.orient("left")
 			.scale(yScale),
@@ -51,7 +52,8 @@ function BarGraph() {
 		showY = true,
 		label = "",
 		flow = 0,
-		title = "graph";
+		title = "graph",
+		click = null;
 
 	function graph(selection) {
 		if (selection) {
@@ -102,7 +104,8 @@ function BarGraph() {
 				width: barWidth,
 				class: "react-rect",
 				fill: "#fff"
-			});
+			})
+			.on("click", click);
 
 		var sum = 0;
 		bars.each(function(d) {
@@ -191,6 +194,13 @@ function BarGraph() {
 			x2: wdth,
 			y2: yScale(flow)
 		})
+	}
+	graph.onClick = function(c) {
+		if (!arguments.length) {
+			return click;
+		}
+		click = c;
+		return graph;
 	}
 	graph.title = function(t) {
 		if (!arguments.length) {

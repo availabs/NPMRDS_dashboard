@@ -64,6 +64,7 @@ var RouteMapper = React.createClass({
         RouteDataStore.removeChangeListener(this.loadMonthlyGraphData);
     },
 
+// retrieves data from RouteDataStore after change event is emitted
     loadMonthlyGraphData: function() {
         var state = this.state;
         state.graphData = {
@@ -167,7 +168,7 @@ var RouteMapper = React.createClass({
             <div className="content container">
                 <div className="row">
 
-                    <div className="col-lg-8">
+                    <div className="col-lg-6">
                         <div className="row">
                             <div className="col-lg-12">
                                 <div className="widget">
@@ -183,7 +184,7 @@ var RouteMapper = React.createClass({
                         </div>
                     </div>
 
-                    <div className="col-lg-4">
+                    <div className="col-lg-6">
                         <RouteMapSidebar collection={ this.state.loadedRoute } TMCcodes={ route.tmc_codes || [] } />
                     </div>
 

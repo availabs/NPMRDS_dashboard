@@ -115,6 +115,14 @@ module.exports = {
       data: data
     });
   },
+  // loadDailyGraphData: function(id, type, data) {
+  //   AppDispatcher.handleServerAction({
+  //     type: ActionTypes.LOAD_MONTHLY_GRAPH_DATA,
+  //     id: id,
+  //     dataType: type,
+  //     data: data
+  //   });
+  // },
 
   // receiveTMClookup: function(data) {
   //   AppDispatcher.handleServerAction({
