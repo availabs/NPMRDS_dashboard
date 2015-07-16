@@ -1,33 +1,6 @@
-var React = require('react'),
-	d3 = require("d3"),
-	crossfilter = require("crossfilter");
+var d3 = require("d3");
 
-var UNIQUE_GRAPH_ID = 0;
-
-exports.react = React.createClass({
-	getInitialState: function() {
-		return {
-			id: "react-bar-graph-"+UNIQUE_GRAPH_ID++,
-
-		}
-	},
-	componentDidMount: function() {
-		d3.select("#"+this.state.id)
-			.style("height", (window.innerHeight*0.15)+"px")
-			.call(this.props.bargraph);
-	},
-	render: function() {
-		return (
-			<div id={ this.state.id } className="react-bar-graph">
-				{ this.props.children }
-			</div>
-		)
-	}
-})
-
-exports.d3 = BarGraph;
-
-function BarGraph() {
+module.exports = function() {
 	var data = [],
 		svg = null,
 		group = null,
@@ -53,7 +26,8 @@ function BarGraph() {
 		label = "",
 		flow = 0,
 		title = "graph",
-		click = null;
+		click = null,
+		id = "";
 
 	function graph(selection) {
 		if (selection) {
@@ -71,6 +45,8 @@ function BarGraph() {
 			height = svg.node().clientHeight;
 			return;
 		}
+		if (!data.length) return;
+
 		var wdth = width-margin.left-margin.right,
 			hght = height-margin.top-margin.bottom,
 			barWidth = Math.floor(wdth/(data.length+1));
@@ -81,18 +57,16 @@ function BarGraph() {
 
 		xScale.rangeRound([0, wdth])
 			.domain([0, data.length]);
-		yScale.range([hght, 0])
-			.domain([0, d3.max(data, function(d) { return d.values.y; })]);
+		yScale.range([hght, 0]);
 
-		var extent = d3.extent(data, function(d) { return d.values.y; });
-		extent[0] = flow ? flow : extent[0];
-		colorScale.domain(extent);
+		var colorDomain = yScale.domain();
+		colorScale.domain([flow || colorDomain[0], colorDomain[1]]);
 
 		if (showX) {
-			xAxisGroup.call(xAxis);
+			xAxisGroup.transition().call(xAxis);
 		}
 		if (showY) {
-			yAxisGroup.call(yAxis);
+			yAxisGroup.transition().call(yAxis);
 		}
 
 		var bars = group.selectAll('rect')
@@ -169,13 +143,13 @@ function BarGraph() {
 			x2: wdth,
 			y2: hght,
 			class: "avg-line"
-			})
+		});
 		avgLine.transition().attr({
 			x1: 0,
 			y1: yScale(avg),
 			x2: wdth,
 			y2: yScale(avg)
-		})
+		});
 
 		var flowLine = group.selectAll(".flow-line")
 			.data([flow]);
@@ -187,13 +161,28 @@ function BarGraph() {
 			y2: hght,
 			class: "flow-line",
 			"stroke-dasharray": "3 3"
-		})
+		});
 		flowLine.transition().attr({
 			x1: 0,
 			y1: yScale(flow),
 			x2: wdth,
 			y2: yScale(flow)
-		})
+		});
+	}
+	graph.id = function(i) {
+		if (!arguments.length) {
+			return id;
+		}
+		id = i;
+		return graph;
+	}
+	graph.yScale = function(y) {
+		if (!arguments.length) {
+			return yScale;
+		}
+		yScale = y;
+		yAxis.scale(yScale);
+		return graph;
 	}
 	graph.onClick = function(c) {
 		if (!arguments.length) {

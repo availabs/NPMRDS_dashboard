@@ -46,6 +46,9 @@ RouteStore.dispatchToken = AppDispatcher.register(function(payload) {
     switch(action.type) {
         case ActionTypes.LOAD_MONTHLY_GRAPH_DATA:
             var dataType = action.Datatype;
+            if (!ROUTE_DATA_CACHE[action.id]) {
+                ROUTE_DATA_CACHE[action.is] = {};
+            }
             ROUTE_DATA_CACHE[action.id][action.dataType] = action.data;
             RouteStore.emitChange();
             break;

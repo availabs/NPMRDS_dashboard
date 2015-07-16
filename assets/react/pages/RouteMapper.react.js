@@ -185,7 +185,7 @@ var RouteMapper = React.createClass({
                     </div>
 
                     <div className="col-lg-6">
-                        <RouteMapSidebar collection={ this.state.loadedRoute } TMCcodes={ route.tmc_codes || [] } />
+            			<RouteMapSidebar collection={ this.state.loadedRoute } TMCcodes={ route.tmc_codes || [] } />
                     </div>
 
 		    	</div>
