@@ -55,9 +55,16 @@ module.exports.routes = {
   /**
   * route data retrieval
   */
-  '/routes/brief/recent/month/:tmc_array': 'routedata.getBriefRecentMonth',
-  '/routes/brief/recent/month/PM/:tmc_array': 'routedata.getBriefRecentMonthAM',
-  '/routes/brief/recent/month/AM/:tmc_array': 'routedata.getBriefRecentMonthPM',
+  '/routes/brief/recent/month/all/:tmc_array': 'routedata.getBriefRecentMonth',
+  '/routes/brief/recent/month/am/:tmc_array': 'routedata.getBriefRecentMonthAM',
+  '/routes/brief/recent/month/pm/:tmc_array': 'routedata.getBriefRecentMonthPM',
+
+  '/routes/brief/day/all/:day/:tmc_array': 'routedata.getBriefDay',
+  '/routes/brief/day/am/:day/:tmc_array': 'routedata.getBriefDayAM',
+  '/routes/brief/day/pm/:day/:tmc_array': 'routedata.getBriefDayPM',
+
+  '/routes/brief/monthly/hours/:tmc_array': 'routedata.getBriefMonthlyHours',
+
   '/routes/brief/year/:tmc_array': 'routedata.getBriefYear',
 
   /**

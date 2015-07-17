@@ -25,13 +25,14 @@ module.exports = {
 		}
 
 console.log("TMC data requested for", TMCs);
+console.time("Sending TMC data for", TMCs);
 
 		dataBuilder(TMCs, function(error, result) {
 			if (error) {
 				res.serverError(error);
 			}
 			else {
-console.log("Sending TMC data for", TMCs);
+console.timeEnd("Sending TMC data for", TMCs);
 				res.ok(result);
 			}
 		})

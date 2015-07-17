@@ -23,23 +23,14 @@ var RouteMapper = React.createClass({
 
     getInitialState: function() {
         var savedRoutes = RouteStore.getSavedRoutes(),
-            routeData = {};
-        if (savedRoutes.length) {
-            var routeId = this.getParams().id,
-                route = savedRoutes.reduce(function(a, c) { return c.id == routeId ? c : a; }, {});
-            routeData.name = route.name;
-        }
+            routeId = this.getParams().id,
+            route = savedRoutes.reduce(function(a, c) { return c.id == routeId ? c : a; }, null);
+
     	return {
             sessionUser: UserStore.getSessionUser(),
             preferences: UserStore.getPreferences(),
-            savedRoutes: savedRoutes,
-            loadedRoute: {},
-            routeData: routeData,
-            graphData: {
-                monthly: null,
-                monthlyAM: null,
-                monthlyPM: null
-            }
+            route: route,
+            routeCollection: null
         };
     },
 
@@ -49,10 +40,10 @@ var RouteMapper = React.createClass({
         RouteStore.addChangeListener(Events.RECEIVED_SAVED_ROUTES, this._receiveSavedRoutes);
         RouteStore.addChangeListener(Events.ROUTE_CREATED, this._onRouteCreated);
 
-        RouteDataStore.addChangeListener(this.loadMonthlyGraphData);
+        // RouteDataStore.addChangeListener(this.loadMonthlyGraphData);
 
-        if (this.state.savedRoutes.length) {
-            this.loadRouteCollection(this.state.savedRoutes);
+        if (this.state.route) {
+            this.loadRouteCollection(this.state.route);
         }
     },
     componentWillUnmount: function() {
@@ -61,29 +52,22 @@ var RouteMapper = React.createClass({
         RouteStore.removeChangeListener(Events.RECEIVED_SAVED_ROUTES, this._receiveSavedRoutes);
         RouteStore.removeChangeListener(Events.ROUTE_CREATED, this._onRouteCreated);
 
-        RouteDataStore.removeChangeListener(this.loadMonthlyGraphData);
+        // RouteDataStore.removeChangeListener(this.loadMonthlyGraphData);
     },
 
 // retrieves data from RouteDataStore after change event is emitted
-    loadMonthlyGraphData: function() {
-        var state = this.state;
-        state.graphData = {
-            monthly: RouteDataStore.getMonthlyData(this.getParams().id),
-            monthlyAM: RouteDataStore.getMonthlyAMData(this.getParams().id),
-            monthlyPM: RouteDataStore.getMonthlyPMData(this.getParams().id)
-        }
-    },
+    // loadMonthlyGraphData: function() {
+    //     var state = this.state;
+    //     state.graphData = {
+    //         monthly: RouteDataStore.getMonthlyData(this.getParams().id),
+    //         monthlyAM: RouteDataStore.getMonthlyAMData(this.getParams().id),
+    //         monthlyPM: RouteDataStore.getMonthlyPMData(this.getParams().id)
+    //     }
+    // },
 
 // this function is called to initiate HERE API route creation
-    loadRouteCollection: function(routes) {
-        routes = routes || RouteStore.getSavedRoutes();
-
+    loadRouteCollection: function(route) {
         RouteStore.clearPoints();
-
-        var routeId = this.getParams().id,
-            route = routes.reduce(function(a, c) {
-                return c.id == routeId ? c : a;
-            }, {});
 
         route.points.forEach(function(d, i) {
             RouteStore.addPoint(i, d);
@@ -98,18 +82,13 @@ var RouteMapper = React.createClass({
             routeId = this.getParams().id,
             route = routes.reduce(function(a, c) { return c.id == routeId ? c : a; }, {});
 
-        this.loadRouteCollection(routes);
-
-        var data = this.state.routeData;
-        data.name = route.name;
+        this.loadRouteCollection(route);
 
         this.setState({
             sessionUser: this.state.sessionUser,
             preferences:  this.state.preferences,
-            savedRoutes: routes,
-            loadedRoute: this.state.loadedRoute,
-            routeData: data,
-            graphData: this.state.graphData
+            routeCollection: this.state.routeCollection,
+            route: route
         })
     },
 
@@ -128,21 +107,23 @@ var RouteMapper = React.createClass({
             }
         })
         length *= METER_TO_MILE;
-        length = Math.round(length*10)/10;
         speed /= speedLength;
         speed = speed * 3600 * METER_TO_MILE;
 
-        var routeData = this.state.routeData;
-        routeData.speed = Math.round(speed);
-        routeData.length = length;
+        collection.length = length;
+        collection.speed = speed;
 
+        var route = this.state.route;
+
+        for (var key in route) {
+            collection[key] = route[key];
+        }
+        
         this.setState({
             sessionUser: this.state.sessionUser,
             preferences: this.state.preferences,
-            savedRoutes: this.state.savedRoutes,
-            loadedRoute: collection,
-            routeData: this.state.routeData,
-            graphData: this.state.graphData
+            routeCollection: collection,
+            route: this.state.route
         })
     },
 
@@ -150,19 +131,13 @@ var RouteMapper = React.createClass({
         this.setState({
             sessionUser: this.state.sessionUser,
             preferences: UserStore.getPreferences(),
-            savedRoutes: this.state.savedRoutes,
-            loadedRoute: this.state.loadedRoute,
-            routeData: this.state.routeData,
-            graphData: this.state.graphData
+            routeCollection: this.state.routeCollection,
+            route: this.state.route
         })
     },
 
     render: function() {
-        var routeId = this.getParams().id,
-            route = this.state.savedRoutes.reduce(function(a, c) { return c.id == routeId ? c : a; }, {});
-
-        var data = this.state.routeData,
-            heading = makeHeading(data);
+        var heading = makeHeading(this.state.routeCollection);
 
     	return (
             <div className="content container">
@@ -172,20 +147,20 @@ var RouteMapper = React.createClass({
                         <div className="row">
                             <div className="col-lg-12">
                                 <div className="widget">
-            		    			<h4>{ data.name }</h4>
+            		    			<h4>{ this.state.route ? this.state.route.name : "loading..." }</h4>
                                     { heading }
                                 </div>
         		    		</div>
                         </div>
                         <div className="row">
                             <div className="col-lg-12">
-                                <RouteMap route={ route } routeCollection={ this.state.loadedRoute }/>
+                                <RouteMap routeCollection={ this.state.routeCollection }/>
                             </div>
                         </div>
                     </div>
 
                     <div className="col-lg-6">
-            			<RouteMapSidebar collection={ this.state.loadedRoute } TMCcodes={ route.tmc_codes || [] } />
+            			<RouteMapSidebar routeCollection={ this.state.routeCollection }/>
                     </div>
 
 		    	</div>
@@ -195,12 +170,11 @@ var RouteMapper = React.createClass({
 })
 
 function makeHeading(data) {
-    var heading = [];
-    if (data.length) {
-        heading.push(<p key="length">Length: { data.length } miles.</p>);
-    }
-    if (data.speed) {
-        heading.push(<p key="speed">Average speed limit: { data.speed } mph.</p>);
+    var heading = [],
+        format = d3.format("0.1f")
+    if (data) {
+        heading.push(<p key="length">Length: { format(data.length) } miles.</p>);
+        heading.push(<p key="speed">Average speed limit: { format(data.speed) } mph.</p>);
     }
     return heading;
 }

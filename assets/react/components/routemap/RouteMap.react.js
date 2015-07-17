@@ -1,20 +1,11 @@
 'use strict';
 var React = require('react'),
 
-    //-utils
     d3 = require("d3"),
 
-    //--Components
     LeafletMap = require("../../components/utils/LeafletMap.react"),
 
-    //RouteControl = require("../mapView/RouteControl.react"),
-    RouteMapSidebar = require("./RouteMapSidebar.react"),
-
-    UsageDataStore = require("../../stores/UsageDataStore");
-
-var linkShader = UsageDataStore.linkShader(),
-    roadPaths = null,
-    UNIQUE_MARKER_IDs = 0;
+    RouteMapSidebar = require("./RouteMapSidebar.react");
 
 var RouteMap = React.createClass({
     getInitialState: function(){
@@ -72,7 +63,7 @@ var RouteMap = React.createClass({
                             return {
                                 className: 'roads id-'+feature.properties.linkID+' tmc-'+feature.properties.tmc,
                                 stroke:true,
-                                color: linkShader(feature)
+                                color: "#000"
                             }
                         },
                          // onEachFeature: function (feature, layer) {
@@ -96,15 +87,13 @@ var RouteMap = React.createClass({
     componentWillReceiveProps: function(newProps) {
         var state = this.state;
 
-        if (newProps.routeCollection.features) {
+        if (newProps.routeCollection) {
             state.layers.route.id++;
             state.layers.route.geo = newProps.routeCollection;
-        }
 
-        if (newProps.route.points) {
             var markerData = [{
-                    id: this.props.route.name,
-                    latlng: newProps.route.points[0],
+                    id: newProps.routeCollection.name,
+                    latlng: newProps.routeCollection.points[0],
                     options: { draggable: false },
                 }]
             state.markers = markerData;
