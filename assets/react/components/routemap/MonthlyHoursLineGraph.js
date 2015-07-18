@@ -23,18 +23,25 @@ module.exports = function() {
 			.scale(yScale),
 		xAxisGroup = null,
 		yAxisGroup = null,
-		showX = false,
+		showX = true,
 		showY = true,
 		label = "",
 		flow = 0,
 		title = "graph",
 		click = null,
 		id = "",
-		type = "";
+		type = "",
+		line = d3.svg.line()
+			.x(function(d) { return xScale(d.x); })
+			.y(function(d) { return yScale(d.y); }),
+		voronoi = d3.geom.voronoi()
+			.x(function(d) { return xScale(d.x); })
+			.y(function(d) { return yScale(d.y); }),
+		vGroup = null;
 
-	function graph(slct) {
-		if (arguments.length) {
-			selection = slct
+    function graph(slct) {
+        if (arguments.length) {
+            selection = slct;
 			svg = selection.append("svg")
 				.style({
 					height: "100%",
@@ -44,13 +51,14 @@ module.exports = function() {
 			lineGroup = svg.append("g");
 			xAxisGroup = group.append("g")
 				.attr("class", "x axis");
+			vGroup = svg.append("g")
 			yAxisGroup = group.append("g")
 				.attr("class", "y axis");
 			width = svg.node().clientWidth;
 			height = svg.node().clientHeight;
 			svg.style("opacity", 0);
 			return;
-		}
+        }
 		if (data.length) {
 			graph.show();
 		}
@@ -58,23 +66,24 @@ module.exports = function() {
 		var wdth = width-margin.left-margin.right,
 			hght = height-margin.top-margin.bottom;
 
+		voronoi.clipExtent([[0, 0],[wdth, hght]]);
+
 		group.attr("transform", "translate("+margin.left+", "+margin.top+")");
+		vGroup.attr("transform", "translate("+margin.left+", "+margin.top+")");
 		lineGroup.attr("transform", "translate("+margin.left+", "+margin.top+")");
 
 		xAxisGroup.attr("transform", "translate(0, "+hght+")");
 		yAxisGroup.attr("transform", "translate(-5, 0)");
 
-		// var xExtent = d3.extent(data, function(d) { return +d.values.x; });
-
-		var barWidth = wdth/(data.length+1);
-		// var barWidth = wdth/(xExtent[1]-xExtent[0]+2);
 		xScale.rangeRound([0, wdth])
-			.domain([0,data.length]);
-			// .domain([xExtent[0], xExtent[1]+1]);
+			.domain([0, 23]);
 
-		yScale.range([hght, 0]);
+		var extent = d3.extent(d3.merge(data.map(function(d) { return d3.extent(d.values, function(d) { return d.y; }); })));
+		// console.log("EXTENT", extent)
 
-		colorScale.domain([flow*3/4, flow*3]);
+		// var max = d3.max(data.map(function(d) { return d3.max(d.values, function(d) { return d.y; }); }));
+		yScale.range([hght, 0])
+			.domain([extent[0]*.9, extent[1]*1.1]);
 
 		if (showX) {
 			xAxisGroup.transition()
@@ -85,124 +94,75 @@ module.exports = function() {
 				.call(yAxis);
 		}
 
-		var bars = group.selectAll('rect')
-			.data(data, function(d) { return d.key+"-"+id; });
+		var lines = group.selectAll(".month-line")
+			.data(data);
 
-		bars.exit().transition()
-			.attr("height", 0)
-			.attr("y", hght)
-			.remove();
+		lines.exit().remove();
+		lines.enter().append("path");
 
-		bars.enter().append("rect")
+		var points = [];
+		lines.transition()
 			.attr({
-				y: hght,
-				height: 0,
-				width: barWidth,
-				class: "react-rect",
-				fill: "#fff"
-			});
-
-		var sum = 0;
-		bars.each(function(d) {
-				sum += d.values.y;
+				d: function(d) { return line(d.values) },
+				fill: "none",
+				opacity: 0.25,
+				class: "month-line"
 			})
-			.on("click", function(d) {
-				click(d, graph);
+			.each(function(dd) {
+				dd.values.forEach(function(d) {
+					points.push({
+						line: this,
+						x: d.x,
+						y: d.y,
+						key: dd.key
+					})
+				}, this)
 			});
-		var avg = sum / data.length;
-		bars.transition().attr({
-				x: function(d, i) { return xScale(i); },
-				y: function(d) { return yScale(d.values.y); },
-				height: function(d) { return hght-yScale(d.values.y); },
-				fill: function(d) { return colorScale(d.values.y); },
-				width: barWidth
+
+		var vLines = vGroup.selectAll(".vline")
+			.data(voronoi(points));
+		vLines.enter().append("path");
+		vLines.attr({
+				fill: "none",
+				stroke: "none",
+				"pointer-events": "all",
+				class: "vline",
+				d: function(d) { return "M" + d.join("L") + "Z"; }
+			})
+			.on({
+				mouseover: mouseover,
+				mouseout: mouseout
 			});
 
-		var ttl = group.selectAll(".title")
-			.data(data.slice(0,1))
-		ttl.exit().remove();
-		ttl.enter().append("text");
-		ttl.attr({
-				x: 100,
-				y: -2,
-				"font-size": 12,
-				class: "title" })
-			.text(title);
+		var lbl = "";
+		function mouseover(d) {
+			var date = new Date(Math.round(d.point.key/100), d.point.key%100, d.point.x)
+			d3.select(d.point.line)
+				.style({
+					opacity: 1,
+					"stroke-width": 3
+				})
+			lbl = date.toDateString() + " | travel time: " + Math.round(d.point.y) + " min";
+			var label = group.selectAll(".graph-text")
+				.data(data.slice(0, 1));
+			label.exit().remove();
+			label.enter().append("text");
+			label.attr({
+					x: wdth,
+					"text-anchor": "end",
+					y: -2,
+					class: "graph-text" })
+				.text(lbl);
+		}
+		function mouseout(d) {
+			d3.select(d.point.line)
+				.style({
+					opacity: null,
+					"stroke-width": null
+				})
+		}
+    }
 
-		var lbl = group.selectAll(".label")
-			.data(data.slice(0,1));
-		lbl.exit().remove();
-		lbl.enter().append("text");
-		lbl.attr({
-				x: -25,
-				y: -5,
-				"font-size": 12,
-				class: "label" })
-			.text(label);
-
-		var date = null,
-			timeLabel = "";
-		bars.on("mouseover", function(d) {
-			if (/\d{8}/.test(d.key)) {
-				date = new Date(Math.round(d.key/10000), Math.round(d.key/100)%100-1, d.key%100);
-				timeLabel = date.toDateString()+" | travel time: "+Math.round(d.values.y)+" min";
-			}
-			else if (/\d{1,3}/.test(d.key)) {
-				timeLabel = +d.key > 12 ? (+d.key-12)+"-"+(+d.key-12)+":59"+" PM" :
-					(+d.key)==0 ? (+d.key+12)+"-"+(+d.key+12)+":59"+" AM" : (+d.key)+"-"+(+d.key)+":59"+" AM";
-				timeLabel += " | travel time: "+Math.round(d.values.y)+" min";
-			}
-		})
-		bars.on("mousemove", function(d) {
-			var t = group.selectAll(".info")
-				.data(data.slice(0,1))
-			t.exit().remove();
-			t.enter().append("text");
-			t.attr({
-				x: wdth,
-				y: -2,
-				"text-anchor": "end",
-				"font-size": 12,
-				class: "info" })
-			.text(timeLabel);
-		})
-
-		var avgLine = lineGroup.selectAll(".avg-line")
-			.data(data.slice(0,1));
-		avgLine.exit().remove();
-		avgLine.enter().append("line")
-			.attr({
-			x1: 0,
-			y1: hght,
-			x2: wdth,
-			y2: hght,
-			class: "avg-line"
-		});
-		avgLine.transition().attr({
-			x1: 0,
-			y1: yScale(avg),
-			x2: wdth,
-			y2: yScale(avg)
-		});
-
-		var flowLine = lineGroup.selectAll(".flow-line")
-			.data(data.slice(0,1));
-		flowLine.exit().remove();
-		flowLine.enter().append("line").attr({
-			x1: 0,
-			y1: hght,
-			x2: wdth,
-			y2: hght,
-			class: "flow-line",
-			"stroke-dasharray": "3 3"
-		});
-		flowLine.transition().attr({
-			x1: 0,
-			y1: yScale(flow),
-			x2: wdth,
-			y2: yScale(flow)
-		});
-	}
 	graph.hide = function() {
 		svg.transition().style("opacity", 0);
 		return graph;
@@ -288,5 +248,5 @@ module.exports = function() {
 		}
 		return graph;
 	}
-	return graph;
+    return graph;
 }

@@ -217,7 +217,7 @@ module.exports = {
         })
     },
     getBriefMonthlyHours: function(req, res) {
-        var tnc_array = req.param("tmc_array");
+        var tmc_array = req.param("tmc_array");
 
         if (!Array.isArray(tmc_array)) {
             try {
@@ -231,7 +231,7 @@ module.exports = {
             "FROM [HERE_traffic_data.HERE_NY] AS here "+
             "WHERE tmc in ("+tmc_array.map(function(d) { return "'"+d+"'"; })+") "+
             "GROUP BY tmc, month, hour, travel_time_all";
-            
+
         BIGquery(sql, function(err, rslt) {
             if (err) {
                 res.serverError(err);

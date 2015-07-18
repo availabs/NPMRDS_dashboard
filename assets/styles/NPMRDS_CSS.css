@@ -179,9 +179,6 @@ body {
 .resolution-label:hover {
   background-color :#333;
 }
-.road:hover{
-  stroke-width:5px;
-}
 
 svg .axis text {
   font: 10px sans-serif;
@@ -217,8 +214,8 @@ svg .axis text {
 .react-bar-graph svg {
     background-color: rgba(225, 225, 225, 0.5);
 }
-.react-bar-graph svg path,
 .react-bar-graph svg line,
+.react-bar-graph svg path,
 .react-bar-graph svg .axis line,
 .react-bar-graph svg .axis path {
     stroke-width: 1px;
@@ -241,6 +238,27 @@ svg .axis text {
 }
 .react-graph-div {
     margin-bottom: 5px;
+}
+
+.react-line-graph svg {
+    background-color: rgba(225, 225, 225, 0.5);
+}
+.react-line-graph svg line,
+.react-line-graph svg path,
+.react-line-graph svg .axis line,
+.react-line-graph svg .axis path {
+    stroke-width: 1px;
+    stroke: #000;
+    stroke-opacity: 1;
+}
+.react-line-graph svg text {
+    fill: #000;
+    fill-opacity: 1;
+}
+.react-line-graph svg path.vline {
+    fill: none;
+    stroke: none;
+    pointer-events: all;
 }
 
 /* application.css changes */

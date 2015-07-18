@@ -4,15 +4,14 @@ var React = require('react'),
 
 	d3 = require("d3"),
 
-	BarGraph = require("./RouteMapBarGraph"),
+	RouteDataStore = require("../../stores/RouteDataStore"),
 
-	RouteDataStore = require("../../stores/RouteDataStore");
+	LineGraph = require("./MonthlyHoursLineGraph"),
+	BarGraph = require("./RouteMapBarGraph");
 
 var margin = { left:30, bottom:5, top:15, right: 10 };
 
 var METER_TO_MILE = 0.000621371;
-
-var yScale = d3.scale.linear();
 
 //'/routes/brief/monthly/hours/:tmc_array'
 var MonthlyHoursGraph = {
@@ -22,10 +21,12 @@ var MonthlyHoursGraph = {
 	graph: null
 }
 
+var BarGraphsYScale = d3.scale.linear();
+
 var MonthlyGraphData = {
 	name: "monthly",
 	domain: [0, 0],
-	yScale: yScale,
+	yScale: BarGraphsYScale,
 	data: [
 		{ url: '/routes/brief/recent/month/all/',
 			title: 'Daily All', id: 'daily', type: "All" },
@@ -39,7 +40,7 @@ var MonthlyGraphData = {
 var DailyGraph = {
 	name: "daily",
 	domain: [0, 0],
-	yScale: yScale,
+	yScale: BarGraphsYScale,
 	data: null,
 	graphs: null
 }
@@ -63,7 +64,7 @@ module.exports = React.createClass({
 
 			TMCs = JSON.stringify(this.props.routeCollection.tmc_codes);
 
-		yScale.domain(MonthlyGraphData.domain);
+		BarGraphsYScale.domain(MonthlyGraphData.domain);
 
 		d3.json(DailyGraph.data.url+TMCs, function(err, res) {
 			if (err) {
@@ -91,11 +92,24 @@ module.exports = React.createClass({
 	resetGraphs: function(d, graph) {
 		graph.data([])
 			.hide()();
-		yScale.domain(MonthlyGraphData.domain);
+		BarGraphsYScale.domain(MonthlyGraphData.domain);
 		MonthlyGraphData.graphs.forEach(function(d) { d(); });
 	},
+	loadMonth: function(d) {
+		console.log("load month",d);
+	},
 	initializeGraphs: function() {
-		MonthlyGraphData.yScale = yScale;
+		var mhData = MonthlyHoursGraph.data;
+		MonthlyHoursGraph.graph = LineGraph()
+				.margin(15, 30, 20, 10)//top, left, bottom, right{ left:30, bottom:5, top:15, right: 10 };
+				.title(mhData.title)
+				.label("minutes")
+				.onClick(this.loadMonth)
+				.id(mhData.id);
+		d3.select("#"+mhData.id)
+			.style("height", (window.innerHeight*0.25)+"px")
+			.call(MonthlyHoursGraph.graph);
+
 		MonthlyGraphData.graphs = MonthlyGraphData.data.map(
 			function(d) {
 				return BarGraph()
@@ -117,7 +131,7 @@ module.exports = React.createClass({
 					.onClick(this.resetGraphs)
 					.margin(margin)
 					.label("minutes")
-					.yScale(yScale)
+					.yScale(DailyGraph.yScale)
 					.id("hourly");
 		d3.select("#hourly")
 			.style("height", (window.innerHeight*0.15)+"px")
@@ -127,9 +141,22 @@ module.exports = React.createClass({
 		var length = collection.length,
 			speed = collection.speed,
 
+			flow = length / speed * 60,
+
 			TMCs = JSON.stringify(collection.tmc_codes);
 
-		yScale.domain([0, 0]);
+		d3.json(MonthlyHoursGraph.data.url+TMCs, function(err, response) {
+			if (err) {
+				console.log(err);
+				return;
+			}
+			var nested = nestMHData(response),
+				data = makeHourLines(nested);
+
+			MonthlyHoursGraph.graph.data(data)();
+		})
+
+		BarGraphsYScale.domain([0, 0]);
 
 		MonthlyGraphData.data.forEach(function(d, i) {
 			d3.json(d.url+TMCs, function(err, res) {
@@ -139,7 +166,6 @@ module.exports = React.createClass({
 				else {
 					var nested = nestData(res),
 
-						flow = length / speed * 60,
 						data = makeRoute(nested),
 
 						maxY = d3.max(data, function(d) { return d.values.y; }),
@@ -171,14 +197,53 @@ module.exports = React.createClass({
 		})
 		return (
 			<div className="route-map-sidebar">
+
+				<div className="react-graph-div">
+					<div id="monthly-hours" className="react-line-graph"/>
+				</div>
+
 				{ monthGraphs }
+
 				<div className="react-graph-div">
 					<div id="hourly" className="react-bar-graph"/>
 				</div>
+
 			</div>
 		)
 	}
 })
+function nestMHData(data) {
+	var schema = data.schema,
+		schemaMap = {};
+	schema.forEach(function(d, i) {
+		schemaMap[d] = i;
+	})
+	return d3.nest()
+		.key(function(d) { return d[schemaMap["month"]]; })
+		.sortKeys(d3.ascending)
+		.key(function(d) { return d[schemaMap["hour"]]; })
+		.sortKeys(d3.ascending)
+		.key(function(d) { return d[schemaMap["tmc"]]; })
+		.rollup(function(grp) {
+			return {
+				avg: d3.sum(grp, function(d) { return +d[schemaMap["sum"]]; })/d3.sum(grp, function(d) { return +d[schemaMap["count"]]; })
+			}
+		})
+		.entries(data.rows);
+}
+function makeHourLines(nested) {
+	return nested.map(function(month) {
+		return {
+			key: month.key,
+			values: month.values.map(function(hour) {
+				return {
+					x: +hour.key,
+					y: d3.sum(hour.values, function(d) { return d.values.avg; })/60
+				}
+			}).sort(function(a, b) { return a.x - b.x; })
+		}
+	})
+}
 
 function nestData(data) {
 	var schema = data.schema,
