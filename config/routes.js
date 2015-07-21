@@ -59,6 +59,10 @@ module.exports.routes = {
   '/routes/brief/recent/month/am/:tmc_array': 'routedata.getBriefRecentMonthAM',
   '/routes/brief/recent/month/pm/:tmc_array': 'routedata.getBriefRecentMonthPM',
 
+  '/routes/brief/month/all/:month/:tmc_array': 'routedata.getBriefMonth',
+  '/routes/brief/month/am/:month/:tmc_array': 'routedata.getBriefMonthAM',
+  '/routes/brief/month/pm/:month/:tmc_array': 'routedata.getBriefMonthPM',
+
   '/routes/brief/day/all/:day/:tmc_array': 'routedata.getBriefDay',
   '/routes/brief/day/am/:day/:tmc_array': 'routedata.getBriefDayAM',
   '/routes/brief/day/pm/:day/:tmc_array': 'routedata.getBriefDayPM',

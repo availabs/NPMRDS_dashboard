@@ -42,7 +42,7 @@ var DailyGraph = {
 	domain: [0, 0],
 	yScale: BarGraphsYScale,
 	data: null,
-	graphs: null
+	graph: null
 }
 
 // AM Peak: HOURS [6-9)
@@ -134,8 +134,47 @@ module.exports = React.createClass({
 		BarGraphsYScale.domain(MonthlyGraphData.domain);
 		MonthlyGraphData.graphs.forEach(function(d) { d(); });
 	},
-	loadMonth: function(d) {
-		console.log("load month",d);
+	loadMonth: function(month) {
+		console.log("load month",month);
+
+		DailyGraph.graph.data([]);
+
+		var collection = this.props.routeCollection,
+
+			length = collection.length,
+			speed = collection.speed,
+
+			flow = length / speed * 60,
+
+			TMCs = JSON.stringify(collection.tmc_codes);
+
+		BarGraphsYScale.domain([0, 0]);
+
+		MonthlyGraphData.data.forEach(function(d, i) {
+			var graph = MonthlyGraphData.graphs[i],
+				url = '/routes/brief/month/'+graph.type()+'/'+month+'/';
+			d3.json(url+TMCs, function(err, res) {
+				if (err) {
+					console.log(err);
+				}
+				else {
+					var nested = nestData(res),
+
+						data = makeRoute(nested),
+
+						maxY = d3.max(data, function(d) { return d.values.y; }),
+						domain = this.yScale.domain();
+
+					this.yScale.domain([0, Math.max(maxY, domain[1])]);
+					this.domain = this.yScale.domain();
+
+					this.graphs[i]
+						.flowLine(flow)
+						.data(data);
+					this.graphs.forEach(function(d) { d(); });
+				}
+			}.bind(MonthlyGraphData));
+		}, this);
 	},
 	loadGraphs: function(collection) {
 		var length = collection.length,

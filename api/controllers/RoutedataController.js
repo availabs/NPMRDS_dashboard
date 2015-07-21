@@ -2,6 +2,99 @@ var BIGquery = require("../../custom_modules/BigQuery")(),
     fs = require("fs");
 
 module.exports = {
+
+  // '/routes/brief/month/all/:tmc_array': 'routedata.getBriefMonth',
+  // '/routes/brief/month/am/:tmc_array': 'routedata.getBriefMonthAM',
+  // '/routes/brief/month/pm/:tmc_array': 'routedata.getBriefMonthPM',
+    getBriefMonth: function(req, res) {
+        var month = req.param("month"),
+            tmc_array = req.param("tmc_array");
+
+        if (!Array.isArray(tmc_array)) {
+            try {
+                tmc_array = JSON.parse(tmc_array);
+            }
+            catch(e) {
+                res.badRequest("You must send an array of TMC codes in JSON format.");
+            }
+        }
+
+        var sql = "SELECT tmc, date, sum(travel_time_all) AS sum, count(*) AS count "+
+                "FROM [HERE_traffic_data.HERE_NY] "+
+                "WHERE INTEGER(date/100) = "+month+
+                " AND tmc IN ("+tmc_array.map(function(d) { return "'"+d+"'"; }).join() + ") "+
+                "AND weekday NOT IN ('saturday', 'sunday') "+
+                "GROUP BY tmc, date, travel_time_all";
+
+        BIGquery(sql, function(err, rslt) {
+            if (err) {
+                res.serverError(err);
+            }
+            else {
+                res.ok(BIGquery.parseResult(rslt));
+            }
+        })
+    },
+    getBriefMonthAM: function(req, res) {
+        var month = req.param("month"),
+            tmc_array = req.param("tmc_array");
+
+        if (!Array.isArray(tmc_array)) {
+            try {
+                tmc_array = JSON.parse(tmc_array);
+            }
+            catch(e) {
+                res.badRequest("You must send an array of TMC codes in JSON format.");
+            }
+        }
+
+        var sql = "SELECT tmc, date, sum(travel_time_all) AS sum, count(*) AS count "+
+                "FROM [HERE_traffic_data.HERE_NY] "+
+                "WHERE INTEGER(date/100) = "+month+
+                " AND tmc IN ("+tmc_array.map(function(d) { return "'"+d+"'"; }).join() + ") "+
+                "AND weekday NOT IN ('saturday', 'sunday') "+
+                "AND epoch >= 72 AND epoch < 108 "+
+                "GROUP BY tmc, date, travel_time_all";
+
+        BIGquery(sql, function(err, rslt) {
+            if (err) {
+                res.serverError(err);
+            }
+            else {
+                res.ok(BIGquery.parseResult(rslt));
+            }
+        })
+    },
+    getBriefMonthPM: function(req, res) {
+        var month = req.param("month"),
+            tmc_array = req.param("tmc_array");
+
+        if (!Array.isArray(tmc_array)) {
+            try {
+                tmc_array = JSON.parse(tmc_array);
+            }
+            catch(e) {
+                res.badRequest("You must send an array of TMC codes in JSON format.");
+            }
+        }
+
+        var sql = "SELECT tmc, date, sum(travel_time_all) AS sum, count(*) AS count "+
+                "FROM [HERE_traffic_data.HERE_NY] "+
+                "WHERE INTEGER(date/100) = "+month+
+                " AND tmc IN ("+tmc_array.map(function(d) { return "'"+d+"'"; }).join() + ") "+
+                "AND weekday NOT IN ('saturday', 'sunday') "+
+                "AND epoch >= 180 AND epoch < 216 "+
+                "GROUP BY tmc, date, travel_time_all";
+
+        BIGquery(sql, function(err, rslt) {
+            if (err) {
+                res.serverError(err);
+            }
+            else {
+                res.ok(BIGquery.parseResult(rslt));
+            }
+        })
+    },
     getBriefDay: function(req, res) {
         var day = req.param("day"),
             tmc_array = req.param("tmc_array");
