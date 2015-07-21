@@ -6,6 +6,7 @@ module.exports = function() {
 		svg = null,
 		group = null,
 		lineGroup = null,
+		monthSelector = null,
 		margin = { top: 0, bottom: 0, left: 0, right: 0 },
 		width = 0,
 		height = 0,
@@ -54,6 +55,7 @@ module.exports = function() {
 			vGroup = svg.append("g")
 			yAxisGroup = group.append("g")
 				.attr("class", "y axis");
+			monthSelector = svg.append("g");
 			width = svg.node().clientWidth;
 			height = svg.node().clientHeight;
 			svg.style("opacity", 0);
@@ -98,15 +100,16 @@ module.exports = function() {
 			.data(data);
 
 		lines.exit().remove();
-		lines.enter().append("path");
+		lines.enter().append("path")
+			.attr("class", "month-line")
+			.classed("active-month-line", function(d, i) { return i == data.length-1; });
 
 		var points = [];
 		lines.transition()
 			.attr({
 				d: function(d) { return line(d.values) },
 				fill: "none",
-				opacity: 0.25,
-				class: "month-line"
+				opacity: 0.25
 			})
 			.each(function(dd) {
 				dd.values.forEach(function(d) {
@@ -119,6 +122,87 @@ module.exports = function() {
 				}, this)
 			});
 
+		var key = data[data.length-1].key,
+			timeout = null,
+			monthGroupOpen = false;
+
+		var monthGroups = monthSelector.selectAll(".month-group")
+			.data(data);
+		monthGroups.exit().remove();
+		monthGroups.enter().append("g")
+			.attr("transform", "translate(50, 5)")
+			.each(function(d, i) {
+				var group = d3.select(this);
+				group.append("rect")
+					.attr({
+						x: 0,
+						y: 0,
+						width: 50,
+						height: 20,
+						fill: "#fff",
+						class: d.key == key ? "month-group month-group-active" : "month-group"
+					});
+				group.append("text")
+					.attr({
+						x: 25,
+						y: 15,
+						"text-anchor": "middle"
+					})
+					.text(d.key);
+			});
+		monthSelector.on("mouseover", function() {
+			monthGroupOpen = true;
+			if (timeout) {
+				clearTimeout(timeout);
+			}
+			if (vTimeout) {
+				clearTimeout(vTimeout);
+			}
+			monthGroups.sort(function(a,b) {
+					return +a.key - +b.key;
+				})
+				.transition()
+				.attr("transform", function(d, i) {
+					return "translate(50, "+(5+i*25)+")";
+				})
+		})
+		monthSelector.on("mouseout", function() {
+			timeout = setTimeout(function() {
+				timeout = null;
+				monthGroupOpen = false;
+				monthGroups.sort(function(a, b) {
+						return a.key == key ? 1 : -1;
+					}).transition()
+					.attr("transform", "translate(50, 5)");
+			}, 500);
+			vTimeout = setTimeout(highlightMonthLine, 25);
+		})
+		monthGroups.on("mouseover", highlightMonthLine);
+		monthGroups.on("click", sortMonthGroups);
+
+		function sortMonthGroups(d) {
+			key = d ? (d.key || d.point.key || d) : key;
+
+			monthGroups.sort(function(a, b) {
+					return a.key == key ? 1 : -1;
+				}).transition()
+				.attr("transform", "translate(50, 5)");
+			monthGroups.selectAll("rect").filter(function(d) {
+				d3.select(this).classed("month-group-active", false);
+				return d.key == key;
+			}).classed("month-group-active", true);
+			highlightMonthLine(d);
+			click(key);
+		}
+
+		function highlightMonthLine(d) {
+			var k = d ? (d.key || d.point.key) : key;
+			group.selectAll(".month-line").filter(function(d) {
+				d3.select(this).classed("active-month-line", false);
+				return k == d.key;
+			}).classed("active-month-line", true);
+		}
+
 		var vLines = vGroup.selectAll(".vline")
 			.data(voronoi(points));
 		vLines.enter().append("path");
@@ -130,19 +214,27 @@ module.exports = function() {
 				d: function(d) { return "M" + d.join("L") + "Z"; }
 			})
 			.on({
-				mouseover: mouseover,
-				mouseout: mouseout
+				mousemove: mouseover,
+				mouseout: mouseout,
+				click: sortMonthGroups
 			});
 
-		var lbl = "";
+		var lbl = "",
+			vTimeout = null;
 		function mouseover(d) {
-			var date = new Date(Math.round(d.point.key/100), d.point.key%100, d.point.x)
-			d3.select(d.point.line)
-				.style({
-					opacity: 1,
-					"stroke-width": 3
-				})
-			lbl = date.toDateString() + " | travel time: " + Math.round(d.point.y) + " min";
+			if (vTimeout) {
+				clearTimeout(vTimeout);
+				vTimeout = null;
+			}
+			if (monthGroupOpen) {
+				return;
+			}
+			d3.event.stopPropagation();
+			var date = new Date(Math.round(+d.point.key/100), +d.point.key%100)
+
+			highlightMonthLine(d.point);
+
+			lbl = date.getMonth()+" "+date.getFullYear() + " hour "+d.point.x+" | travel time: " + Math.round(d.point.y) + " min";
 			var label = group.selectAll(".graph-text")
 				.data(data.slice(0, 1));
 			label.exit().remove();
@@ -155,11 +247,13 @@ module.exports = function() {
 				.text(lbl);
 		}
 		function mouseout(d) {
+			d3.event.stopPropagation();
+			if (monthGroupOpen) {
+				return;
+			}
 			d3.select(d.point.line)
-				.style({
-					opacity: null,
-					"stroke-width": null
-				})
+				.classed("active-month-line", false);
+			vTimeout = setTimeout(highlightMonthLine, 25);
 		}
     }
 

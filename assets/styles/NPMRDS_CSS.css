@@ -260,6 +260,17 @@ svg .axis text {
     stroke: none;
     pointer-events: all;
 }
+.react-line-graph .month-group rect {
+    stroke: none;
+}
+.react-line-graph rect.month-group.month-group-active {
+    stroke: #000;
+    stroke-width: 2px;
+}
+.react-line-graph path.active-month-line {
+    opacity: 1;
+    stroke-width: 3px;
+}
 
 /* application.css changes */
 .nav-tabs > li > a {

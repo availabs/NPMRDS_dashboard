@@ -51,6 +51,45 @@ module.exports = React.createClass({
 	componentDidMount: function() {
 		this.initializeGraphs();
 	},
+	initializeGraphs: function() {
+		var mhData = MonthlyHoursGraph.data;
+		MonthlyHoursGraph.graph = LineGraph()
+				.margin(30, 30, 20, 10)//top, left, bottom, right
+				.title(mhData.title)
+				.label("minutes")
+				.onClick(this.loadMonth)
+				.id(mhData.id);
+		d3.select("#"+mhData.id)
+			.style("height", (window.innerHeight*0.5)+"px")
+			.call(MonthlyHoursGraph.graph);
+
+		MonthlyGraphData.graphs = MonthlyGraphData.data.map(
+			function(d) {
+				return BarGraph()
+					.margin(margin)
+					.yScale(MonthlyGraphData.yScale)
+					.title(d.title)
+					.label("minutes")
+					.onClick(this.loadDailyGraphData)
+					.id(d.id)
+					.type(d.type);
+			}, this);
+		MonthlyGraphData.graphs.forEach(function(d, i) {
+			d3.select("#"+MonthlyGraphData.data[i].id)
+				.style("height", (window.innerHeight*0.15)+"px")
+				.call(d)
+		}, this);
+
+		DailyGraph.graph = BarGraph()
+					.onClick(this.resetGraphs)
+					.margin(margin)
+					.label("minutes")
+					.yScale(DailyGraph.yScale)
+					.id("hourly");
+		d3.select("#hourly")
+			.style("height", (window.innerHeight*0.15)+"px")
+			.call(DailyGraph.graph);
+	},
 	loadDailyGraphData: function(d, graph) {
 		var date = new Date(Math.round(d.key/10000), Math.round(d.key/100)%100-1, d.key%100);
 		DailyGraph.data = { url: '/routes/brief/day/'+graph.type()+'/'+d.key+"/",
@@ -97,45 +136,6 @@ module.exports = React.createClass({
 	},
 	loadMonth: function(d) {
 		console.log("load month",d);
-	},
-	initializeGraphs: function() {
-		var mhData = MonthlyHoursGraph.data;
-		MonthlyHoursGraph.graph = LineGraph()
-				.margin(15, 30, 20, 10)//top, left, bottom, right{ left:30, bottom:5, top:15, right: 10 };
-				.title(mhData.title)
-				.label("minutes")
-				.onClick(this.loadMonth)
-				.id(mhData.id);
-		d3.select("#"+mhData.id)
-			.style("height", (window.innerHeight*0.25)+"px")
-			.call(MonthlyHoursGraph.graph);
-
-		MonthlyGraphData.graphs = MonthlyGraphData.data.map(
-			function(d) {
-				return BarGraph()
-					.margin(margin)
-					.yScale(MonthlyGraphData.yScale)
-					.title(d.title)
-					.label("minutes")
-					.onClick(this.loadDailyGraphData)
-					.id(d.id)
-					.type(d.type);
-			}, this);
-		MonthlyGraphData.graphs.forEach(function(d, i) {
-			d3.select("#"+MonthlyGraphData.data[i].id)
-				.style("height", (window.innerHeight*0.15)+"px")
-				.call(d)
-		}, this);
-
-		DailyGraph.graph = BarGraph()
-					.onClick(this.resetGraphs)
-					.margin(margin)
-					.label("minutes")
-					.yScale(DailyGraph.yScale)
-					.id("hourly");
-		d3.select("#hourly")
-			.style("height", (window.innerHeight*0.15)+"px")
-			.call(DailyGraph.graph);
 	},
 	loadGraphs: function(collection) {
 		var length = collection.length,
