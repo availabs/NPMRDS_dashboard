@@ -102,7 +102,9 @@ module.exports = function() {
 		lines.exit().remove();
 		lines.enter().append("path")
 			.attr("class", "month-line")
-			.classed("active-month-line", function(d, i) { return i == data.length-1; });
+			.classed("selected-month-line", function(d, i) {
+				return i == data.length-1;
+			});
 
 		var points = [];
 		lines.transition()
@@ -181,7 +183,7 @@ module.exports = function() {
 		monthGroups.on("click", sortMonthGroups);
 
 		function sortMonthGroups(d) {
-			key = d ? (d.key || d.point.key || d) : key;
+			key = d.key || d.point.key;
 
 			monthGroups.sort(function(a, b) {
 					return a.key == key ? 1 : -1;
@@ -191,8 +193,16 @@ module.exports = function() {
 				d3.select(this).classed("month-group-active", false);
 				return d.key == key;
 			}).classed("month-group-active", true);
-			highlightMonthLine(d);
+			selectMonthLine(d);
 			click(key);
+		}
+
+		function selectMonthLine(d) {
+			var k = d ? (d.key || d.point.key) : key;
+			group.selectAll(".month-line").filter(function(d) {
+				d3.select(this).classed("selected-month-line", false);
+				return k == d.key;
+			}).classed("selected-month-line", true);
 		}
 
 		function highlightMonthLine(d) {
@@ -242,7 +252,7 @@ module.exports = function() {
 			label.attr({
 					x: wdth,
 					"text-anchor": "end",
-					y: -2,
+					y: -17,
 					class: "graph-text" })
 				.text(lbl);
 		}

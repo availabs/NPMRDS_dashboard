@@ -135,9 +135,7 @@ module.exports = React.createClass({
 		MonthlyGraphData.graphs.forEach(function(d) { d(); });
 	},
 	loadMonth: function(month) {
-		console.log("load month",month);
-
-		DailyGraph.graph.data([]);
+		DailyGraph.graph.data([])();
 
 		var collection = this.props.routeCollection,
 

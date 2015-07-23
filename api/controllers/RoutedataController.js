@@ -1,5 +1,6 @@
 var BIGquery = require("../../custom_modules/BigQuery")(),
-    fs = require("fs");
+    fs = require("fs"),
+    zlib = require("zlib");
 
 module.exports = {
 
@@ -293,6 +294,7 @@ module.exports = {
             "AND weekday NOT IN ('saturday', 'sunday') "+
             "AND tmc IN ("+tmc_array.map(function(d) { return "'"+d+"'"; })+") "+
             "GROUP BY tmc, month, travel_time_all;";
+
         BIGquery(sql, function(err, rslt) {
             if (err) {
                 res.serverError(err);
@@ -325,17 +327,66 @@ module.exports = {
             "WHERE tmc in ("+tmc_array.map(function(d) { return "'"+d+"'"; })+") "+
             "GROUP BY tmc, month, hour, travel_time_all";
 
-        BIGquery(sql, function(err, rslt) {
+        var id = "/routes/brief/monthly/hours/"+JSON.stringify(TMCSort(tmc_array));
+        GzipCache.findOne(id).exec(function(err, data) {
             if (err) {
                 res.serverError(err);
+                return;
+            }
+
+            if (data) {
+                var buf = new Buffer(data.gzipData, "base64");
+
+                zlib.gunzip(buf, function(err, d) {
+                    if (err) {
+                        console.log("error gunzip", err)
+                    }
+                    else {
+                        console.log(d.length)
+                        res.ok(JSON.parse(d));
+                    }
+                });
             }
             else {
-                rslt = BIGquery.parseResult(rslt);
+                BIGquery(sql, function(err, rslt) {
+                    if (err) {
+                        res.serverError(err);
+                    }
+                    else {
+                        rslt = BIGquery.parseResult(rslt);
 
-                res.ok(rslt);
+                        var buf = new Buffer(JSON.stringify(rslt), "utf-8");
+
+                        zlib.gzip(buf, function(err, data) {
+                            GzipCache.create({ id: id, gzipData: data }).exec(function(err, res) {
+                                if (err) {
+                                    console.log("error create gzip", err)
+                                }
+                                else {
+                                    console.log("cached gzip")
+                                }
+                            })
+                        });
+
+                        res.ok(rslt);
+                    }
+                })
             }
         })
     }
+}
+
+function TMCSort(tmcArray) {
+    var regex = /\d{3}([NnPp])(\d{5})/
+    return tmcArray.sort(function(a, b) {
+        var aMatch = regex.exec(a),
+            bMatch = regex.exec(b);
+
+        if (aMatch[1].toLowerCase() != bMatch[1].toLowerCase()) {
+            return aMatch[1] == "N" ? -1 : 1;
+        }
+        return +aMatch[2] - +bMatch[2];
+    })
 }
 
 var Readable = require('stream').Readable;

@@ -264,12 +264,17 @@ svg .axis text {
     stroke: none;
 }
 .react-line-graph rect.month-group.month-group-active {
-    stroke: #000;
+    stroke: #090;
     stroke-width: 2px;
 }
 .react-line-graph path.active-month-line {
     opacity: 1;
     stroke-width: 3px;
+}
+.react-line-graph path.selected-month-line {
+    opacity: 1;
+    stroke-width: 3px;
+    stroke: #090;
 }
 
 /* application.css changes */

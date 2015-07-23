@@ -54,6 +54,9 @@ module.exports = function() {
 		if (data.length) {
 			graph.show();
 		}
+		else {
+			graph.hide();
+		}
 
 		var wdth = width-margin.left-margin.right,
 			hght = height-margin.top-margin.bottom;
