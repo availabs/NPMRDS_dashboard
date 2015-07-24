@@ -1,12 +1,9 @@
 var BIGquery = require("../../custom_modules/BigQuery")(),
     fs = require("fs"),
-    zlib = require("zlib");
+    // zlib = require("zlib"),
+    GzipCacher = require("../../custom_modules/GzipCacher")();
 
 module.exports = {
-
-  // '/routes/brief/month/all/:tmc_array': 'routedata.getBriefMonth',
-  // '/routes/brief/month/am/:tmc_array': 'routedata.getBriefMonthAM',
-  // '/routes/brief/month/pm/:tmc_array': 'routedata.getBriefMonthPM',
     getBriefMonth: function(req, res) {
         var month = req.param("month"),
             tmc_array = req.param("tmc_array");
@@ -328,26 +325,11 @@ module.exports = {
             "GROUP BY tmc, month, hour, travel_time_all";
 
         var id = "/routes/brief/monthly/hours/"+JSON.stringify(TMCSort(tmc_array));
-        GzipCache.findOne(id).exec(function(err, data) {
+        GzipCacher.find(id, function(err, data) {
             if (err) {
                 res.serverError(err);
-                return;
             }
-
-            if (data) {
-                var buf = new Buffer(data.gzipData, "base64");
-
-                zlib.gunzip(buf, function(err, d) {
-                    if (err) {
-                        console.log("error gunzip", err)
-                    }
-                    else {
-                        console.log(d.length)
-                        res.ok(JSON.parse(d));
-                    }
-                });
-            }
-            else {
+            else if (!data) {
                 BIGquery(sql, function(err, rslt) {
                     if (err) {
                         res.serverError(err);
@@ -355,22 +337,14 @@ module.exports = {
                     else {
                         rslt = BIGquery.parseResult(rslt);
 
-                        var buf = new Buffer(JSON.stringify(rslt), "utf-8");
-
-                        zlib.gzip(buf, function(err, data) {
-                            GzipCache.create({ id: id, gzipData: data }).exec(function(err, res) {
-                                if (err) {
-                                    console.log("error create gzip", err)
-                                }
-                                else {
-                                    console.log("cached gzip")
-                                }
-                            })
-                        });
-
                         res.ok(rslt);
+
+                        GzipCacher.cache(id, rslt);
                     }
                 })
+            }
+            else {
+                res.ok(data);
             }
         })
     }
@@ -389,24 +363,24 @@ function TMCSort(tmcArray) {
     })
 }
 
-var Readable = require('stream').Readable;
-
-function ReadStream(buf, opts) {
-    if (!(this instanceof ReadStream)) return new ReadStream(buf, opts);
-
-    Readable.call(this, opts);
-
-    this.maxPush = 4096;
-    this.data = buf;
-    this.pos = 0;
-}
-ReadStream.prototype = Object.create(Readable.prototype);
-ReadStream.prototype.constructor = ReadStream;
-
-ReadStream.prototype._read = function() {
-    this.push(this.data.slice(this.pos, this.pos+this.maxPush));
-    this.pos += this.maxPush;
-    if (this.pos >= this.data.length) {
-        this.push(null);
-    }
-}
+// var Readable = require('stream').Readable;
+//
+// function ReadStream(buf, opts) {
+//     if (!(this instanceof ReadStream)) return new ReadStream(buf, opts);
+//
+//     Readable.call(this, opts);
+//
+//     this.maxPush = 4096;
+//     this.data = buf;
+//     this.pos = 0;
+// }
+// ReadStream.prototype = Object.create(Readable.prototype);
+// ReadStream.prototype.constructor = ReadStream;
+//
+// ReadStream.prototype._read = function() {
+//     this.push(this.data.slice(this.pos, this.pos+this.maxPush));
+//     this.pos += this.maxPush;
+//     if (this.pos >= this.data.length) {
+//         this.push(null);
+//     }
+// }

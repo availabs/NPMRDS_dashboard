@@ -5,11 +5,11 @@ var React = require('react'),
     Events = require('../../constants/AppConstants').EventTypes,
     TMCDataStore = require("../../stores/TMCDataStore"),
     saveSvgAsPng = require('save-svg-as-png'),
-	
+
 	d3 = require("d3"),
 
-	crossfilter = TMCDataStore.getCrossFilter(),
-	avgCrossfilter = TMCDataStore.getCrossFilter(),
+	crossfilter = TMCDataStore.getTMCCrossFilter(),
+	avgCrossfilter = TMCDataStore.getWebWorker(),//TMCDataStore.getTMCCrossFilter(),
 
 	UNIQUE_IDs = 0;
 
@@ -44,7 +44,7 @@ var LineGraph = React.createClass({
 	componentWillUnmount: function() {
 		TMCDataStore.removeChangeListener(Events.DISPLAY_TMC_DATA, this.TMCadded);
 		TMCDataStore.removeChangeListener(Events.REMOVE_TMC_DATA, this.TMCremoved);
-		
+
 		TMCDataStore.removeChangeListener(Events.TMC_DATAVIEW_CHANGE, this.dataViewChange);
 	},
 	testEventDispatcher: function(args) {
@@ -73,14 +73,18 @@ var LineGraph = React.createClass({
 			group = this.state.linegraph.group(),
 			avgLines = this.state.linegraph.avgLines();
 
-		// params = TMCDataStore.getParams(false);
-		// applyParams(this.state.linegraph.resolution());
-		// console.log("TMCsOverTime_Graph",params);
+		// avgCrossfilter.filter("tmc", tmc);
+		// var all = getValues(avgCrossfilter("all"));
+		// avgLines.push({key: tmc, values: all});
+		// this.state.linegraph.avgLines(avgLines);
 
-		avgCrossfilter.filter("tmc", tmc);
-		var all = getValues(avgCrossfilter("all"));
-		avgLines.push({key: tmc, values: all});
-		this.state.linegraph.avgLines(avgLines);
+        avgCrossfilter.filter("tmc", tmc);
+        avgCrossfilter("all", function(data) {
+            console.log("ALL DATA", data)
+            var all = getValues(data);
+    		avgLines.push({key: tmc, values: all});
+    		this.state.linegraph.avgLines(avgLines)();
+        }.bind(this));
 
 		crossfilter.filter("tmc", tmc);
 		var tmcData = crossfilter(group);
@@ -223,14 +227,14 @@ function Labeller() {
 		});
 
 		var tmcs = tmcDiv.selectAll(".tmcs-label")
-			.data(TMCs);
+			.data(TMCs, function(d) { return d; });
 		tmcs.exit().remove();
 		var enter = tmcs.enter().append("div");
 
 		enter.attr("class", "tmcs-label")
 			.style({float:"left",padding:"0px 10px",height:"30px","line-height":"30px"});
 
-		tmcs.style("background-color", function(d) { return TMCDataStore.getTMCcolor(d); })
+		tmcs.style("background-color", TMCDataStore.getTMCcolor)
 
 		var text = enter.append("div")
 				.style({ display: "inline" })
@@ -441,7 +445,7 @@ function Linegraph() {
 				.data([groupData.values]);
 			path.exit().remove();
 			path.enter().append("path")
-				.attr({stroke: function(d) { return TMCDataStore.getTMCcolor(groupData.key) }, 
+				.attr({stroke: function(d) { return TMCDataStore.getTMCcolor(groupData.key) },
 					  "stroke-width": 3, fill:"none", class:"NPMRDS-graph-path"})
 				.on("mouseover", mouseover)
 				.on("mouseout", mouseout);
@@ -506,7 +510,7 @@ function Linegraph() {
 			var avgLine = d3.select(this).selectAll("line").data([groupData.values]);
 			avgLine.exit().remove();
 			avgLine.enter().append("line")
-				.attr({stroke: function(d) { return TMCDataStore.getTMCcolor(groupData.key) }, 
+				.attr({stroke: function(d) { return TMCDataStore.getTMCcolor(groupData.key) },
 					"stroke-width": 3, fill:"none", class:"NPMRDS-graph-path",
 					"stroke-dasharray": "6,6"})
 				.attr("x1", 0)
@@ -524,7 +528,7 @@ function Linegraph() {
 			var avgLine = d3.select(this).selectAll("line").data([groupData.values]);
 			avgLine.exit().remove();
 			avgLine.enter().append("line")
-				.attr({stroke: function(d) { return TMCDataStore.getTMCcolor(groupData.key) }, 
+				.attr({stroke: function(d) { return TMCDataStore.getTMCcolor(groupData.key) },
 					"stroke-width": 3, fill:"none", class:"NPMRDS-graph-path",
 					"stroke-dasharray": "3,3"})
 				.attr("x1", 0)

@@ -11,6 +11,7 @@ var AppDispatcher = require('../dispatcher/AppDispatcher'),
     Events = Constants.EventTypes,
 
 	crossfilter = require("../utils/CrossFilter")(),
+    TMCCrossFilter = require("../utils/TMCCrossFilter"),
 	//TMCmodel = require("../utils/TMCModel")(),
 
 	selectedTMCs = {},
@@ -30,6 +31,33 @@ var AppDispatcher = require('../dispatcher/AppDispatcher'),
 	nameMapper = TMCNameMapper();
 
 var controlPanelParams = {};
+
+var TMC_CrossFilter_List = [];
+
+var WEB_WORKERS = [];
+function WebWorker() {
+    var workerInstance = new Worker("/react/utils/WebWorker.js"),
+        callBack;
+
+    workerInstance.onmessage = function(e) {
+        console.log("WebWorker Response", e.data)
+        if (e.data.data) {
+            callBack(e.data.data);
+        }
+    }
+
+    function worker(g, cb) {
+        callBack = cb;
+        workerInstance.postMessage({ type: "group", group: g });
+    }
+    worker.add = function(d) {
+        workerInstance.postMessage({ type: "add", data: d });
+    }
+    worker.filter = function(dim, filter) {
+        workerInstance.postMessage({ type: "filter", dim: dim, filter: filter });
+    }
+    return worker;
+}
 
 var TMCDataStore = assign({}, EventEmitter.prototype, {
 	emitEvent: function(Event, data) {
@@ -56,6 +84,7 @@ var TMCDataStore = assign({}, EventEmitter.prototype, {
 		}
 	},
 	removeTMC: function(tmc) {
+//console.log("<TMCDataStore::removeTMC>", tmc);
 		if (selectedTMCs[tmc]) {
 			TMCDataStore.emitEvent(Events.REMOVE_TMC_DATA, tmc);
 			colorMapper.remove(tmc);
@@ -66,24 +95,28 @@ var TMCDataStore = assign({}, EventEmitter.prototype, {
 		this.emitEvent(Events.TMC_DATAVIEW_CHANGE, view);
 	},
 	receiveTMCdata: function(requestedTMCs, data) {
-console.log("TMCDataStore.receiveTMCdata", requestedTMCs, data);
+//console.log("TMCDataStore.receiveTMCdata", requestedTMCs, data);
 
 		var parsedData = d3.nest()
 				.key(function(d) { return d.tmc.toString(); })
 				.entries(parseData(data));
 
-console.log("TMCDataStore.receiveTMCdata", parsedData);
+//console.log("TMCDataStore.receiveTMCdata", parsedData);
 
 		parsedData.forEach(function(data) {
 			TMCdata[data.key] = data.values;
+
 			crossfilter.add(data.values);
+            TMC_CrossFilter_List.forEach(function(d) { d.add(data.values); });
+            WEB_WORKERS.forEach(function(d) { d.add(data.values); });
+
 			nameMapper.add(data.key, data.values[0].road_name);
 		});
 
 		this.displayTMCdata(requestedTMCs);
 	},
 	displayTMCdata: function(TMCs) {
-console.log("TMCDataStore.displayTMCdata", TMCs);
+//console.log("TMCDataStore.displayTMCdata", TMCs);
 		TMCs.forEach(function(tmc) {
 			if (!(tmc in selectedTMCs) && TMCs.length==1) {
 				selectedTMCs[tmc] = true;
@@ -104,12 +137,22 @@ console.log("TMCDataStore.displayTMCdata", TMCs);
 	getCrossFilter: function() {
 		return crossfilter.session();
 	},
+    getTMCCrossFilter: function() {
+        var cf = TMCCrossFilter();
+        TMC_CrossFilter_List.push(cf);
+        return cf;
+    },
+    getWebWorker: function() {
+        var worker = WebWorker();
+        WEB_WORKERS.push(worker);
+        return worker;
+    },
 	getTMCcolor: function(tmc) {
 		return colorMapper(tmc);
 	},
 	getTMCname: function(tmc) {
 		var name = nameMapper(tmc);
-console.log("TMCDataStore.getTMCname", tmc, name);
+//console.log("TMCDataStore.getTMCname", tmc, name);
 		if (!name || !name.length) {
 			return tmc.toString();
 		}

@@ -8,5 +8,6 @@ module.exports = {
 			type: "binary",
 			required: true
 		}
-	}
+	},
+	migrate: "safe"
 }

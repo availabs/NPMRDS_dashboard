@@ -43,7 +43,7 @@ var LineGraph = React.createClass({
 	componentWillUnmount: function() {
 		TMCDataStore.removeChangeListener(Events.DISPLAY_TMC_DATA, this.TMCadded);
 		TMCDataStore.removeChangeListener(Events.REMOVE_TMC_DATA, this.TMCremoved);
-		
+
 		TMCDataStore.removeChangeListener(Events.TMC_DATAVIEW_CHANGE, this.dataviewChange);
 	},
 	TMCadded: function(tmc) {
@@ -92,7 +92,7 @@ var LineGraph = React.createClass({
 	},
 	updateGraph: function() {
 		var graphData = [];
-		
+
 		if (currentTMC) {
 			if (!months.length) {
 				months = crossfilter("yyyymm").map(function(d) { return d.key; });
@@ -172,18 +172,18 @@ function Labeller() {
 		}
 
 		var tmcs = tmcDiv.selectAll(".tmcs-label")
-			.data(TMCs);
+			.data(TMCs, function(d) { return d; });
 		tmcs.exit().remove();
 		var enter = tmcs.enter().append("div")
 			.attr("class", "tmcs-label")
 			.style({float:"left",padding:"0px 10px",height:"30px","line-height":"30px",cursor:"pointer"});
 
 		tmcs.on("click", highlight)
-			.style("background-color", function(d) { return TMCDataStore.getTMCcolor(d.toString()); });
+			.style("background-color", TMCDataStore.getTMCcolor);
 
 		var text = enter.append("div")
 				.style({ display: "inline" })
-				.text(function(d) { return TMCDataStore.getTMCname(d); });
+				.text(TMCDataStore.getTMCname);
 
 		if (TMCs.length == 1) {
 			tmcs.each(highlight);
@@ -245,7 +245,7 @@ function Popup() {
 	function popup(selection) {
 		if (selection) {
 			div = d3.select("#TMC-monthly-div-"+selfID).append("div")
-				.style({padding:"0px", color:"#000", height:"30px", 
+				.style({padding:"0px", color:"#000", height:"30px",
 					"line-height":"30px", position:"absolute", left:"20px", top:"5px",
 					"font-size":"15pt"})
 		}
@@ -359,7 +359,7 @@ function Linegraph() {
 			path.exit().remove();
 			path.enter().append("path")
 				.attr("id", "TMC-monthly-"+groupData.key+"-path")
-				.attr({stroke: "#74c476",//function() { return colorScale(ndx); }, 
+				.attr({stroke: "#74c476",//function() { return colorScale(ndx); },
 					  	"stroke-width": 3, fill:"none", class:"NPMRDS-graph-path",
 						"stroke-opacity": 0.3})
 			path.transition().attr("d", line);
