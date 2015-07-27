@@ -8,8 +8,8 @@ var React = require('react'),
 
 	d3 = require("d3"),
 
-	crossfilter = TMCDataStore.getTMCCrossFilter(),
-	avgCrossfilter = TMCDataStore.getWebWorker(),//TMCDataStore.getTMCCrossFilter(),
+	crossfilter = TMCDataStore.getCrossFilter(),
+	avgCrossfilter = TMCDataStore.getCrossFilter(),
 
 	UNIQUE_IDs = 0;
 
@@ -73,18 +73,18 @@ var LineGraph = React.createClass({
 			group = this.state.linegraph.group(),
 			avgLines = this.state.linegraph.avgLines();
 
-		// avgCrossfilter.filter("tmc", tmc);
-		// var all = getValues(avgCrossfilter("all"));
-		// avgLines.push({key: tmc, values: all});
-		// this.state.linegraph.avgLines(avgLines);
+		avgCrossfilter.filter("tmc", tmc);
+		var all = getValues(avgCrossfilter("all"));
+		avgLines.push({key: tmc, values: all});
+		this.state.linegraph.avgLines(avgLines);
 
-        avgCrossfilter.filter("tmc", tmc);
-        avgCrossfilter("all", function(data) {
-            console.log("ALL DATA", data)
-            var all = getValues(data);
-    		avgLines.push({key: tmc, values: all});
-    		this.state.linegraph.avgLines(avgLines)();
-        }.bind(this));
+        // avgCrossfilter.filter("tmc", tmc);
+        // avgCrossfilter("all", function(data) {
+        //     console.log("ALL DATA", data)
+        //     var all = getValues(data);
+    	// 	avgLines.push({key: tmc, values: all});
+    	// 	this.state.linegraph.avgLines(avgLines)();
+        // }.bind(this));
 
 		crossfilter.filter("tmc", tmc);
 		var tmcData = crossfilter(group);

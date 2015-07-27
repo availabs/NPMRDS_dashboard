@@ -14,11 +14,12 @@ var AppDispatcher = require('../dispatcher/AppDispatcher'),
     GeoStore = require("./GeoStore"),
     UserStore = require("./UserStore");
 
-var ROUTE_DATA_CACHE = {};
+var MONTHLY_HOURS_DATA_CACHE = {},
+    currentViewedMonth = -1;    // no month set, views should default to most recent month
 
 var CHANGE_EVENT = "CHANGE_EVENT";
 
-var RouteStore = assign({}, EventEmitter.prototype, {
+var RouteDataStore = assign({}, EventEmitter.prototype, {
     addChangeListener: function(cb) {
         this.on(CHANGE_EVENT, cb);
     },
@@ -29,33 +30,28 @@ var RouteStore = assign({}, EventEmitter.prototype, {
         this.emit(CHANGE_EVENT);
     },
 
-    getMonthlyData: function(id) {
-        return ROUTE_DATA_CACHE[id] ? ROUTE_DATA_CACHE[id].monthly : null;
-    },
-    getMonthlyAMData: function(id) {
-        return ROUTE_DATA_CACHE[id] ? ROUTE_DATA_CACHE[id].monthlyAM : null;
-    },
-    getMonthlyPMData: function(id) {
-        return ROUTE_DATA_CACHE[id] ? ROUTE_DATA_CACHE[id].monthlyPM : null;
+    getMonthlyHoursData: function(id) {
+        return { data: MONTHLY_HOURS_DATA_CACHE[id], month: currentViewedMonth };
     }
 })
 
-RouteStore.dispatchToken = AppDispatcher.register(function(payload) {
+RouteDataStore.dispatchToken = AppDispatcher.register(function(payload) {
     var action = payload.action;
 
     switch(action.type) {
-        case ActionTypes.LOAD_MONTHLY_GRAPH_DATA:
-            var dataType = action.Datatype;
-            if (!ROUTE_DATA_CACHE[action.id]) {
-                ROUTE_DATA_CACHE[action.is] = {};
-            }
-            ROUTE_DATA_CACHE[action.id][action.dataType] = action.data;
-            RouteStore.emitChange();
+        case ActionTypes.MONTHLY_HOURS_DATA_LOADED:
+            console.log("<RaouteDataStore::MONTHLY_HOURS_DATA_LOADED>",action)
+            MONTHLY_HOURS_DATA_CACHE[action.id] = action.data;
+            RouteDataStore.emitChange();
             break;
+
+        case ActionTypes.ROUTE_DATA_MONTH_CHANGE:
+            currentViewedMonth = action.month;
+            RouteDataStore.emitChange();
 
         default:
             break;
     }
 })
 
-module.exports = RouteStore;
+module.exports = RouteDataStore;

@@ -4,7 +4,7 @@ var React = require('react'),
 
 	d3 = require("d3"),
 
-	RouteDataStore = require("../../stores/RouteDataStore"),
+	ViewActionsCreator = require("../../actions/ViewActionsCreator"),
 
 	LineGraph = require("./MonthlyHoursLineGraph"),
 	BarGraph = require("./RouteMapBarGraph");
@@ -137,6 +137,8 @@ module.exports = React.createClass({
 	loadMonth: function(month) {
 		DailyGraph.graph.data([])();
 
+		ViewActionsCreator.routeDataMonthChange(month);
+
 		var collection = this.props.routeCollection,
 
 			length = collection.length,
@@ -190,6 +192,8 @@ module.exports = React.createClass({
 			var nested = nestMHData(response),
 				data = makeHourLines(nested);
 
+			ViewActionsCreator.monthlyHoursDataLoaded(collection.id, data);
+
 			MonthlyHoursGraph.graph.data(data)();
 		})
 
@@ -220,7 +224,7 @@ module.exports = React.createClass({
 		}, this);
 	},
 	componentWillReceiveProps: function(newProps, newState) {
-		if (newProps.routeCollection) {
+		if (newProps.routeCollection && newProps.routeCollection != this.props.routeCollection) {
 			this.loadGraphs(newProps.routeCollection);
 		}
 	},

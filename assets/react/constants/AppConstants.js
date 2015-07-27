@@ -44,7 +44,11 @@ module.exports = {
 
     RECEIVED_MPO_NAMES: null,
 
-    LOAD_MONTHLY_GRAPH_DATE: null
+    LOAD_MONTHLY_GRAPH_DATE: null,
+
+    MONTHLY_HOURS_DATA_LOADED: null,
+
+    ROUTE_DATA_MONTH_CHANGE: null
   }),
 
   EventTypes: keyMirror({

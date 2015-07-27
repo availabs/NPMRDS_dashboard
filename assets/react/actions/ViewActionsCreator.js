@@ -5,10 +5,24 @@ var ActionTypes = Constants.ActionTypes;
 
 module.exports = {
 	setControlPanelParams: function(params) {
-console.log("ViewActionCreator: params", params)
 	    AppDispatcher.handleViewAction({
 	    	type: ActionTypes.CONTROL_PANEL_PARAMS_LOADED,
 	      	params: params
+	    });
+	},
+
+	monthlyHoursDataLoaded: function(id, data) {
+	    AppDispatcher.handleViewAction({
+	    	type: ActionTypes.MONTHLY_HOURS_DATA_LOADED,
+			id: id,
+	      	data: data
+	    });
+	},
+
+	routeDataMonthChange: function(month) {
+	    AppDispatcher.handleViewAction({
+	    	type: ActionTypes.ROUTE_DATA_MONTH_CHANGE,
+			month: month
 	    });
 	}
 }

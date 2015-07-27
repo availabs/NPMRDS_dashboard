@@ -11,7 +11,7 @@ var AppDispatcher = require('../dispatcher/AppDispatcher'),
     Events = Constants.EventTypes,
 
 	crossfilter = require("../utils/CrossFilter")(),
-    TMCCrossFilter = require("../utils/TMCCrossFilter"),
+    //TMCCrossFilter = require("../utils/TMCCrossFilter"),
 	//TMCmodel = require("../utils/TMCModel")(),
 
 	selectedTMCs = {},
@@ -32,32 +32,32 @@ var AppDispatcher = require('../dispatcher/AppDispatcher'),
 
 var controlPanelParams = {};
 
-var TMC_CrossFilter_List = [];
-
-var WEB_WORKERS = [];
-function WebWorker() {
-    var workerInstance = new Worker("/react/utils/WebWorker.js"),
-        callBack;
-
-    workerInstance.onmessage = function(e) {
-        console.log("WebWorker Response", e.data)
-        if (e.data.data) {
-            callBack(e.data.data);
-        }
-    }
-
-    function worker(g, cb) {
-        callBack = cb;
-        workerInstance.postMessage({ type: "group", group: g });
-    }
-    worker.add = function(d) {
-        workerInstance.postMessage({ type: "add", data: d });
-    }
-    worker.filter = function(dim, filter) {
-        workerInstance.postMessage({ type: "filter", dim: dim, filter: filter });
-    }
-    return worker;
-}
+// var TMC_CrossFilter_List = [];
+//
+// var WEB_WORKERS = [];
+// function WebWorker() {
+//     var workerInstance = new Worker("/react/utils/WebWorker.js"),
+//         callBack;
+//
+//     workerInstance.onmessage = function(e) {
+//         console.log("WebWorker Response", e.data)
+//         if (e.data.data) {
+//             callBack(e.data.data);
+//         }
+//     }
+//
+//     function worker(g, cb) {
+//         callBack = cb;
+//         workerInstance.postMessage({ type: "group", group: g });
+//     }
+//     worker.add = function(d) {
+//         workerInstance.postMessage({ type: "add", data: d });
+//     }
+//     worker.filter = function(dim, filter) {
+//         workerInstance.postMessage({ type: "filter", dim: dim, filter: filter });
+//     }
+//     return worker;
+// }
 
 var TMCDataStore = assign({}, EventEmitter.prototype, {
 	emitEvent: function(Event, data) {
@@ -107,8 +107,8 @@ var TMCDataStore = assign({}, EventEmitter.prototype, {
 			TMCdata[data.key] = data.values;
 
 			crossfilter.add(data.values);
-            TMC_CrossFilter_List.forEach(function(d) { d.add(data.values); });
-            WEB_WORKERS.forEach(function(d) { d.add(data.values); });
+            // TMC_CrossFilter_List.forEach(function(d) { d.add(data.values); });
+            // WEB_WORKERS.forEach(function(d) { d.add(data.values); });
 
 			nameMapper.add(data.key, data.values[0].road_name);
 		});
@@ -137,16 +137,16 @@ var TMCDataStore = assign({}, EventEmitter.prototype, {
 	getCrossFilter: function() {
 		return crossfilter.session();
 	},
-    getTMCCrossFilter: function() {
-        var cf = TMCCrossFilter();
-        TMC_CrossFilter_List.push(cf);
-        return cf;
-    },
-    getWebWorker: function() {
-        var worker = WebWorker();
-        WEB_WORKERS.push(worker);
-        return worker;
-    },
+    // getTMCCrossFilter: function() {
+    //     var cf = TMCCrossFilter();
+    //     TMC_CrossFilter_List.push(cf);
+    //     return cf;
+    // },
+    // getWebWorker: function() {
+    //     var worker = WebWorker();
+    //     WEB_WORKERS.push(worker);
+    //     return worker;
+    // },
 	getTMCcolor: function(tmc) {
 		return colorMapper(tmc);
 	},

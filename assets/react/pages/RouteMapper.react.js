@@ -3,6 +3,8 @@
 var React = require('react'),
     Router = require("react-router"),
 
+    d3 = require("d3"),
+
     Events = require('../constants/AppConstants').EventTypes,
 
 	MPO_LandingPage = require("../components/landing/MPO_LandingPage.react"),
@@ -30,7 +32,8 @@ var RouteMapper = React.createClass({
             sessionUser: UserStore.getSessionUser(),
             preferences: UserStore.getPreferences(),
             route: route,
-            routeCollection: null
+            routeCollection: null,
+            monthData: null
         };
     },
 
@@ -40,7 +43,7 @@ var RouteMapper = React.createClass({
         RouteStore.addChangeListener(Events.RECEIVED_SAVED_ROUTES, this._receiveSavedRoutes);
         RouteStore.addChangeListener(Events.ROUTE_CREATED, this._onRouteCreated);
 
-        // RouteDataStore.addChangeListener(this.loadMonthlyGraphData);
+        RouteDataStore.addChangeListener(this.getMonthlyHoursData);
 
         if (this.state.route) {
             this.loadRouteCollection(this.state.route);
@@ -52,7 +55,52 @@ var RouteMapper = React.createClass({
         RouteStore.removeChangeListener(Events.RECEIVED_SAVED_ROUTES, this._receiveSavedRoutes);
         RouteStore.removeChangeListener(Events.ROUTE_CREATED, this._onRouteCreated);
 
-        // RouteDataStore.removeChangeListener(this.loadMonthlyGraphData);
+        RouteDataStore.removeChangeListener(this.getMonthlyHoursData);
+    },
+
+// AM HOURS [6-9)
+// PM HOURS [3-6)
+    getMonthlyHoursData: function() {
+        var data = RouteDataStore.getMonthlyHoursData(this.state.route.id);
+
+        if (!data.data) return;
+
+        if (data.month == -1) {
+            var monthData = data.data.reduce(function(a, c) { return c.key > a.key ? c : a; }, {key: 0});
+        }
+        else {
+            var monthData = data.data.reduce(function(a, c) { return c.key == data.month ? c : a; });
+        }
+
+        var flow = this.state.routeCollection.length / this.state.routeCollection.speed * 60,
+
+            avgMonthly = d3.sum(monthData.values, function(d) { return d.y; }) / monthData.values.length,
+            congestion = avgMonthly / flow,
+
+            monthAMData = monthData.values.filter(function(d) { return d.x >= 6 && d.x < 9; }),
+            avgMonthlyAM = d3.sum(monthAMData, function(d) { return d.y; }) / monthAMData.length,
+            AMcongestion = avgMonthlyAM / flow,
+
+            monthPMData = monthData.values.filter(function(d) { return d.x >= 3 && d.x < 6; }),
+            avgMonthlyPM = d3.sum(monthPMData, function(d) { return d.y; }) / monthPMData.length,
+            PMcongestion = avgMonthlyPM / flow;
+
+        var monthData = {
+            avgMonthly: avgMonthly,
+            congestion: congestion,
+            avgMonthlyAM: avgMonthlyAM,
+            AMcongestion: AMcongestion,
+            avgMonthlyPM: avgMonthlyPM,
+            PMcongestion: PMcongestion
+        }
+
+        this.setState({
+            sessionUser: this.state.sessionUser,
+            preferences:  this.state.preferences,
+            routeCollection: this.state.routeCollection,
+            route: this.state.route,
+            monthData: monthData
+        })
     },
 
 // retrieves data from RouteDataStore after change event is emitted
@@ -88,7 +136,8 @@ var RouteMapper = React.createClass({
             sessionUser: this.state.sessionUser,
             preferences:  this.state.preferences,
             routeCollection: this.state.routeCollection,
-            route: route
+            route: route,
+            monthData: this.state.monthData
         })
     },
 
@@ -118,12 +167,13 @@ var RouteMapper = React.createClass({
         for (var key in route) {
             collection[key] = route[key];
         }
-        
+
         this.setState({
             sessionUser: this.state.sessionUser,
             preferences: this.state.preferences,
             routeCollection: collection,
-            route: this.state.route
+            route: this.state.route,
+            monthData: this.state.monthData
         })
     },
 
@@ -132,12 +182,14 @@ var RouteMapper = React.createClass({
             sessionUser: this.state.sessionUser,
             preferences: UserStore.getPreferences(),
             routeCollection: this.state.routeCollection,
-            route: this.state.route
+            route: this.state.route,
+            monthData: this.state.monthData
         })
     },
 
     render: function() {
-        var heading = makeHeading(this.state.routeCollection);
+        var heading = makeHeading(this.state.routeCollection),
+            monthData = makeMonthData(this.state.monthData);
 
     	return (
             <div className="content container">
@@ -145,12 +197,15 @@ var RouteMapper = React.createClass({
 
                     <div className="col-lg-6">
                         <div className="row">
-                            <div className="col-lg-12">
+                            <div className="col-lg-6">
                                 <div className="widget">
             		    			<h4>{ this.state.route ? this.state.route.name : "loading..." }</h4>
                                     { heading }
                                 </div>
         		    		</div>
+                            <div className="col-lg-6">
+                                { monthData }
+                            </div>
                         </div>
                         <div className="row">
                             <div className="col-lg-12">
@@ -174,9 +229,36 @@ function makeHeading(data) {
         format = d3.format("0.1f")
     if (data) {
         heading.push(<p key="length">Length: { format(data.length) } miles.</p>);
-        heading.push(<p key="speed">Average speed limit: { format(data.speed) } mph.</p>);
+        heading.push(<p key="speed">Average posted speed limit: { format(data.speed) } mph.</p>);
     }
     return heading;
+}
+
+/*
+var monthData = {
+    avgMonthly: avgMonthly,
+    avgMonthlyAM: avgMonthlyAM,
+    AMcongestion: AMcongestion,
+    avgMonthlyPM: avgMonthlyPM,
+    PMcongestion: PMcongestion
+}
+*/
+
+function makeMonthData(data) {
+    if (!data) return null;
+    var format = d3.format("0.1f");
+
+    return (
+        <div className="widget">
+            <h4>Monthly Travel Time Averages</h4>
+            <p>Month average: { format(data.avgMonthly) } minutes</p>
+            <p>Month congestion: { format(data.congestion )}</p>
+            <p>Month AM average: { format(data.avgMonthlyAM) } minutes</p>
+            <p>AM congestion: { format(data.AMcongestion) }</p>
+            <p>Month PM average: { format(data.avgMonthlyPM) } minutes</p>
+            <p>PM congestion: { format(data.PMcongestion) }</p>
+        </div>
+    )
 }
 
 module.exports = RouteMapper;
