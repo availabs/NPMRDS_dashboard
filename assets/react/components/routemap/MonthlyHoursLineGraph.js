@@ -1,4 +1,5 @@
-var d3 = require("d3");
+var d3 = require("d3"),
+	esc = require("esc");
 
 module.exports = function() {
 	var data = [],
@@ -16,6 +17,7 @@ module.exports = function() {
 			.range(["#a50026","#d73027","#f46d43","#fdae61","#fee08b","#ffffbf","#d9ef8b","#a6d96a","#66bd63","#1a9850","#006837"].reverse()),
 		xAxis = d3.svg.axis()
 			.orient("bottom")
+			.tickFormat(hourFormat)
 			.scale(xScale),
 		yAxis = d3.svg.axis()
 			.ticks(5)
@@ -139,18 +141,18 @@ module.exports = function() {
 					.attr({
 						x: 0,
 						y: 0,
-						width: 50,
+						width: 70,
 						height: 20,
 						fill: "#fff",
 						class: d.key == key ? "month-group month-group-active" : "month-group"
 					});
 				group.append("text")
 					.attr({
-						x: 25,
+						x: 35,
 						y: 15,
 						"text-anchor": "middle"
 					})
-					.text(d.key);
+					.text(esc.getMonth(d.key%100).slice(0,3)+" "+Math.round(+d.key/100));
 			});
 		monthSelector.on("mouseover", function() {
 			monthGroupOpen = true;
@@ -240,11 +242,10 @@ module.exports = function() {
 				return;
 			}
 			d3.event.stopPropagation();
-			var date = new Date(Math.round(+d.point.key/100), +d.point.key%100)
 
 			highlightMonthLine(d.point);
 
-			lbl = date.getMonth()+" "+date.getFullYear() + " hour "+d.point.x+" | travel time: " + Math.round(d.point.y) + " min";
+			lbl = esc.getMonth(d.point.key%100).slice(0,3)+" "+Math.round(+d.point.key/100) + " hour "+hourFormat(d.point.x)+" | travel time: " + Math.round(d.point.y) + " min";
 			var label = group.selectAll(".graph-text")
 				.data(data.slice(0, 1));
 			label.exit().remove();
@@ -266,6 +267,19 @@ module.exports = function() {
 			vTimeout = setTimeout(highlightMonthLine, 25);
 		}
     }
+
+	function hourFormat(num) {
+		if (num == 0) {
+			return "12am";
+		}
+		if (num == 12) {
+			return "12pm";
+		}
+		if (num > 12) {
+			return (num-12)+"pm";
+		}
+		return num+"am";
+	}
 
 	graph.hide = function() {
 		svg.transition().style("opacity", 0);

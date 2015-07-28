@@ -61,11 +61,11 @@ var RouteStore = assign({}, EventEmitter.prototype, {
             })
     },
   	getRoute: function() {
-  		return routeCreator.route().route;
+  		return routeCreator.route();
   	},
     getRouteData: function() {
         var data = {},
-            route = routeCreator.route().route;
+            route = routeCreator.route();
 
         data.points = routeCreator.points();
 

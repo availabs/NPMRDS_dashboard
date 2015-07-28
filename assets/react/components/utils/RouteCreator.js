@@ -1,13 +1,11 @@
 "use strict"
 
-var turf = require("turf"),
-	HERE_API = require("./HERE_API");
+var HERE_API = require("./HERE_API");
 
 function RouteCreator() {
 	var points = [],
 		here = HERE_API(),
-		routeCollection = {},
-		bufferedRoute = {};
+		routeCollection = {};
 
 	function router() {
 		if (points.length < 2) {
@@ -40,26 +38,16 @@ function RouteCreator() {
 				type: "FeatureCollection",
 				features: []
 			}
-			bufferedRoute = routeCollection;
 			func(null, routeCollection);
 		}
 		return router;
 	}
 	router.route = function(r) {
 		if (!arguments.length) {
-			return { route: routeCollection, buffer: bufferedRoute };
+			return routeCollection;
 		}
 		routeCollection = r;
-		bufferedRoute = router.buffer(r);
 		return router;
-	}
-	router.buffer = function(r, dist, units) {
-		dist = dist || 5;
-		units = units || "feet";
-		return turf.buffer(r, dist, units);
-	}
-	router.intersect = function(r) {
-		return turf.intersect(bufferedRoute.features[0], r);
 	}
 	return router;
 
@@ -94,7 +82,6 @@ function RouteCreator() {
 				routeCollection.features.push(feature);
 			});
 		});
-		bufferedRoute = router.buffer(routeCollection);
 		return routeCollection;
 	}
 }
