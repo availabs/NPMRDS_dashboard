@@ -793,6 +793,7 @@ function LinkShader() {
 	function shader(feature) {
 		var congestion = data[feature.properties.linkID] ?
 				data[feature.properties.linkID][feature.properties.tmc] || -1 : -1;
+                
 		return (congestion > 0 ? scale(congestion) : "#000");
 	}
 

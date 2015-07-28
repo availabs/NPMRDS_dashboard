@@ -36,9 +36,8 @@ var LoadingIndicator = React.createClass({
 		}
 		else {
 			return (
-				<div className="spinner-div">
-		            <h3>Loading Data...</h3>
-		            <div className="spinner" ></div>
+				<div className="loading-indicator-div">
+		            <div><span className="fa fa-spinner fa-pulse fa-2x" /><span className="loading-data">Loading Data...</span></div>
 				</div>
 			);
 		}
@@ -46,18 +45,3 @@ var LoadingIndicator = React.createClass({
 })
 
 module.exports = LoadingIndicator;
-/*
-    renderLoadingSpan:function(){
-        if( this.props.loading){
-            return (
-                <div>
-                    <h3>Loading Data...</h3>
-                    <div className="spinner" ></div>
-                </div>
-            )
-        }
-        return (
-            <span />
-        )
-    },
-*/

@@ -290,6 +290,29 @@ svg .axis text {
   margin-bottom: 20px;
 }
 
+.loading-indicator-div {
+    position: "absolute";
+    top: 0;
+    font-size: 24px;
+    vertical-align: middle;
+}
+.loading-indicator-div span {
+    vertical-align: middle;
+}
+.loading-data {
+    display: inline-block;
+    margin-left: 10px;
+}
+
+.navbar {
+    margin-top: 10px;
+}
+
+.page-header {
+    margin: 0;
+    height: 55px;
+}
+
 /*-------------
 Loading Spinner
 ---------------*/

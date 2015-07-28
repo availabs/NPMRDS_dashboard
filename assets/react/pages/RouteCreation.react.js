@@ -45,7 +45,7 @@ var linkShader = UsageDataStore.linkShader(),
     roadPaths = null,
     UNIQUE_MARKER_IDs = 0;
 
-var MapView = React.createClass({
+var RouteCreation = React.createClass({
     getInitialState: function(){
         var mapView = this;
         return {
@@ -96,39 +96,7 @@ var MapView = React.createClass({
 
                         }
                     }
-                },
-                roads:{
-                    id:0,
-                    geo:{type:'FeatureCollection',features:[]},
-                    options:{
-                        zoomOnLoad:true,
-                        style:function (feature) {
-                            return {
-                                className: 'roads id-'+feature.properties.linkID+' tmc-'+feature.properties.tmc,
-                                stroke:true,
-                                color: linkShader(feature)
-                            }
-                        },
-                         onEachFeature: function (feature, layer) {
-
-                            layer.on({
-
-                                click: function(e){
-                                  if (feature.properties.tmc) {
-                                    TMCDataStore.addTMC(feature.properties.tmc);
-                                  }
-                                },
-                                mouseover: function(e){
-                                    mapView.state.popup(feature);
-                                },
-                                mouseout: function(e){
-                                    mapView.state.popup.display(false);
-                                }
-                            });
-
-                        }
-                    }
-                },
+                }
                 route: {
                     id: 0,
                     geo: { type: "FeatureCollection", features: [] },
@@ -149,15 +117,8 @@ var MapView = React.createClass({
     componentDidMount: function() {
         RouteStore.clearPoints();
 
-        GeoStore.addChangeListener(Events.COUNTY_CHANGE, this._onCountyChange);
-        GeoStore.addChangeListener(Events.STATE_CHANGE, this._onStateChange);
-
-        UsageDataStore.addChangeListener(Events.DATA_POINT_SLIDER_UPDATE, this._onDataPointSliderUpdate);
-
-        TMCDataStore.addChangeListener(Events.DISPLAY_TMC_DATA, this._onDisplayTMCdata);
-        TMCDataStore.addChangeListener(Events.REMOVE_TMC_DATA, this._onRemoveTMCdata);
-
         RouteStore.addChangeListener(Events.ROUTE_CREATED, this._onRouteCreated);
+        RouteStore.addChangeListener(Events.INTERSECTS_CREATED, this._onIntersectsCreated);
         RouteStore.addChangeListener(Events.ROUTE_LOADED, this._onRouteLoaded);
 
         this.state.popup.init(d3.select("#NPMRDS-map-div"));
@@ -172,29 +133,16 @@ var MapView = React.createClass({
     },
 
     componentWillUnmount: function() {
-        GeoStore.removeChangeListener(Events.COUNTY_CHANGE, this._onCountyChange);
-        GeoStore.removeChangeListener(Events.STATE_CHANGE, this._onStateChange);
-
-        UsageDataStore.removeChangeListener(Events.DATA_POINT_SLIDER_UPDATE, this._onDataPointSliderUpdate);
-
-        TMCDataStore.removeChangeListener(Events.DISPLAY_TMC_DATA, this._onDisplayTMCdata);
-        TMCDataStore.removeChangeListener(Events.REMOVE_TMC_DATA, this._onRemoveTMCdata);
 
         RouteStore.removeChangeListener(Events.ROUTE_CREATED, this._onRouteCreated);
+        RouteStore.removeChangeListener(Events.INTERSECTS_CREATED, this._onIntersectsCreated);
         RouteStore.removeChangeListener(Events.ROUTE_LOADED, this._onRouteLoaded);
 
         this.state.input.close();
     },
 
-    _onDisplayTMCdata: function(tmc) {
-//console.log("DisplayTMCdata", data.tmc)
-    },
-
-    _onRemoveTMCdata: function(tmc) {
-//console.log("RemoveTMCdata", data.tmc)
-    },
-
     _onStateChange: function() {
+        console.log("STATE_CHANGE");
         var newState = this.state;
 
         newState.layers.county.id++;
@@ -204,6 +152,7 @@ var MapView = React.createClass({
     },
 
     _onCountyChange: function() {
+        console.log("COUNTY_CHANGE");
         var newState = this.state;
 
         newState.layers.roads.id++;
@@ -214,38 +163,9 @@ var MapView = React.createClass({
 
         roadPaths = null;
 
-        // reset to state view if when last county is deselected
         if (!newState.layers.roads.geo.features.length) {
             this._onStateChange();
         }
-    },
-
-    _onDataPointSliderUpdate: function() {
-
-        if (!roadPaths) {
-            var newState = this.state;
-
-            newState.layers.roads.id++;
-            newState.layers.roads.geo.features = GeoStore.getLoadedRoads();
-            newState.layers.roads.options.zoomOnLoad = false;
-
-            this.setState(newState);
-
-            roadPaths = d3.selectAll(".roads")
-                .datum(function() {
-                    var path = d3.select(this),
-                        match = path.attr("class").match(/id-(\w+) tmc-(\w+)/),
-                        linkID = +match[1],
-                        tmc = match[2];
-                    return {
-                        properties: {
-                            linkID:linkID,
-                            tmc:tmc
-                        }
-                    };
-                });
-        }
-        roadPaths.attr("stroke", linkShader);
     },
 
     _onRouteLoaded: function(points) {
@@ -384,4 +304,4 @@ var MapView = React.createClass({
 
 });
 
-module.exports = MapView;
+module.exports = RouteCreation;

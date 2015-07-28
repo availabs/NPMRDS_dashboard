@@ -95,8 +95,8 @@ var ControlPanel = React.createClass({
                 }
             })
         params.weekdays = weekdays;
-        
-        console.log('<ControlPanel.getParams> params:', params);
+
+//console.log('<ControlPanel.getParams> params:', params);
 
         if (!this.state.loading) {
             ViewActionsCreator.setControlPanelParams(params);

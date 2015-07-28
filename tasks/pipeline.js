@@ -15,6 +15,7 @@
 // (if you're using LESS with the built-in default config, you'll want
 //  to change `assets/styles/importer.less` instead.)
 var cssFilesToInject = [
+    'bower_components/components-font-awesome/css/font-awesome.min.css',
   'styles/white/application.css',
   'styles/NPMRDS_CSS.css',
   'bower_components/leaflet/dist/leaflet.css'
@@ -25,7 +26,7 @@ var cssFilesToInject = [
 // (uses Grunt-style wildcard/glob/splat expressions)
 var jsFilesToInject = [
 
-  
+
   // Dependencies like sails.io.js, jQuery, or Angular
   // are brought in here
   //'js/dependencies/**/*.js',

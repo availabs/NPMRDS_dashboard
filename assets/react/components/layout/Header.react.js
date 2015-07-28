@@ -1,6 +1,8 @@
 var React = require('react'),
     Link = require('react-router').Link,
-    
+
+    LoadingIndicator = require("../mapView/LoadingIndicator.react"),
+
     // -- Stores
     UserStore = require('../../stores/UserStore');
 
@@ -30,47 +32,57 @@ var Header = React.createClass({
     render: function() {
         var padding = {"marginRight": "10px"}
         return (
-            <header className="page-header">
-                <div className="navbar">
-                    <ul className="nav navbar-nav navbar-right pull-right">
-                        <li className="hidden-xs dropdown">
-                            <a href="#" title="Links" id="npmrds-links" className="dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
-                                <span className="glyphicon glyphicon-th-list" />
-                            </a>
-                            <ul className="dropdown-menu account" role="menu">
-                                <li role="presentation">
-                                    <a href="/#/mapView">
-                                        <span style={padding} className="glyphicon glyphicon-picture" />
-                                        NPMRDS Map
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
-                        
-                        <li className="hidden-xs dropdown">
-                            <a href="#" title="Account" id="account" className="dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
-                                <i className="glyphicon glyphicon-user"></i>
-                            </a>
-                            <ul id="account-menu" className="dropdown-menu account" role="menu">
-                                <li role="presentation" className="account-picture">
-                                    {this.state.sessionUser.name}
-                                </li>
-                                <li role="presentation">
-                                    <a href="/#/user/settings">
-                                        <i style={padding} className="glyphicon glyphicon-cog"></i>
-                                        Settings
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
-
-                        <li className="hidden-xs">
-                            <a href="/logout" title="Logout">
-                                <i className="glyphicon glyphicon-log-out" />
-                            </a>
-                        </li>
-                    </ul>
+            <header className="page-header row">
+                <div className="col-lg-2"/>
+                
+                <div className="col-lg-2">
+                    <LoadingIndicator />
                 </div>
+
+                <div className="col-lg-7">
+                    <div className="navbar">
+                        <ul className="nav navbar-nav navbar-right pull-right">
+                            <li className="hidden-xs dropdown">
+                                <a href="#" title="Links" id="npmrds-links" className="dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                                    <span className="glyphicon glyphicon-th-list" />
+                                </a>
+                                <ul className="dropdown-menu account" role="menu">
+                                    <li role="presentation">
+                                        <a href="/#/mapView">
+                                            <span style={padding} className="glyphicon glyphicon-picture" />
+                                            NPMRDS Map
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+
+                            <li className="hidden-xs dropdown">
+                                <a href="#" title="Account" id="account" className="dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                                    <i className="glyphicon glyphicon-user"></i>
+                                </a>
+                                <ul id="account-menu" className="dropdown-menu account" role="menu">
+                                    <li role="presentation" className="account-picture">
+                                        {this.state.sessionUser.name}
+                                    </li>
+                                    <li role="presentation">
+                                        <a href="/#/user/settings">
+                                            <i style={padding} className="glyphicon glyphicon-cog"></i>
+                                            Settings
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+
+                            <li className="hidden-xs">
+                                <a href="/logout" title="Logout">
+                                    <i className="glyphicon glyphicon-log-out" />
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div className="col-lg-1"/>
             </header>
         );
     }
