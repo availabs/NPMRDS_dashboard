@@ -52,6 +52,10 @@ var Header = React.createClass({
                                             <span style={padding} className="glyphicon glyphicon-picture" />
                                             NPMRDS Map
                                         </a>
+                                        <a href="/#/routecreation">
+                                            <span style={padding} className="glyphicon glyphicon-road" />
+                                            Route Creation
+                                        </a>
                                     </li>
                                 </ul>
                             </li>
