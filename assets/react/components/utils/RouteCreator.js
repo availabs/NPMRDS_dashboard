@@ -60,6 +60,7 @@ function RouteCreator() {
 			type: "FeatureCollection",
 			features: []
 		}
+console.log("<RouteCreator::makeRoute>", result);
 
 		result.response.route[0].leg.forEach(function(leg) {
 			leg.link.forEach(function(link) {
@@ -82,6 +83,7 @@ function RouteCreator() {
 				routeCollection.features.push(feature);
 			});
 		});
+
 		return routeCollection;
 	}
 }
