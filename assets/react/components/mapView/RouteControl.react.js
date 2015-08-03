@@ -69,46 +69,11 @@ var RoutePanel = React.createClass({
         this.setState(state);
     },
 
-	saveRoute: function() {
-		var name = d3.select("#routeName").property("value").trim();
-
-		if (!checkRoute()) {
-			alert("You must create a route with at least 2 points.");
-			return;
-		}
-
-		var regex = /^[_a-zA-Z][\w ]{4,}/;
-		if (!regex.test(name)) {
-			alert("Please give your route a name of at least 5 characters, starting with a letter or underscore.");
-			return;
-		}
-
-        var data = {
-            owner: UserStore.getSessionUser().id,
-            name: name,
-            points:  RouteStore.getRouteData().points
-        }
-        SailsWebApi.saveRoute(data);
-	},
     loadRoute: function(data) {
-        var name = d3.select("#savedRoutes").property("value").trim();
-
-        var route = this.state.savedRoutes.reduce(function(a,c) { return c.name == name ? c : a; }, {});
-console.log(name, route, this.state.savedRoutes);
-        d3.select("#routeName").property("value", name);
+        var name = d3.select("#savedRoutes").property("value").trim(),
+            route = this.state.savedRoutes.reduce(function(a,c) { return c.name == name ? c : a; }, {});
 
         SailsWebApi.loadRoute(route);
-    },
-
-    loadRouteData: function() {
-		var name = d3.select("#routeName").property("value").trim();
-
-		if (!checkRoute()) {
-			alert("You must create a route with at least 2 points.");
-			return;
-		}
-        var tmcs = this.state.savedRoutes.reduce(function(a, c) { return c.name == name ? c.tmc_codes : a; }, []);
-        TMCDataStore.addTMC(tmcs);
     },
 
     render: function() {
@@ -122,20 +87,9 @@ console.log(name, route, this.state.savedRoutes);
           	<section className="widget">
                 <header>
                     <h4>Route Control</h4>
-                    <p>Create and save routes</p>
+                    <p>Load saved routes</p>
                 </header>
 	            <div className="body">
-                    <div className="form-group">
-                        <label htmlFor="routeName">Route Name</label>
-                        <div className="input-group">
-                            <input id="routeName" className='form-control' type="text" color="#000"/>
-                        </div>
-                    </div>
-	                <div className="form-group">
-	                    <div className="form-group">
-	                        <div className="NPMRDS-submit NPMRDS-label" onClick={this.saveRoute}>Save Route</div>
-	                    </div>
-	                </div>
                     <div className="form-group">
                         <label htmlFor="savedRoutes">Saved Routes</label>
                         <select id="savedRoutes" className="form-control" onChange={this.loadRoute}>
@@ -143,11 +97,6 @@ console.log(name, route, this.state.savedRoutes);
                             {options}
                         </select>
                     </div>
-	                <div className="form-group">
-	                    <div className="form-group">
-	                        <div id="NPMRDS-RP-submit" className="NPMRDS-submit NPMRDS-label" onClick={this.loadRouteData}>Load Data</div>
-	                    </div>
-	                </div>
 	            </div>
             </section>
     	)

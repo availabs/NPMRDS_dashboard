@@ -12,6 +12,7 @@ module.exports = {
 	},
 
 	monthlyHoursDataLoaded: function(id, data) {
+		rawData.flow = flow;
 	    AppDispatcher.handleViewAction({
 	    	type: ActionTypes.MONTHLY_HOURS_DATA_LOADED,
 			id: id,

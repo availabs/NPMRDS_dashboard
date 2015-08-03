@@ -37,9 +37,7 @@ var React = require('react'),
     TMCsAllTime = require("../components/mapView/TMCsAllTime_Chart.react"),
     TMCMonthly = require("../components/mapView/TMCMonthly_Graph.react"),
 
-    TMCMonthly_Aggregated = require("../components/mapView/TMCMonthly_Aggregated_Graph.react"),
-
-    Input = require("../utils/Input");
+    TMCMonthly_Aggregated = require("../components/mapView/TMCMonthly_Aggregated_Graph.react");
 
 var linkShader = UsageDataStore.linkShader(),
     roadPaths = null,
@@ -49,7 +47,6 @@ var MapView = React.createClass({
     getInitialState: function(){
         var mapView = this;
         return {
-            input: Input(),
             popup: Popup(),
             markers: [],
             layers:{
@@ -72,12 +69,7 @@ var MapView = React.createClass({
 
                             layer.on({
                                 click: function(e){
-                                    if (mapView.state.input.keyDown("ctrl")) {
-                                        mapView.addRoutePoint(e.latlng.lat, e.latlng.lng);
-                                    }
-                                    else {
-                                        GeoStore.toggleCounty(feature.id);
-                                    }
+                                    GeoStore.toggleCounty(feature.id);
                                 },
                                 mouseover: function(e){
                                     this.setStyle({
@@ -109,10 +101,8 @@ var MapView = React.createClass({
                                 color: linkShader(feature)
                             }
                         },
-                         onEachFeature: function (feature, layer) {
-
+                        onEachFeature: function (feature, layer) {
                             layer.on({
-
                                 click: function(e){
                                   if (feature.properties.tmc) {
                                     TMCDataStore.addTMC(feature.properties.tmc);
@@ -125,7 +115,6 @@ var MapView = React.createClass({
                                     mapView.state.popup.display(false);
                                 }
                             });
-
                         }
                     }
                 },
@@ -161,14 +150,6 @@ var MapView = React.createClass({
         RouteStore.addChangeListener(Events.ROUTE_LOADED, this._onRouteLoaded);
 
         this.state.popup.init(d3.select("#NPMRDS-map-div"));
-
-        this.state.input
-            .init()
-            .on("keyup", function(key) {
-                if (key == "ctrl") {
-                    RouteStore.calcRoute();
-                }
-            })
     },
 
     componentWillUnmount: function() {
@@ -182,8 +163,6 @@ var MapView = React.createClass({
 
         RouteStore.removeChangeListener(Events.ROUTE_CREATED, this._onRouteCreated);
         RouteStore.removeChangeListener(Events.ROUTE_LOADED, this._onRouteLoaded);
-
-        this.state.input.close();
     },
 
     _onDisplayTMCdata: function(tmc) {
@@ -221,7 +200,6 @@ var MapView = React.createClass({
     },
 
     _onDataPointSliderUpdate: function() {
-
         if (!roadPaths) {
             var newState = this.state;
 
@@ -260,53 +238,18 @@ var MapView = React.createClass({
                 return {
                     id: markerID,
                     latlng: point,
-                    options: { draggable: true },
+                    options: { draggable: false },
                     events: {
                         dragend: function(e) {
-                            RouteStore.addPoint(markerID, [e.target._latlng.lat, e.target._latlng.lng]);
-                            RouteStore.calcRoute();
                         },
                         click: function(e) {
-                            if (mapView.state.input.keyDown("ctrl")) {
-                                mapView.state.markers = mapView.state.markers.filter(function(d) { return d.id != markerID; });
-                                RouteStore.addPoint(markerID, []);
-                                RouteStore.calcRoute();
-                            }
                         }
                     }
                 };
             });
 
-        state.markers = markerData;
+        state.markers = markerData.slice(0, 1);
         RouteStore.calcRoute();
-        this.setState(state);
-    },
-
-    addRoutePoint: function(lat, lng) {
-        var mapView = this,
-            state = this.state,
-            markerID = UNIQUE_MARKER_IDs++,
-            markerData = {
-                id: markerID,
-                latlng: [lat, lng],
-                options: { draggable: true },
-                events: {
-                    dragend: function(e) {
-                        RouteStore.addPoint(markerID, [e.target._latlng.lat, e.target._latlng.lng]);
-                        RouteStore.calcRoute();
-                    },
-                    click: function(e) {
-                        if (mapView.state.input.keyDown("ctrl")) {
-                            mapView.state.markers = mapView.state.markers.filter(function(d) { return d.id != markerID; });
-                            RouteStore.addPoint(markerID, []);
-                            RouteStore.calcRoute();
-                        }
-                    }
-                }
-            };
-        RouteStore.addPoint(markerID, [lat, lng]);
-
-        state.markers.push(markerData);
         this.setState(state);
     },
 

@@ -4,6 +4,7 @@ var AppDispatcher = require('../dispatcher/AppDispatcher'),
     Constants = require('../constants/AppConstants'),
     EventEmitter = require('events').EventEmitter,
     assign = require('object-assign'),
+    d3 = require("d3"),
 
     SailsWebApi = require("../utils/api/SailsWebApi"),
 

@@ -71,6 +71,8 @@ module.exports.routes = {
 
   '/routes/brief/year/:tmc_array': 'routedata.getBriefYear',
 
+  '/routes/brief/getdata/:date/:tmcArray': 'routedata.getBriefData',
+
   /**
   * user preferences saving and loading
   */

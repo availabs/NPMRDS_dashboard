@@ -347,6 +347,60 @@ module.exports = {
                 res.ok(data);
             }
         })
+    },
+    getBriefData: function(req, res) {
+        var date = req.param("date"),
+            hours = req.param("hours"),
+            weekdays = req.param("weekdays"),
+            tmcArray = req.param("tmcArray");
+
+        var monthRegex = /\d{6}/,
+            dayRegex = /\d{8}/;
+
+        if (monthRegex.test(date)) {
+            var resolution = "month";
+        }
+        else if (dayRegex.test(date)) {
+            var resolution = "day";
+        }
+
+        var _RESOLUTION_,
+            _DATE_,
+            _HOURS_ = "";
+
+        weekdays = weekdays || ["monday", "tuesday", "wednesday", "thursday", "friday"];
+
+        var sql = "SELECT tmc, _RESOLUTION_ AS resolution, sum(travel_time_all) AS sum, count(*) AS count "+
+                    "FROM [HERE_traffic_data.HERE_NY] "+
+                    " WHERE _DATE_ = "+date+
+                    " AND tmc IN (" +tmcArray.map(function(d) { return "'"+d+"'"; }).join()+ ") "+
+                    "AND weekday IN (" +weekdays.map(function(d) { return "'"+d+"'"; }).join()+ ") "+
+                    "_HOURS_ "+
+                    "GROUP BY tmc, resolution, travel_time_all";
+
+        switch (resolution) {
+            case "month":
+                _RESOLUTION = "date as resolution";
+                _DATE_ = "INTEGER(date/100)";
+                break;
+
+            case "day":
+                _RESOLUTION_ = "INTEGER(epoch/12) as resolution";
+                _DATE_ = "date";
+                break;
+
+            default:
+                res.badRequest("Invalid date parameter supplied.");
+                return;
+        }
+
+        if (hours) {
+            _HOURS_ = "AND epoch >= " +hours[0]+ " AND epoch < " +hours[1];
+        }
+
+        sql = sql.replace("_RESOLUTION_", _RESOLUTION)
+                    .replace("_DATE_", _DATE_)
+                    .replace("_HOURS_", _HOURS_);
     }
 }
 

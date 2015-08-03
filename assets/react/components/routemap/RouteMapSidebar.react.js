@@ -153,13 +153,13 @@ module.exports = React.createClass({
 		MonthlyGraphData.data.forEach(function(d, i) {
 			var graph = MonthlyGraphData.graphs[i],
 				url = '/routes/brief/month/'+graph.type()+'/'+month+'/';
+
 			d3.json(url+TMCs, function(err, res) {
 				if (err) {
 					console.log(err);
 				}
 				else {
 					var nested = nestData(res),
-
 						data = makeRoute(nested),
 
 						maxY = d3.max(data, function(d) { return d.values.y; }),
@@ -174,7 +174,7 @@ module.exports = React.createClass({
 					this.graphs.forEach(function(d) { d(); });
 				}
 			}.bind(MonthlyGraphData));
-		}, this);
+		});
 	},
 	loadGraphs: function(collection) {
 		var length = collection.length,
@@ -206,7 +206,6 @@ module.exports = React.createClass({
 				}
 				else {
 					var nested = nestData(res),
-
 						data = makeRoute(nested),
 
 						maxY = d3.max(data, function(d) { return d.values.y; }),
@@ -221,7 +220,7 @@ module.exports = React.createClass({
 					this.graphs.forEach(function(d) { d(); });
 				}
 			}.bind(MonthlyGraphData));
-		}, this);
+		});
 	},
 	componentWillReceiveProps: function(newProps, newState) {
 		if (newProps.routeCollection && newProps.routeCollection != this.props.routeCollection) {

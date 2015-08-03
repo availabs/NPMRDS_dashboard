@@ -72,7 +72,7 @@ var RouteMapper = React.createClass({
             var monthData = data.data.reduce(function(a, c) { return c.key == data.month ? c : a; });
         }
 
-        var flow = this.state.routeCollection.length / this.state.routeCollection.speed * 60,
+        var flow = this.state.routeCollection.length / (this.state.routeCollection.speed*0.7) * 60,
 
             avgMonthly = d3.sum(monthData.values, function(d) { return d.y; }) / monthData.values.length,
             congestion = avgMonthly / flow,
@@ -233,16 +233,6 @@ function makeHeading(data) {
     }
     return heading;
 }
-
-/*
-var monthData = {
-    avgMonthly: avgMonthly,
-    avgMonthlyAM: avgMonthlyAM,
-    AMcongestion: AMcongestion,
-    avgMonthlyPM: avgMonthlyPM,
-    PMcongestion: PMcongestion
-}
-*/
 
 function makeMonthData(data) {
     if (!data) return null;
