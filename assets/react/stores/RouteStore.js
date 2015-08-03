@@ -94,8 +94,9 @@ RouteStore.dispatchToken = AppDispatcher.register(function(payload) {
         case ActionTypes.ROUTE_SAVED:
 // console.log("RouteStore.ROUTE_SAVED");
             RouteStore.emitEvent(Events.ROUTE_SAVED);
-            var prefs = action.prefs,
+            var prefs = UserStore.getPreferences(),
                 userId = UserStore.getSessionUser().id;
+            SailsWebApi.getSavedRoutes(userId, prefs.mpo_name);
             break;
 
         case ActionTypes.ROUTE_LOADED:

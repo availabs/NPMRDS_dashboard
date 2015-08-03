@@ -11,16 +11,7 @@ var React = require('react'),
     //--Components
     LeafletMap = require("../components/utils/LeafletMap.react"),
 
-
-    ControlPanel = require("../components/mapView/ControlPanel.react"),
-    RouteControl = require("../components/mapView/RouteControl.react"),
-    DataPointSlider = require("../components/mapView/DataPointSlider.react"),
-
-    NPMRDSLegend = require("../components/mapView/NPMRDSLegend.react"),
-    DataView = require("../components/mapView/NPMRDSDataView.react"),
-
-    // NPMRDSTabPanel = require("../components/mapView/NPMRDSTabPanel.react"),
-    // NPMRDSTabSelector = require("../components/mapView/NPMRDSTabSelector.react"),
+    RouteCreationControl = require("../components/routecreation/RouteCreationControl.react"),
 
     // stores
     GeoStore = require("../stores/GeoStore"),
@@ -32,18 +23,9 @@ var React = require('react'),
 
     ViewActionsCreator = require("../actions/ViewActionsCreator"),
 
-    // mapView components
-    TMCsOverTime = require("../components/mapView/TMCsOverTime_Graph.react"),
-    TMCsAllTime = require("../components/mapView/TMCsAllTime_Chart.react"),
-    TMCMonthly = require("../components/mapView/TMCMonthly_Graph.react"),
-
-    TMCMonthly_Aggregated = require("../components/mapView/TMCMonthly_Aggregated_Graph.react"),
-
     Input = require("../utils/Input");
 
-var linkShader = UsageDataStore.linkShader(),
-    roadPaths = null,
-    UNIQUE_MARKER_IDs = 0;
+var UNIQUE_MARKER_IDs = 0;
 
 var RouteCreation = React.createClass({
     getInitialState: function(){
@@ -86,7 +68,7 @@ var RouteCreation = React.createClass({
                                     });
                                 },
                                 mouseout: function(e){
-                                      this.setStyle({
+                                    this.setStyle({
                                         weight:1,
                                         color:'#004'
                                     });
@@ -96,7 +78,39 @@ var RouteCreation = React.createClass({
 
                         }
                     }
-                }
+                },
+                roads:{
+                    id:0,
+                    geo:{type:'FeatureCollection',features:[]},
+                    options:{
+                        zoomOnLoad:true,
+                        style:function (feature) {
+                            return {
+                                className: 'roads id-'+feature.properties.linkID+' tmc-'+feature.properties.tmc,
+                                stroke:true,
+                                color: "#000"//linkShader(feature)
+                            }
+                        },
+                         onEachFeature: function (feature, layer) {
+
+                            layer.on({
+
+                                click: function(e){
+                                  if (feature.properties.tmc) {
+                                    TMCDataStore.addTMC(feature.properties.tmc);
+                                  }
+                                },
+                                mouseover: function(e){
+                                    mapView.state.popup(feature);
+                                },
+                                mouseout: function(e){
+                                    mapView.state.popup.display(false);
+                                }
+                            });
+
+                        }
+                    }
+                },
                 route: {
                     id: 0,
                     geo: { type: "FeatureCollection", features: [] },
@@ -117,8 +131,10 @@ var RouteCreation = React.createClass({
     componentDidMount: function() {
         RouteStore.clearPoints();
 
+        GeoStore.addChangeListener(Events.COUNTY_CHANGE, this._onCountyChange);
+        GeoStore.addChangeListener(Events.STATE_CHANGE, this._onStateChange);
+
         RouteStore.addChangeListener(Events.ROUTE_CREATED, this._onRouteCreated);
-        RouteStore.addChangeListener(Events.INTERSECTS_CREATED, this._onIntersectsCreated);
         RouteStore.addChangeListener(Events.ROUTE_LOADED, this._onRouteLoaded);
 
         this.state.popup.init(d3.select("#NPMRDS-map-div"));
@@ -133,16 +149,16 @@ var RouteCreation = React.createClass({
     },
 
     componentWillUnmount: function() {
+        GeoStore.removeChangeListener(Events.COUNTY_CHANGE, this._onCountyChange);
+        GeoStore.removeChangeListener(Events.STATE_CHANGE, this._onStateChange);
 
         RouteStore.removeChangeListener(Events.ROUTE_CREATED, this._onRouteCreated);
-        RouteStore.removeChangeListener(Events.INTERSECTS_CREATED, this._onIntersectsCreated);
         RouteStore.removeChangeListener(Events.ROUTE_LOADED, this._onRouteLoaded);
 
         this.state.input.close();
     },
 
     _onStateChange: function() {
-        console.log("STATE_CHANGE");
         var newState = this.state;
 
         newState.layers.county.id++;
@@ -152,7 +168,6 @@ var RouteCreation = React.createClass({
     },
 
     _onCountyChange: function() {
-        console.log("COUNTY_CHANGE");
         var newState = this.state;
 
         newState.layers.roads.id++;
@@ -160,8 +175,6 @@ var RouteCreation = React.createClass({
         newState.layers.roads.options.zoomOnLoad = true;
 
         this.setState(newState);
-
-        roadPaths = null;
 
         if (!newState.layers.roads.geo.features.length) {
             this._onStateChange();
@@ -245,58 +258,11 @@ var RouteCreation = React.createClass({
                 <div className="row">
 
                     <div className="col-lg-2">
-                        <section>
-                            <header>
-                                <ul className="nav nav-tabs">
-                                    <li className="active">
-                                        <a href="#control-panel" data-toggle="tab" aria-expanded="true">
-                                            Main
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a href="#route-panel" data-toggle="tab" aria-expanded="false">
-                                            Routes
-                                        </a>
-                                    </li>
-                                </ul>
-                            </header>
-                            <div className="body tab-content">
-                                <div id="control-panel" className="tab-pane clearfix active">
-                                    <ControlPanel />
-                                </div>
-                                <div id="route-panel" className="tab-pane">
-                                    <RouteControl />
-                                </div>
-                            </div>
-                        </section>
+                        <RouteCreationControl />
                     </div>
                     <div className="col-lg-10" id="NPMRDS-map-div">
                         <LeafletMap height="85%" layers={this.state.layers} markers={this.state.markers} />
-                        <DataView />
-                        <NPMRDSLegend />
                     </div>
-                </div>
-
-                <div className="row">
-                    <div className="col-log-10">
-                        <DataPointSlider />
-                    </div>
-                </div>
-
-                <div vlassName="row">
-                    <TMCMonthly_Aggregated/>
-                </div>
-
-                <div className="row">
-                    <TMCMonthly/>
-                </div>
-
-                <div className="row">
-                    <TMCsAllTime/>
-                </div>
-
-                <div className="row">
-                    <TMCsOverTime/>
                 </div>
             </div>
         );

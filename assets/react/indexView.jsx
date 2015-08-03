@@ -20,6 +20,7 @@ var React = require('react'),
     LandingPage = require('./pages/LandingPage.react'),
     UserSettings = require('./pages/UserSettings.react'),
     RouteMapper = require('./pages/RouteMapper.react'),
+    RouteCreation = require("./pages/RouteCreation.react"),
 
 // --- Server API
     sailsWebApi = require('./utils/api/SailsWebApi.js');
@@ -36,6 +37,7 @@ var routes = (
     <Route name="userAdmin" path="admin/users"  handler={UserAdmin} />
     <Route name="settings" path="user/settings" handler={UserSettings} />
     <Route name="mapper" path="routemap/:id" handler={RouteMapper} />
+    <Route name="router" path="routecreation" handler={RouteCreation} />
     <DefaultRoute handler={LandingPage}/>
   </Route>
 );
