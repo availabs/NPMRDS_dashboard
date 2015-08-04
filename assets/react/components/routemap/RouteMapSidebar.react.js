@@ -28,12 +28,9 @@ var MonthlyGraphData = {
 	domain: [0, 0],
 	yScale: BarGraphsYScale,
 	data: [
-		{ url: '/routes/brief/recent/month/all/',
-			title: 'Daily All', id: 'daily', type: "All" },
-		{ url: '/routes/brief/recent/month/AM/',
-			title: 'Daily AM', id: 'dailyAM', type: "AM" },
-		{ url: '/routes/brief/recent/month/PM/',
-			title: 'Daily PM', id: 'dailyPM', type: "PM" }
+		{ title: 'Daily All', id: 'daily', type: "All" },
+		{ title: 'Daily AM', id: 'dailyAM', type: "AM" },
+		{ title: 'Daily PM', id: 'dailyPM', type: "PM" }
 	],
 	graphs: []
 }
@@ -92,7 +89,7 @@ module.exports = React.createClass({
 	},
 	loadDailyGraphData: function(d, graph) {
 		var date = new Date(Math.round(d.key/10000), Math.round(d.key/100)%100-1, d.key%100);
-		DailyGraph.data = { url: '/routes/brief/day/'+graph.type()+'/'+d.key+"/",
+		DailyGraph.data = { url: '/routes/brief/'+d.key+'/',
 			title: 'Hourly '+graph.type()+" for "+date.toDateString(), id: 'hourly', type: graph.type() };
 		DailyGraph.graph
 			.title(DailyGraph.data.title)
@@ -105,28 +102,41 @@ module.exports = React.createClass({
 
 		BarGraphsYScale.domain(MonthlyGraphData.domain);
 
-		d3.json(DailyGraph.data.url+TMCs, function(err, res) {
-			if (err) {
-				console.log(err);
-			}
-			else {
-				var nested = nestData(res),
+		var data = {};
+		switch (graph.type()) {
+			case "AM":
+				data.hours = [72, 108];
+				break;
+			case "PM":
+				data.hours = [180, 216];
+				break;
+			default:
+				break;
+		}
 
-					flow = length / speed * 60,
-					data = makeRoute(nested),
+		d3.json(DailyGraph.data.url+TMCs)
+			.post(JSON.stringify(data), function(err, res) {
+				if (err) {
+					console.log(err);
+				}
+				else {
+					var nested = nestData(res),
 
-					maxY = d3.max(data, function(d) { return d.values.y; }),
-					domain = this.yScale.domain();
+						flow = length / speed * 60,
+						data = makeRoute(nested),
 
-				this.yScale.domain([0, Math.max(maxY, domain[1])]);
+						maxY = d3.max(data, function(d) { return d.values.y; }),
+						domain = this.yScale.domain();
 
-				this.graph
-					.flowLine(flow)
-					.data(data)();
+					this.yScale.domain([0, Math.max(maxY, domain[1])]);
 
-				MonthlyGraphData.graphs.forEach(function(d) { d(); });
-			}
-		}.bind(DailyGraph));
+					this.graph
+						.flowLine(flow)
+						.data(data)();
+
+					MonthlyGraphData.graphs.forEach(function(d) { d(); });
+				}
+			}.bind(DailyGraph));
 	},
 	resetGraphs: function(d, graph) {
 		graph.data([])
@@ -152,28 +162,25 @@ module.exports = React.createClass({
 
 		MonthlyGraphData.data.forEach(function(d, i) {
 			var graph = MonthlyGraphData.graphs[i],
-				url = '/routes/brief/month/'+graph.type()+'/'+month+'/';
+				data = {},
+				url = '/routes/brief/'+month+'/';
 
-			d3.json(url+TMCs, function(err, res) {
-				if (err) {
-					console.log(err);
-				}
-				else {
-					var nested = nestData(res),
-						data = makeRoute(nested),
 
-						maxY = d3.max(data, function(d) { return d.values.y; }),
-						domain = this.yScale.domain();
+// AM Peak: HOURS [6-9)
+// PM Peak: HOURS [3-6)
+			switch (graph.type()) {
+				case "AM":
+					data.hours = [72, 108];
+					break;
+				case "PM":
+					data.hours = [180, 216];
+					break;
+				default:
+					break;
+			}
 
-					this.yScale.domain([0, Math.max(maxY, domain[1])]);
-					this.domain = this.yScale.domain();
-
-					this.graphs[i]
-						.flowLine(flow)
-						.data(data);
-					this.graphs.forEach(function(d) { d(); });
-				}
-			}.bind(MonthlyGraphData));
+			d3.json(url+TMCs)
+				.post(JSON.stringify(data), monthlyGraphRequest.call(MonthlyGraphData, flow, i));
 		});
 	},
 	loadGraphs: function(collection) {
@@ -200,26 +207,25 @@ module.exports = React.createClass({
 		BarGraphsYScale.domain([0, 0]);
 
 		MonthlyGraphData.data.forEach(function(d, i) {
-			d3.json(d.url+TMCs, function(err, res) {
-				if (err) {
-					console.log(err);
-				}
-				else {
-					var nested = nestData(res),
-						data = makeRoute(nested),
+			var graph = MonthlyGraphData.graphs[i],
+				data = {},
+				url = '/routes/brief/recent/';
 
-						maxY = d3.max(data, function(d) { return d.values.y; }),
-						domain = this.yScale.domain();
+// AM Peak: HOURS [6-9)
+// PM Peak: HOURS [3-6)
+			switch (graph.type()) {
+				case "AM":
+					data.hours = [72, 108];
+					break;
+				case "PM":
+					data.hours = [180, 216];
+					break;
+				default:
+					break;
+			}
 
-					this.yScale.domain([0, Math.max(maxY, domain[1])]);
-					this.domain = this.yScale.domain();
-
-					this.graphs[i]
-						.flowLine(flow)
-						.data(data);
-					this.graphs.forEach(function(d) { d(); });
-				}
-			}.bind(MonthlyGraphData));
+			d3.json(url+TMCs)
+				.post(JSON.stringify(data), monthlyGraphRequest.call(MonthlyGraphData, flow, i));
 		});
 	},
 	componentWillReceiveProps: function(newProps, newState) {
@@ -252,6 +258,30 @@ module.exports = React.createClass({
 		)
 	}
 })
+
+function monthlyGraphRequest(flow, i) {
+	return function(err, res) {
+		if (err) {
+			console.log(err);
+		}
+		else {
+			var nested = nestData(res),
+				data = makeRoute(nested),
+
+				maxY = d3.max(data, function(d) { return d.values.y; }),
+				domain = this.yScale.domain();
+
+			this.yScale.domain([0, Math.max(maxY, domain[1])]);
+			this.domain = this.yScale.domain();
+
+			this.graphs[i]
+				.flowLine(flow)
+				.data(data);
+			this.graphs.forEach(function(d) { d(); });
+		}
+	}.bind(this);
+}
+
 function nestMHData(data) {
 	var schema = data.schema,
 		schemaMap = {};
@@ -293,11 +323,11 @@ function nestData(data) {
 	})
 	return d3.nest()
 		.key(function(d) { return d[schemaMap["tmc"]]; })
-		.key(function(d) { return d[schemaMap["date"]]; })
+		.key(function(d) { return d[schemaMap["date"]||schemaMap["resolution"]]; })
 		.sortKeys(d3.ascending)
 		.rollup(function(grp) {
 			return {
-				x: +grp[0][schemaMap["date"]],
+				x: +grp[0][schemaMap["date"]||schemaMap["resolution"]],
 				y: d3.sum(grp, function(d) { return +d[schemaMap["sum"]]; })/d3.sum(grp, function(d) { return +d[schemaMap["count"]]; })
 			}
 		})
