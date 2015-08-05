@@ -273,15 +273,15 @@ module.exports = function() {
 
 	function hourFormat(num) {
 		if (num == 0 || num == 24) {
-			return "12am";
+			return "12-12:59am";
 		}
 		if (num == 12) {
-			return "12pm";
+			return "12-12:59pm";
 		}
 		if (num > 12) {
-			return (num-12)+"pm";
+			return (num-12)+"-"+(num-12)+":59pm";
 		}
-		return num+"am";
+		return num+"-"+num+":59am";
 	}
 
 	graph.hide = function() {
@@ -355,12 +355,12 @@ module.exports = function() {
 			return data;
 		}
 		data = d;
-		data.forEach(function(month) {
-			month.values.push({
-				x: month.values.length,
-				y: month.values[0].y
-			})
-		})
+		// data.forEach(function(month) {
+		// 	month.values.push({
+		// 		x: month.values.length,
+		// 		y: month.values[0].y
+		// 	})
+		// })
 		return graph;
 	}
 	// margin params:

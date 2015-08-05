@@ -245,17 +245,17 @@ console.log("update PM", bounds);
 
 			var AMscale = d3.scale.linear()
 				.domain([domain[0], Math.floor(domain[1]/2)])
-				.range([range[0], scale(12)]);
+				.range([range[0], scale(11)]);
 			AMbrushSelector
 				.xScale(AMscale)
-				.extent([6, 9]);
+				.extent([6, 8]);
 
 			var PMscale = d3.scale.linear()
 				.domain([Math.ceil(domain[1]/2), domain[1]])
 				.range([scale(12), range[1]]);
 			PMbrushSelector
 				.xScale(PMscale)
-				.extent([15, 18]);
+				.extent([15, 17]);
 
 			d3.select("#monthly-hours-brush-selector")
 				.call(AMbrushSelector);
@@ -309,10 +309,12 @@ console.log("update PM", bounds);
 function configureDataType(type) {
 	switch (type) {
 		case "AM":
-			var hours = AMbrushSelector.extent() || [6, 9];
+			var hours = AMbrushSelector.extent() || [6, 8];
+			++hours[1];
 			return { hours: hours.map(function(d) { return d*12; }) };
 		case "PM":
-			var hours = PMbrushSelector.extent() || [15, 18];
+			var hours = PMbrushSelector.extent() || [15, 17];
+			++hours[1];
 			return { hours: hours.map(function(d) { return d*12; }) };
 		default:
 			return {};
