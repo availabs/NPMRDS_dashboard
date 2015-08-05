@@ -54,9 +54,12 @@ module.exports = function() {
 			lineGroup = svg.append("g");
 			xAxisGroup = group.append("g")
 				.attr("class", "x axis");
-			vGroup = svg.append("g")
 			yAxisGroup = group.append("g")
 				.attr("class", "y axis");
+			svg.append("g")
+				.attr("id","monthly-hours-brush-selector")
+				.attr("transform", "translate("+margin.left+",0)");
+			vGroup = svg.append("g");
 			monthSelector = svg.append("g");
 			width = svg.node().clientWidth;
 			height = svg.node().clientHeight;
@@ -80,7 +83,7 @@ module.exports = function() {
 		yAxisGroup.attr("transform", "translate(-5, 0)");
 
 		xScale.rangeRound([0, wdth])
-			.domain([0, 23]);
+			.domain([0, data[0].values.length-1]);
 
 		var extent = d3.extent(d3.merge(data.map(function(d) { return d3.extent(d.values, function(d) { return d.y; }); })));
 		// console.log("EXTENT", extent)
@@ -269,7 +272,7 @@ module.exports = function() {
     }
 
 	function hourFormat(num) {
-		if (num == 0) {
+		if (num == 0 || num == 24) {
 			return "12am";
 		}
 		if (num == 12) {
@@ -352,6 +355,12 @@ module.exports = function() {
 			return data;
 		}
 		data = d;
+		data.forEach(function(month) {
+			month.values.push({
+				x: month.values.length,
+				y: month.values[0].y
+			})
+		})
 		return graph;
 	}
 	// margin params:

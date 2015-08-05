@@ -4,10 +4,14 @@ var React = require('react'),
 
 	d3 = require("d3"),
 
+	RouteDataStore = require("../../stores/RouteDataStore"),
+
 	ViewActionsCreator = require("../../actions/ViewActionsCreator"),
 
 	LineGraph = require("./MonthlyHoursLineGraph"),
-	BarGraph = require("./RouteMapBarGraph");
+	BarGraph = require("./RouteMapBarGraph"),
+
+	BrushTimeSelector = require("./BrushTimeSelector");
 
 var margin = { left:30, bottom:5, top:15, right: 10 };
 
@@ -42,16 +46,67 @@ var DailyGraph = {
 	graph: null
 }
 
+var AMbrushSelector = BrushTimeSelector(),
+	PMbrushSelector = BrushTimeSelector();
+
 // AM Peak: HOURS [6-9)
 // PM Peak: HOURS [3-6)
 module.exports = React.createClass({
 	componentDidMount: function() {
 		this.initializeGraphs();
-		this.initializeBrush();
+
+		AMbrushSelector
+			.onChange(this.updateAM);
+		PMbrushSelector
+			.onChange(this.updatePM);
 	},
-	initializeBrush: function() {
-		var svg = d3.select("#monthly-hours").select("svg"),
-			brush = d3.brush();
+	updateAM: function(bounds) {
+		var collection = this.props.routeCollection,
+
+			length = collection.length,
+			speed = collection.speed,
+
+			flow = length / speed * 60,
+
+			TMCs = JSON.stringify(collection.tmc_codes);
+
+		BarGraphsYScale.domain([0, 0]);
+
+		MonthlyGraphData.data.forEach(function(d, i) {
+			var graph = MonthlyGraphData.graphs[i],
+				data = configureDataType(graph.type()),
+				url = '/routes/brief/'+RouteDataStore.getCurrentMonth()+'/';
+
+			if (graph.type() == "AM") {
+console.log("update AM", bounds);
+				d3.json(url+TMCs)
+					.post(JSON.stringify(data), monthlyGraphRequest.call(MonthlyGraphData, flow, i));
+			}
+		});
+	},
+	updatePM: function(bounds) {
+		var collection = this.props.routeCollection,
+
+			length = collection.length,
+			speed = collection.speed,
+
+			flow = length / speed * 60,
+
+			TMCs = JSON.stringify(collection.tmc_codes);
+
+		BarGraphsYScale.domain([0, 0]);
+
+		MonthlyGraphData.data.forEach(function(d, i) {
+			var graph = MonthlyGraphData.graphs[i],
+				data = configureDataType(graph.type()),
+				url = '/routes/brief/'+RouteDataStore.getCurrentMonth()+'/';
+
+			if (graph.type() == "PM") {
+console.log("update PM", bounds);
+				d3.json(url+TMCs)
+					.post(JSON.stringify(data), monthlyGraphRequest.call(MonthlyGraphData, flow, i));
+			}
+		});
 	},
 	initializeGraphs: function() {
 		var mhData = MonthlyHoursGraph.data;
@@ -183,6 +238,30 @@ module.exports = React.createClass({
 			ViewActionsCreator.monthlyHoursDataLoaded(collection.id, data);
 
 			MonthlyHoursGraph.graph.data(data)();
+
+			var scale = MonthlyHoursGraph.graph.xScale(),
+				domain = scale.domain(),
+				range = scale.range();
+
+			var AMscale = d3.scale.linear()
+				.domain([domain[0], Math.floor(domain[1]/2)])
+				.range([range[0], scale(12)]);
+			AMbrushSelector
+				.xScale(AMscale)
+				.extent([6, 9]);
+
+			var PMscale = d3.scale.linear()
+				.domain([Math.ceil(domain[1]/2), domain[1]])
+				.range([scale(12), range[1]]);
+			PMbrushSelector
+				.xScale(PMscale)
+				.extent([15, 18]);
+
+			d3.select("#monthly-hours-brush-selector")
+				.call(AMbrushSelector);
+
+			d3.select("#monthly-hours-brush-selector")
+				.call(PMbrushSelector);
 		})
 
 		BarGraphsYScale.domain([0, 0]);
@@ -230,9 +309,11 @@ module.exports = React.createClass({
 function configureDataType(type) {
 	switch (type) {
 		case "AM":
-			return { hours: [72, 108] };
+			var hours = AMbrushSelector.extent() || [6, 9];
+			return { hours: hours.map(function(d) { return d*12; }) };
 		case "PM":
-			return { hours: [180, 216] };
+			var hours = PMbrushSelector.extent() || [15, 18];
+			return { hours: hours.map(function(d) { return d*12; }) };
 		default:
 			return {};
 	}

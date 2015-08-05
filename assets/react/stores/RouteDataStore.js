@@ -33,6 +33,9 @@ var RouteDataStore = assign({}, EventEmitter.prototype, {
 
     getMonthlyHoursData: function(id) {
         return { data: MONTHLY_HOURS_DATA_CACHE[id], month: currentViewedMonth };
+    },
+    getCurrentMonth: function() {
+        return currentViewedMonth == -1 ? "recent" : currentViewedMonth;
     }
 })
 
