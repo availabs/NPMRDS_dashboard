@@ -47,6 +47,11 @@ var DailyGraph = {
 module.exports = React.createClass({
 	componentDidMount: function() {
 		this.initializeGraphs();
+		this.initializeBrush();
+	},
+	initializeBrush: function() {
+		var svg = d3.select("#monthly-hours").select("svg"),
+			brush = d3.brush();
 	},
 	initializeGraphs: function() {
 		var mhData = MonthlyHoursGraph.data;
@@ -102,17 +107,7 @@ module.exports = React.createClass({
 
 		BarGraphsYScale.domain(MonthlyGraphData.domain);
 
-		var data = {};
-		switch (graph.type()) {
-			case "AM":
-				data.hours = [72, 108];
-				break;
-			case "PM":
-				data.hours = [180, 216];
-				break;
-			default:
-				break;
-		}
+		var data = configureDataType(graph.type());
 
 		d3.json(DailyGraph.data.url+TMCs)
 			.post(JSON.stringify(data), function(err, res) {
@@ -162,22 +157,8 @@ module.exports = React.createClass({
 
 		MonthlyGraphData.data.forEach(function(d, i) {
 			var graph = MonthlyGraphData.graphs[i],
-				data = {},
+				data = configureDataType(graph.type()),
 				url = '/routes/brief/'+month+'/';
-
-
-// AM Peak: HOURS [6-9)
-// PM Peak: HOURS [3-6)
-			switch (graph.type()) {
-				case "AM":
-					data.hours = [72, 108];
-					break;
-				case "PM":
-					data.hours = [180, 216];
-					break;
-				default:
-					break;
-			}
 
 			d3.json(url+TMCs)
 				.post(JSON.stringify(data), monthlyGraphRequest.call(MonthlyGraphData, flow, i));
@@ -208,21 +189,8 @@ module.exports = React.createClass({
 
 		MonthlyGraphData.data.forEach(function(d, i) {
 			var graph = MonthlyGraphData.graphs[i],
-				data = {},
+				data = configureDataType(graph.type()),
 				url = '/routes/brief/recent/';
-
-// AM Peak: HOURS [6-9)
-// PM Peak: HOURS [3-6)
-			switch (graph.type()) {
-				case "AM":
-					data.hours = [72, 108];
-					break;
-				case "PM":
-					data.hours = [180, 216];
-					break;
-				default:
-					break;
-			}
 
 			d3.json(url+TMCs)
 				.post(JSON.stringify(data), monthlyGraphRequest.call(MonthlyGraphData, flow, i));
@@ -259,6 +227,16 @@ module.exports = React.createClass({
 	}
 })
 
+function configureDataType(type) {
+	switch (type) {
+		case "AM":
+			return { hours: [72, 108] };
+		case "PM":
+			return { hours: [180, 216] };
+		default:
+			return {};
+	}
+}
 function monthlyGraphRequest(flow, i) {
 	return function(err, res) {
 		if (err) {
@@ -323,11 +301,11 @@ function nestData(data) {
 	})
 	return d3.nest()
 		.key(function(d) { return d[schemaMap["tmc"]]; })
-		.key(function(d) { return d[schemaMap["date"]||schemaMap["resolution"]]; })
+		.key(function(d) { return d[schemaMap["resolution"]]; })
 		.sortKeys(d3.ascending)
 		.rollup(function(grp) {
 			return {
-				x: +grp[0][schemaMap["date"]||schemaMap["resolution"]],
+				x: +grp[0][schemaMap["resolution"]],
 				y: d3.sum(grp, function(d) { return +d[schemaMap["sum"]]; })/d3.sum(grp, function(d) { return +d[schemaMap["count"]]; })
 			}
 		})

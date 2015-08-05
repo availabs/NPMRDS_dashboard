@@ -311,6 +311,14 @@ module.exports = function() {
 		yAxis.scale(yScale);
 		return graph;
 	}
+	graph.xScale = function(x) {
+		if (!arguments.length) {
+			return xScale;
+		}
+		xScale = x;
+		xAxis.scale(xScale);
+		return graph;
+	}
 	graph.onClick = function(c) {
 		if (!arguments.length) {
 			return click;
