@@ -12,7 +12,7 @@ function HERE_API() {
 	here.calculateRoute = function(points, options) {
 		options = options || {};
 //http://route.st.nlp.nokia.com/routing/6.2/calculateroute.json
-		var baseURL = options.baseURL || "http://route.st.nlp.nokia.com",//"http://route.cit.api.here.com",
+		var baseURL = options.baseURL || "https://route.st.nlp.nokia.com",//"http://route.cit.api.here.com",
 			path = options.path || "/routing/7.2",
 			resource = "/calculateroute",
 			format = options.format || ".json",
@@ -36,6 +36,7 @@ function HERE_API() {
 	}
 	here.call = function(func) {
 		if (request) {
+console.log("<HERE_API::call> request:",request);
 			d3.json(request, func);
 		}
 		request = null;
