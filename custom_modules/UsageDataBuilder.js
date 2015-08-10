@@ -14,7 +14,7 @@ function UsageDataBuilder() {
 	*/
 		request.weekdays = request.weekdays || DEFUALT_WEEKDAYS;
 		request.weekdays = request.weekdays || DEFUALT_WEEKDAYS;
-		
+
 		if (request.type == "state") {
 			var sql = makeStateSQL(request);
 		}
@@ -128,11 +128,16 @@ function UsageDataBuilder() {
 	*/
         var sql = "SELECT lut.link_id AS link_id, here.tmc AS tmc, avg(here.travel_time_all) AS travel_time, "+
         			"atts.distance AS length, atts.direction AS travel_direction, lut.dir AS link_direction, "+
-        			" min(here.travel_time_all) AS freeflow "+
+        			" ff.free_flow AS freeflow "+
         			"_RESOLUTION_ "+
                     "FROM [HERE_traffic_data.HERE_NY] AS here "+
                         "JOIN EACH [NPMRDS_LUT.NPMRDS_LUT] AS lut ON here.TMC = lut.tmc "+
                         "JOIN EACH [NPMRDS_LUT.TMC_ATTRIBUTES] AS atts ON here.TMC = atts.tmc "+
+						"JOIN (SELECT here.tmc AS tmc, NTH(70, QUANTILES(here.travel_time_all)) AS free_flow "+
+								"FROM [HERE_traffic_data.HERE_NY] AS here "+
+								"JOIN EACH [NPMRDS_LUT.NPMRDS_LUT] AS lut ON here.TMC = lut.tmc "+
+								"WHERE lut.link_id IN ("+ request.links.join() +") "+
+								"GROUP BY tmc) AS ff ON here.TMC = ff.tmc "+
                     "WHERE lut.link_id IN ("+ request.links.join() +") "+
                     "AND weekday IN ("+request.weekdays.map(function(d) { return "'"+d+"'"; }).join()+")"+
                     "_DATE_BOUNDS_ "+
@@ -192,7 +197,7 @@ function UsageDataBuilder() {
 	        	break;
     	}
 
-    	_GROUP_BY_ += ", travel_direction, length, link_direction"
+    	_GROUP_BY_ += ", freeflow, travel_direction, length, link_direction"
 
         return sql.replace("_RESOLUTION_", _RESOLUTION_)
         		.replace("_DATE_BOUNDS_", _DATE_BOUNDS_)

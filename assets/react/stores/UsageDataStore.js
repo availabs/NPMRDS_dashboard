@@ -478,10 +478,14 @@ function UsageDataPoint() {
 		return datapoint;
 	}
 	datapoint.add = function(linkID, tmc, value) {
-		if (!data[linkID]) {
-			data[linkID] = {};
+		// if (!data[linkID]) {
+		// 	data[linkID] = {};
+		// }
+		// data[linkID][tmc] = value;
+		if (!data[tmc]) {
+			data[tmc] = {};
 		}
-		data[linkID][tmc] = value;
+		data[tmc] = value;
 		return datapoint;
 	}
 	datapoint.value = function(v) {
@@ -791,10 +795,9 @@ function LinkShader() {
 			.range(colors);
 
 	function shader(feature) {
-		var congestion = data[feature.properties.linkID] ?
-				data[feature.properties.linkID][feature.properties.tmc] || -1 : -1;
-                
-		return (congestion > 0 ? scale(congestion) : "#000");
+		var congestion = data[feature.properties.tmc] || null;
+
+		return (congestion === null ? "#000" : scale(congestion));
 	}
 
 	shader.domain = function(d) {
