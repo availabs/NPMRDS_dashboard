@@ -31,12 +31,16 @@ var ControlPanel = React.createClass({
 
     },
     _onDataLoadingStart: function() {
-        this.state.loading = true;
+        var state = this.state;
+        state.loading = true;
         d3.select("#NPMRDS-CP-submit").classed("NPMRDS-button-disabled", true);
+        this.setState(state);
     },
     _onDataLoadingStop: function() {
-        this.state.loading = false;
+        var state = this.state;
+        state.loading = false;
         d3.select("#NPMRDS-CP-submit").classed("NPMRDS-button-disabled", false);
+        this.setState(state);
     },
     getParams: function() {
         var startDate = d3.select("#startDate").property("value").trim(),

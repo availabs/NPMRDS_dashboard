@@ -38,6 +38,7 @@ module.exports.routes = {
   */
   '/roads/usage/state/:id': 'usagedata.getStateData',
   '/roads/usage/county/:id': 'usagedata.getCountyData',
+  '/roads/usage/route/:id': 'usagedata.getRouteData',
 
   /**
   * tmc usage data, by tmc code

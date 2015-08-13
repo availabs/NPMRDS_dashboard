@@ -5,6 +5,7 @@ var AppDispatcher = require('../dispatcher/AppDispatcher'),
     EventEmitter = require('events').EventEmitter,
     assign = require('object-assign'),
     topojson = require("topojson"),
+    d3 = require("d3"),
 
     SailsWebApi = require("../utils/api/SailsWebApi"),
 
@@ -86,14 +87,14 @@ var GeoStore = assign({}, EventEmitter.prototype, {
     for (var key in _loadedRoads) {
       if (_loadedRoads[key] == "loaded") {
           if (_shiftedRoads[key]) {
-              loadedRoadFeatures = loadedRoadFeatures.concat(_shiftedRoads[key]);
+              loadedRoadFeatures.push(_shiftedRoads[key]);
           }
           else if (_roadsCache[key]) {
-              loadedRoadFeatures = loadedRoadFeatures.concat(_roadsCache[key]);
+              loadedRoadFeatures.push(_roadsCache[key]);
           }
       }
     }
-    return loadedRoadFeatures;
+    return d3.merge(loadedRoadFeatures);
   },
 
   getLoadedRoadsByCounty: function() {

@@ -13,6 +13,7 @@ var AppDispatcher = require('../dispatcher/AppDispatcher'),
 
     SailsWebApi = require("../utils/api/SailsWebApi"),
     GeoStore = require("./GeoStore"),
+    RouteStore = require("./RouteStore"),
 
     // TMCDataStore = require("./TMCDataStore"),
 
@@ -64,26 +65,27 @@ var UsageDataStore = assign({}, EventEmitter.prototype, {
   	},
 
 	loadData: function(params) {
-		var loadedRoads = GeoStore.getLoadedRoads();
+		var activeRoute = RouteStore.activeRoute();
 
-		if (!loadedRoads.length) {
-			return;
+		if (activeRoute) {
+			params.tmcs = activeRoute.tmc_codes;
+			dataPointCollectionsManager.reset();
+			SailsWebApi.loadRouteUsageData(36, params);
 		}
 
-		dataPointCollectionsManager.reset();
+		var loadedRoads = GeoStore.getLoadedRoads();
 
-		params.links = loadedRoads.map(function(road) { return road.properties.linkID; });
-		SailsWebApi.getCountyUsageData(36, params);
-
-		// console.log('data is loading')
-		// UsageDataStore.emitChange();
+		if (loadedRoads.length) {
+			params.links = loadedRoads.map(function(road) { return road.properties.linkID; });
+			dataPointCollectionsManager.reset();
+			SailsWebApi.getCountyUsageData(36, params);
+		}
 	},
 	linkShader: function() {
 		return linkShader;
 	},
 
 	setSVG: function(svg) {
-		//console.log("SETTING SVG", svg);
 		dataPointSlider.svg(svg)
 			.init();
 	},
@@ -104,6 +106,13 @@ UsageDataStore.dispatchToken = AppDispatcher.register(function(payload) {
 console.log("RECEIVED_COUNTY_ROADS_DATA::usageData", action.usageData);
   			processUsageData(action.usageData, action.params);
 			UsageDataStore.emitEvent(Events.USAGE_DATA_PROCESSED);
+			// UsageDataStore.emitChange();
+			break;
+			
+  		case ActionTypes.LOAD_ROUTE_USAGE_DATA:
+console.log("LOAD_ROUTE_USAGE_DATA::usageData", action.usageData);
+  	// 		processUsageData(action.usageData, action.params);
+			// UsageDataStore.emitEvent(Events.USAGE_DATA_PROCESSED);
 			// UsageDataStore.emitChange();
 			break;
 

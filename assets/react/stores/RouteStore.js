@@ -17,7 +17,8 @@ var AppDispatcher = require('../dispatcher/AppDispatcher'),
     routeCreator = require("../components/utils/RouteCreator")();
 
 var routePoints = {},
-    SAVED_ROUTES = [];
+    SAVED_ROUTES = [],
+    ACTIVE_ROUTE = null;
 
 var RouteStore = assign({}, EventEmitter.prototype, {
 	emitEvent: function(Event, data) {
@@ -73,6 +74,13 @@ var RouteStore = assign({}, EventEmitter.prototype, {
     },
     getSavedRoutes: function() {
         return SAVED_ROUTES;
+    },
+
+    activeRoute: function(route) {
+        if (!arguments.length) {
+            return ACTIVE_ROUTE;
+        }
+        ACTIVE_ROUTE = route;
     }
 })
 

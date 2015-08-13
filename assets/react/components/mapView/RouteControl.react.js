@@ -17,14 +17,10 @@ var React = require('react'),
 var RoutePanel = React.createClass({
     getInitialState: function() {
         return {
-            loading: false,
             savedRoutes: []
         }
     },
     componentDidMount: function() {
-        SailsWebApi.addChangeListener(Events.SAILS_WEB_API_LOADING_START, this._onDataLoadingStart);
-        SailsWebApi.addChangeListener(Events.SAILS_WEB_API_LOADING_STOP, this._onDataLoadingStop);
-
         RouteStore.addChangeListener(Events.RECEIVED_SAVED_ROUTES, this.displaySavedRoutes);
 
         UserStore.addChangeListener(this.getSavedRoutes);
@@ -37,9 +33,6 @@ var RoutePanel = React.createClass({
         }
     },
     componentWillUnmount: function() {
-        SailsWebApi.removeChangeListener(Events.SAILS_WEB_API_LOADING_START, this._onDataLoadingStart);
-        SailsWebApi.removeChangeListener(Events.SAILS_WEB_API_LOADING_STOP, this._onDataLoadingStop);
-
         RouteStore.removeChangeListener(Events.RECEIVED_SAVED_ROUTES, this.displaySavedRoutes);
 
         UserStore.removeChangeListener(this.getSavedRoutes);
@@ -54,15 +47,6 @@ var RoutePanel = React.createClass({
         }
     },
 
-    _onDataLoadingStart: function() {
-        this.state.loading = true;
-        d3.select("#NPMRDS-RP-submit").classed("NPMRDS-button-disabled", true);
-    },
-    _onDataLoadingStop: function() {
-        this.state.loading = false;
-        d3.select("#NPMRDS-RP-submit").classed("NPMRDS-button-disabled", false);
-    },
-
     displaySavedRoutes: function(routes) {
         var state = this.state;
         state.savedRoutes = routes;
@@ -74,6 +58,7 @@ var RoutePanel = React.createClass({
             route = this.state.savedRoutes.reduce(function(a,c) { return c.name == name ? c : a; }, {});
 
         SailsWebApi.loadRoute(route);
+        RouteStore.activeRoute(route);
     },
 
     render: function() {

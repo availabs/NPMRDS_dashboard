@@ -30,6 +30,8 @@ module.exports = {
     RECEIVED_COUNTY_ROADS_DATA: null,
     RECEIVED_SHIFTED_COUNTY_ROADS:null,
 
+    LOAD_ROUTE_USAGE_DATA: null,
+
     DATA_VIEW_CHANGED: null,
 
     RECEIVED_TMC_DATA: null,

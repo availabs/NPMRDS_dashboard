@@ -212,6 +212,16 @@ console.log("SailsWebApi.getTMCdata: recieved data for", unloadedTMCs);
         SailsWebApi.checkLoading(false);
       })
   },
+// get HERE usage data for a user defined route
+  loadRouteUsageData: function(fips, params) {
+    SailsWebApi.checkLoading(true);
+    d3.xhr("/roads/usage/route/"+fips)
+      .response(function(request) { return JSON.parse(request.responseText); })
+      .post(JSON.stringify(params), function(err, data) {
+        ServerActionCreators.loadRouteUsageData(fips, params, data);
+        SailsWebApi.checkLoading(false);
+      })
+  },
 
   //---------------------------------------------------
   // Sails Rest Route

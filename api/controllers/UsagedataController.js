@@ -70,14 +70,37 @@ console.log("sending data for ", request.fips);
 			weekdays: req.param("weekdays")
 		};
 		
-console.log("TMC usage data requested for:", request.fips);
+console.log("TMC usage data requested for:", request.fips, request.type);
 
 		Builder(request, function(error, result) {
 			if (error) {
 				res.serverError(error);
 				return;
 			}
-console.log("sending data for ", request.fips);
+console.log("sending data for ", request.fips, request.type);
+			res.ok(result);
+		});
+	},
+
+	getRouteData: function(req, res) {
+		var request = {
+			type: "route",
+			fips: req.param("id"),
+			tmcs: req.param("tmcs"),
+			dateBounds: req.param("dateBounds"),
+			timeBounds: req.param("timeBounds"),
+			resolution: req.param("resolution"),
+			weekdays: req.param("weekdays")
+		};
+		
+console.log("TMC usage data requested for:", request.fips, request.type);
+
+		Builder(request, function(error, result) {
+			if (error) {
+				res.serverError(error);
+				return;
+			}
+console.log("sending data for ", request.fips, request.type);
 			res.ok(result);
 		});
 	}

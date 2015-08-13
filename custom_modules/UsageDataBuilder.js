@@ -15,13 +15,19 @@ function UsageDataBuilder() {
 		request.weekdays = request.weekdays || DEFUALT_WEEKDAYS;
 		request.weekdays = request.weekdays || DEFUALT_WEEKDAYS;
 
-		if (request.type == "state") {
-			var sql = makeStateSQL(request);
-		}
-		else {
-			var sql = makeCountySQL(request);
+		switch (request.type) {
+			case "state":
+				var sql = makeStateSQL(request);
+				break;
+			case "county":
+				var sql = makeCountySQL(request);
+				break;
+			case "route":
+				var sql = makeRouteSQL(request);
+				break;
 		}
 
+console.log(sql)
         BIGquery(sql, function(error, result) {
         	if (error) {
         		cb(error);
@@ -119,6 +125,27 @@ function UsageDataBuilder() {
 		return response;
 	}
 
+	function makeRouteSQL(request) {//lut.link_id AS link_id, 
+        var sql = "SELECT here.tmc AS tmc, avg(here.travel_time_all) AS travel_time, "+
+        			"atts.distance AS length, atts.direction AS travel_direction, lut.dir AS link_direction, "+
+        			" ff.free_flow AS freeflow "+
+        			"_RESOLUTION_ "+
+                    "FROM [HERE_traffic_data.HERE_NY] AS here "+
+                        "JOIN EACH [NPMRDS_LUT.NPMRDS_LUT] AS lut ON here.TMC = lut.tmc "+
+                        "JOIN EACH [NPMRDS_LUT.TMC_ATTRIBUTES] AS atts ON here.TMC = atts.tmc "+
+						"JOIN (SELECT here.tmc AS tmc, NTH(70, QUANTILES(here.travel_time_all)) AS free_flow "+
+							"FROM [HERE_traffic_data.HERE_NY] AS here "+
+							"WHERE here.TMC IN ("+ request.tmcs.map(function(d) { return "'"+d+"'"; }).join() +") "+
+							"GROUP BY tmc) AS ff ON here.TMC = ff.tmc "+
+                    "WHERE here.TMC IN ("+ request.tmcs.map(function(d) { return "'"+d+"'"; }).join() +") "+
+                    "AND weekday IN ("+request.weekdays.map(function(d) { return "'"+d+"'"; }).join()+")"+
+                    "_DATE_BOUNDS_ "+
+                    "_TIME_BOUNDS_ "+
+                    "GROUP BY _GROUP_BY_;";
+
+        return makeReplacements(sql, request);
+	}
+
 	function makeCountySQL(request) {
 	/*
 	This helper function receives the request object and dynamically
@@ -134,20 +161,24 @@ function UsageDataBuilder() {
                         "JOIN EACH [NPMRDS_LUT.NPMRDS_LUT] AS lut ON here.TMC = lut.tmc "+
                         "JOIN EACH [NPMRDS_LUT.TMC_ATTRIBUTES] AS atts ON here.TMC = atts.tmc "+
 						"JOIN (SELECT here.tmc AS tmc, NTH(70, QUANTILES(here.travel_time_all)) AS free_flow "+
-								"FROM [HERE_traffic_data.HERE_NY] AS here "+
-								"JOIN EACH [NPMRDS_LUT.NPMRDS_LUT] AS lut ON here.TMC = lut.tmc "+
-								"WHERE lut.link_id IN ("+ request.links.join() +") "+
-								"GROUP BY tmc) AS ff ON here.TMC = ff.tmc "+
+							"FROM [HERE_traffic_data.HERE_NY] AS here "+
+							"JOIN EACH [NPMRDS_LUT.NPMRDS_LUT] AS lut ON here.TMC = lut.tmc "+
+							"WHERE lut.link_id IN ("+ request.links.join() +") "+
+							"GROUP BY tmc) AS ff ON here.TMC = ff.tmc "+
                     "WHERE lut.link_id IN ("+ request.links.join() +") "+
                     "AND weekday IN ("+request.weekdays.map(function(d) { return "'"+d+"'"; }).join()+")"+
                     "_DATE_BOUNDS_ "+
                     "_TIME_BOUNDS_ "+
                     "GROUP BY _GROUP_BY_;";
 
+        return makeReplacements(sql, request);
+    }
+
+    function makeReplacements(sql, request) {
         var _RESOLUTION_ = "",
         	_DATE_BOUNDS_ = "",
         	_TIME_BOUNDS_ = "",
-        	_GROUP_BY_ = "link_id, tmc";
+        	_GROUP_BY_ = request.type == "route" ? "tmc" : "link_id, tmc";
 
         if (request.dateBounds) {
         	if (request.dateBounds.length == 2) {
@@ -216,63 +247,8 @@ function UsageDataBuilder() {
                     "_TIME_BOUNDS_ "+
                     "GROUP BY _GROUP_BY_;";
 
-        var _RESOLUTION_ = "",
-        	_DATE_BOUNDS_ = "",
-        	_TIME_BOUNDS_ = ""
-        	_GROUP_BY_ = "link_id, tmc";
-
-        if (request.dateBounds) {
-        	if (request.dateBounds.length == 2) {
-	        	_DATE_BOUNDS_ = "WHERE date >= "+request.dateBounds[0]+
-	        						" AND date <= "+request.dateBounds[1];
-	        }
-	        else {
-	        	_DATE_BOUNDS_ = "WHERE date = "+request.dateBounds[0];
-	        }
-        }
-
-        if (request.timeBounds) {
-        	var connector = request.dateBounds ? "AND" : "WHERE";
-        	if (request.timeBounds.length == 2) {
-	        	_TIME_BOUNDS_ = connector+" epoch >= "+Math.floor(request.timeBounds[0]/5)+
-	        						" AND epoch < "+Math.floor(request.timeBounds[1]/5);
-	        }
-	        else {
-	        	_TIME_BOUNDS_ = connector+" epoch = "+request.timeBounds[0]/5;
-	        }
-        }
-
-        switch (request.resolution) {
-        	case "year":
-	        	_RESOLUTION_ = ", date%10000 AS year";
-	        	_GROUP_BY_ = "year, "+_GROUP_BY_;
-	        	break;
-        	case "month":
-	        	_RESOLUTION_ = ", INTEGER(date/1000000) AS month";
-	        	_GROUP_BY_ = "month, "+_GROUP_BY_;
-	        	break;
-    		case "day":
-	        	_RESOLUTION_ = ", INTEGER(date/10000)%100 AS day";
-	        	_GROUP_BY_ = "day, "+_GROUP_BY_;
-	        	break;
-    		case "hour":
-	        	_RESOLUTION_ = ", INTEGER(epoch/12) AS hour";
-	        	_GROUP_BY_ = "hour, "+_GROUP_BY_;
-	        	break;
-    		case "15-minute":
-	        	_RESOLUTION_ = ", INTEGER(epoch/3) AS minute";
-	        	_GROUP_BY_ = "minute, "+_GROUP_BY_;
-	        	request.resolution = "minute";
-	        	break;
-    	}
-
-    	_GROUP_BY_ += ", travel_direction, length, link_direction"
-
-        return sql.replace("_RESOLUTION_", _RESOLUTION_)
-        		.replace("_DATE_BOUNDS_", _DATE_BOUNDS_)
-        		.replace("_TIME_BOUNDS_", _TIME_BOUNDS_)
-        		.replace("_GROUP_BY_", _GROUP_BY_);
-	}
+        return makeReplacements(sql, request);
+    }
 }
 
 module.exports = UsageDataBuilder;

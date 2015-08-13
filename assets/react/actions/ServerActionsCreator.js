@@ -106,6 +106,14 @@ module.exports = {
       params: params
     });
   },
+  loadRouteUsageData: function(fips, params, data) {
+    AppDispatcher.handleServerAction({
+      type: ActionTypes.LOAD_ROUTE_USAGE_DATA,
+      usageData: data,
+      fips: fips,
+      params: params
+    });
+  },
 
   loadMonthlyGraphData: function(id, type, data) {
     AppDispatcher.handleServerAction({

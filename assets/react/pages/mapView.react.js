@@ -96,8 +96,8 @@ var MapView = React.createClass({
                         zoomOnLoad:true,
                         style:function (feature) {
                             return {
-                                className: 'roads id-'+feature.properties.linkID+' tmc-'+feature.properties.tmc,
-                                stroke:true,
+                                className: 'roads '+(feature.properties.tmc ? 'tmc-'+feature.properties.tmc : ''),
+                                stroke: true,
                                 color: linkShader(feature)
                             }
                         },
@@ -125,8 +125,9 @@ var MapView = React.createClass({
                         zoomOnLoad:true,
                         style: function(feature) {
                             return {
-                                stroke:true,
-                                color: "#009"
+                                className: 'roads '+(feature.properties.tmc ? 'tmc-'+feature.properties.tmc : ''),
+                                stroke: true,
+                                color: linkShader(feature)
                             }
                         }
                     }
@@ -212,13 +213,11 @@ var MapView = React.createClass({
             roadPaths = d3.selectAll(".roads")
                 .datum(function() {
                     var path = d3.select(this),
-                        match = path.attr("class").match(/id-(\w+) tmc-(\w+)/),
-                        linkID = +match[1],
-                        tmc = match[2];
+                        match = path.attr("class").match(/ tmc-(\w+)/),
+                        tmc = match ? match[1] : null;
                     return {
                         properties: {
-                            linkID:linkID,
-                            tmc:tmc
+                            tmc: tmc
                         }
                     };
                 });
