@@ -29,7 +29,7 @@ var UNIQUE_MARKER_IDs = 0;
 
 var RouteCreation = React.createClass({
     getInitialState: function(){
-        var mapView = this;
+        var routeCreation = this;
         return {
             input: Input(),
             popup: Popup(),
@@ -54,8 +54,8 @@ var RouteCreation = React.createClass({
 
                             layer.on({
                                 click: function(e){
-                                    if (mapView.state.input.keyDown("ctrl")) {
-                                        mapView.addRoutePoint(e.latlng.lat, e.latlng.lng);
+                                    if (routeCreation.state.input.keyDown("ctrl")) {
+                                        routeCreation.addRoutePoint(e.latlng.lat, e.latlng.lng);
                                     }
                                     else {
                                         GeoStore.toggleCounty(feature.id);
@@ -101,10 +101,10 @@ var RouteCreation = React.createClass({
                                   }
                                 },
                                 mouseover: function(e){
-                                    mapView.state.popup(feature);
+                                    routeCreation.state.popup(feature);
                                 },
                                 mouseout: function(e){
-                                    mapView.state.popup.display(false);
+                                    routeCreation.state.popup.display(false);
                                 }
                             });
 
@@ -182,7 +182,7 @@ var RouteCreation = React.createClass({
     },
 
     _onRouteLoaded: function(points) {
-        var mapView = this,
+        var routeCreation = this,
             state = this.state;
 
         RouteStore.clearPoints();
@@ -200,8 +200,8 @@ var RouteCreation = React.createClass({
                             RouteStore.calcRoute();
                         },
                         click: function(e) {
-                            if (mapView.state.input.keyDown("ctrl")) {
-                                mapView.state.markers = mapView.state.markers.filter(function(d) { return d.id != markerID; });
+                            if (routeCreation.state.input.keyDown("ctrl")) {
+                                routeCreation.state.markers = routeCreation.state.markers.filter(function(d) { return d.id != markerID; });
                                 RouteStore.addPoint(markerID, []);
                                 RouteStore.calcRoute();
                             }
@@ -216,7 +216,7 @@ var RouteCreation = React.createClass({
     },
 
     addRoutePoint: function(lat, lng) {
-        var mapView = this,
+        var routeCreation = this,
             state = this.state,
             markerID = UNIQUE_MARKER_IDs++,
             markerData = {
@@ -229,8 +229,8 @@ var RouteCreation = React.createClass({
                         RouteStore.calcRoute();
                     },
                     click: function(e) {
-                        if (mapView.state.input.keyDown("ctrl")) {
-                            mapView.state.markers = mapView.state.markers.filter(function(d) { return d.id != markerID; });
+                        if (routeCreation.state.input.keyDown("ctrl")) {
+                            routeCreation.state.markers = routeCreation.state.markers.filter(function(d) { return d.id != markerID; });
                             RouteStore.addPoint(markerID, []);
                             RouteStore.calcRoute();
                         }

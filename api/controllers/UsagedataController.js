@@ -69,7 +69,7 @@ console.log("sending data for ", request.fips);
 			resolution: req.param("resolution"),
 			weekdays: req.param("weekdays")
 		};
-		
+
 console.log("TMC usage data requested for:", request.fips, request.type);
 
 		Builder(request, function(error, result) {
@@ -92,7 +92,7 @@ console.log("sending data for ", request.fips, request.type);
 			resolution: req.param("resolution"),
 			weekdays: req.param("weekdays")
 		};
-		
+
 console.log("TMC usage data requested for:", request.fips, request.type);
 
 		Builder(request, function(error, result) {
@@ -105,4 +105,3 @@ console.log("sending data for ", request.fips, request.type);
 		});
 	}
 };
-

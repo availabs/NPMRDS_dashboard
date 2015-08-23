@@ -1,4 +1,15 @@
+var HTTPS = require("https");
+
 module.exports = {
+	createRoute: function(req, res) {
+		var url = req.param("url");
+		HTTPS.get(url, function(response) {
+			response.pipe(res);
+		})
+		.on('error', function(e) {
+			res.badRequest(e.message);
+		});
+	},
 	saveRoute: function(req, res) {
 		var owner = req.param("owner"),
 			name = req.param("name"),

@@ -13,7 +13,7 @@ function HERE_API() {
 		options = options || {};
 //http://route.st.nlp.nokia.com/routing/6.2/calculateroute.json
 		var baseURL = options.baseURL || "https://route.st.nlp.nokia.com",//"http://route.cit.api.here.com",
-			path = options.path || "/routing/7.2",
+			path = options.path || "/routing/6.2",
 			resource = "/calculateroute",
 			format = options.format || ".json",
 			mode = options.mode || "fastest;car;traffic:disabled",
@@ -36,13 +36,34 @@ function HERE_API() {
 	}
 	here.call = function(func) {
 		if (request) {
-console.log("<HERE_API::call> request:",request);
-			d3.json(request, func);
+// console.log("<HERE_API> request",request);
+// var req = new XMLHttpRequest(),
+// 	handler = getResponseHandler(func);
+// req.addEventListener('load', handler);
+// req.addEventListener('error', handler);
+// req.open("get", request, true);
+// req.send();
+			//d3.json(request, func);
+			d3.xhr("/routes/create")
+				.response(function(d) { return JSON.parse(d.responseText); })
+				.post(JSON.stringify({url:request}), func);
+			request = null;
 		}
-		request = null;
 		return here;
 	}
 	return here;
 }
 
 module.exports = HERE_API;
+
+function getResponseHandler(callback) {
+	return function(e) {
+		console.log("XHR return", this, e);
+		if (this.status == 200) {
+			callback(null, JSON.parse(this.responseText));
+		}
+		else {
+			callback("error: "+this.status);
+		}
+	}
+}

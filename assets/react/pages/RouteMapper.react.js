@@ -103,16 +103,6 @@ var RouteMapper = React.createClass({
         })
     },
 
-// retrieves data from RouteDataStore after change event is emitted
-    // loadMonthlyGraphData: function() {
-    //     var state = this.state;
-    //     state.graphData = {
-    //         monthly: RouteDataStore.getMonthlyData(this.getParams().id),
-    //         monthlyAM: RouteDataStore.getMonthlyAMData(this.getParams().id),
-    //         monthlyPM: RouteDataStore.getMonthlyPMData(this.getParams().id)
-    //     }
-    // },
-
 // this function is called to initiate HERE API route creation
     loadRouteCollection: function(route) {
         RouteStore.clearPoints();

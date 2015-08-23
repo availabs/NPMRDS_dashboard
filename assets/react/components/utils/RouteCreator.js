@@ -62,21 +62,22 @@ function RouteCreator() {
 		}
 console.log("<RouteCreator::makeRoute>", result);
 
-		result.response.route[0].leg.forEach(function(leg) {
-			leg.link.forEach(function(link) {
+		result.Response.Route[0].Leg.forEach(function(leg) {
+			leg.Link.forEach(function(link) {
+				console.log(link.TMCCodes)
 				var feature = {
 						type: "Feature",
 						properties: {
-							linkID: link.linkId,
-							length: link.length,
-							speedLimit: link.speedLimit
+							linkID: link.LinkId,
+							length: link.Length,
+							speedLimit: link.SpeedLimit
 						},
 						geometry: {
 							type: "LineString",
 							coordinates: []
 						}
 					},
-					shape = link.shape.map(function(string) {
+					shape = link.Shape.map(function(string) {
 						return string.split(",").reverse().map(function(d){return +d;});
 					});
 				feature.geometry.coordinates = shape;

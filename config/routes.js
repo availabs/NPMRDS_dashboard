@@ -53,6 +53,8 @@ module.exports.routes = {
   '/routes/load/:owner/:name': 'route.loadRoute',
   '/routes/getsaved/:owner/:mpo_array': 'route.getSavedRoutes',            // this route returns a list of route names
 
+  '/routes/create': 'route.createRoute',
+
   /**
   * route data retrieval
   */
