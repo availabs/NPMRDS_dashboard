@@ -15,12 +15,12 @@ var React = require('react'),
     RouteStore = require("../stores/RouteStore"),
     RouteDataStore = require("../stores/RouteDataStore"),
 
-    RouteMap = require("../components/routemap/RouteMap.react"),
-    RouteMapSidebar = require("../components/routemap/RouteMapSidebar.react");
+    RouteMap = require("../components/routeviewer/RouteMap.react"),
+    RouteMapSidebar = require("../components/routeviewer/RouteMapSidebar.react");
 
 var METER_TO_MILE = 0.000621371;
 
-var RouteMapper = React.createClass({
+var RouteViewer = React.createClass({
     mixins: [ Router.State ],
 
     getInitialState: function() {
@@ -251,4 +251,4 @@ function makeMonthData(data) {
     )
 }
 
-module.exports = RouteMapper;
+module.exports = RouteViewer;

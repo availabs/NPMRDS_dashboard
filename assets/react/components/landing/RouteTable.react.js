@@ -21,7 +21,7 @@ var RouteTable = React.createClass({
             rows = this.props.rows.map(function(route, i) {
                 return (
                     <tr key={i}>
-                        <td style={ widthStyle }><a href={ "/#/routemap/"+route.id }>{ route.name }</a></td>
+                        <td style={ widthStyle }><a href={ "/#/routeviewer/"+route.id }>{ route.name }</a></td>
                         <td>{"<super awesome data here!>"}</td>
                         <td>{"<even more awesomer data here!!!>"}</td>
                     </tr>
